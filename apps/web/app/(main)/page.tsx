@@ -18,7 +18,7 @@ export default function Home() {
       {/* Main Content */}
       <main className="flex-1">
         {/* Hero Sections */}
-        <section className="container mx-auto max-w-360 px-3 py-24 grid lg:grid-cols-2 gap-16 items-center">
+        <section className="container mx-auto max-w-360 px-4 py-24 grid lg:grid-cols-2 gap-16 items-center">
           <div className="space-y-8">
             <Badge
               variant="outline"
