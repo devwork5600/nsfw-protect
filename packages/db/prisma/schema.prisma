@@ -1,0 +1,267 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+//
+// ==========================
+// AUTH & USERS
+// ==========================
+//
+
+enum Role {
+  user
+  admin
+}
+
+model User {
+  id    String @id @default(uuid())
+  email String @unique
+
+  name      String?
+  firstName String?
+  lastName  String?
+
+  password String?
+  role     Role    @default(user)
+
+  emailVerified Boolean @default(false)
+  image         String?
+
+  deletedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions Session[]
+  accounts Account[]
+
+  // SaaS relations
+  customer Customer?
+  apiKeys  ApiKey[]
+  usages   UsageRecord[]
+
+  @@map("user")
+}
+
+model Session {
+  id    String @id @default(uuid())
+  token String @unique
+
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id         String @id @default(uuid())
+  accountId  String
+  providerId String
+
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+
+  scope    String?
+  password String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@map("account")
+}
+
+model Verification {
+  id String @id @default(uuid())
+
+  identifier String
+  value      String
+
+  expiresAt DateTime
+  purpose   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("verification")
+}
+
+//
+// ==========================
+// BILLING
+// ==========================
+//
+
+enum PlanTier {
+  FREE
+  STARTER
+  PRO
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+  UNPAID
+}
+
+model Customer {
+  id String @id @default(uuid())
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  stripeCustomerId String @unique
+
+  subscriptions Subscription[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("customer")
+}
+
+model Subscription {
+  id String @id @default(uuid())
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  stripeSubscriptionId String @unique
+
+  plan   PlanTier
+  status SubscriptionStatus
+
+  stripePriceId String
+
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+
+  cancelAtPeriodEnd Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invoices Invoice[]
+
+  @@index([customerId])
+  @@map("subscription")
+}
+
+model Invoice {
+  id String @id @default(uuid())
+
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  stripeInvoiceId String @unique
+
+  amountPaid Int
+  currency   String @default("usd")
+
+  hostedInvoiceUrl String?
+  pdfUrl           String?
+
+  paid Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([subscriptionId])
+  @@map("invoice")
+}
+
+//
+// ==========================
+// API KEYS
+// ==========================
+//
+
+enum ApiKeyEnvironment {
+  TEST
+  LIVE
+}
+
+model ApiKey {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name String
+
+  environment ApiKeyEnvironment @default(LIVE)
+
+  // Example:
+  // prefix: nsfw_live_abcd1234
+  // store only hash of secret
+  keyPrefix String
+  keyHash   String @unique
+
+  requestsPerMinute Int @default(60)
+
+  lastUsedAt DateTime?
+
+  isUnlimited Boolean @default(false)
+
+  revoked   Boolean   @default(false)
+  expiresAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  usage UsageRecord[]
+
+  @@index([userId])
+  @@index([keyPrefix])
+  @@map("api_key")
+}
+
+//
+// ==========================
+// USAGE / METERING
+// ==========================
+//
+
+model UsageRecord {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  apiKeyId String?
+  apiKey   ApiKey? @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+
+  requestCount Int @default(0)
+  imageCount   Int @default(0)
+
+  nsfwDetections Int @default(0)
+
+  periodStart DateTime
+  periodEnd   DateTime
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, periodStart])
+  @@index([apiKeyId])
+  @@map("usage_record")
+}
