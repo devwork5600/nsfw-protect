@@ -4,26 +4,14 @@ import { Badge } from "@/components/ui/badge";
 import { ShieldCheck, BarChart3, ImageIcon, Key, Zap } from "lucide-react";
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { getUsageStats } from '@/actions/usage-actions';
+import { getApiKeys } from '@/actions/api-key-actions';
 
 export const dynamic = 'force-dynamic';
 
-const DashboardPage = () => {
-  // Dummy data for UI
-  const stats = {
-    plan: "PRO",
-    usage: {
-      imageCount: 12450,
-      nsfwDetections: 450,
-      safeDetections: 12000
-    },
-    percentUsed: 62.25,
-    limit: 20000
-  };
-
-  const apiKeys = [
-    { id: '1', name: 'Production Key' },
-    { id: '2', name: 'Development Key' }
-  ];
+const DashboardPage = async () => {
+  const stats = await getUsageStats();
+  const apiKeys = await getApiKeys();
 
   return (
     <div className="space-y-8">
