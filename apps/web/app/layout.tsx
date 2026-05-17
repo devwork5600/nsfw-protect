@@ -19,6 +19,7 @@ export const metadata: Metadata = {
 
 
 import { Toaster } from "@/components/ui/sonner";
+import { MobileMenu } from "@/components/MobileMenu";
 
 export default function RootLayout({
   children,
@@ -32,6 +33,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         {children}
+        <MobileMenu />
         <Toaster />
       </body>
     </html>

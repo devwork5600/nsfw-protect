@@ -1,13 +1,18 @@
+"use client";
+
 import { Shield, BookOpen, Rocket, Key, Lock, Image as ImageIcon, Video, Terminal, Menu, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useMobileMenu } from "@/lib/store/use-mobile-menu";
 
 export default function DocsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { toggle } = useMobileMenu();
+
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-background">
       {/* Sidebar */}
@@ -17,7 +22,9 @@ export default function DocsLayout({
             <Shield className="w-6 h-6 text-primary" />
             NSFWGuard
           </Link>
-          <Menu className="w-5 h-5 md:hidden text-foreground" />
+          <button onClick={toggle} className="md:hidden p-2 hover:bg-accent transition-colors border border-border">
+            <Menu className="w-5 h-5 text-foreground" />
+          </button>
         </div>
         
         <div className="p-4 border-b border-border flex items-center justify-between">
