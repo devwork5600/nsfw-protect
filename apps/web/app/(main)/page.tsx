@@ -1,4 +1,4 @@
-
+import { HomeTestModule } from "@/components/HomeTestModule";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -17,7 +17,7 @@ export default function Home() {
     <div className="flex flex-col flex-1 items-center justify-center font-sans">
       {/* Main Content */}
       <main className="flex-1">
-        {/* Hero Sections */}
+        {/* Hero Section */}
         <section className="container mx-auto max-w-360 px-4 py-24 grid lg:grid-cols-2 gap-16 items-center">
           <div className="space-y-8">
             <Badge
@@ -35,18 +35,18 @@ export default function Home() {
               content moderation infrastructure. Built for scale, optimized for
               latency.
             </p>
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 size="lg"
-                className="h-14 px-8 text-base font-heading font-bold tracking-widest uppercase rounded-none bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(0,245,255,0.5)]"
+                className="h-14 px-8 text-base font-heading font-bold tracking-widest uppercase rounded-none bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(0,245,255,0.5)] w-full sm:w-auto"
               >
                 Start Building Free
               </Button>
-              <Link href="/docs">
+              <Link href="/docs" className="w-full sm:w-auto">
                 <Button
                   size="lg"
                   variant="outline"
-                  className="h-14 px-8 text-base font-heading tracking-widest uppercase rounded-none border-border hover:bg-accent hover:text-primary hover:border-primary transition-all"
+                  className="h-14 px-8 text-base font-heading tracking-widest uppercase rounded-none border-border hover:bg-accent hover:text-primary hover:border-primary transition-all w-full"
                 >
                   Read the Docs
                 </Button>
@@ -54,7 +54,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="relative">
+          <div className="relative overflow-hidden lg:overflow-visible">
             {/* The Code block Card representing 'Test our models' */}
             <Card className="rounded-none border-border bg-card shadow-2xl relative z-10 overflow-hidden group">
               <div className="h-10 bg-muted/50 border-b border-border flex items-center px-4 gap-2">
@@ -179,8 +179,7 @@ export default function Home() {
                   Multi-Modal
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Unified API for images, video streams, and text-to-image AI
-                  prompt moderation.
+                  Unified API for images.
                 </p>
               </div>
             </div>
@@ -189,7 +188,7 @@ export default function Home() {
 
         {/* Real-time testing module */}
         <section className="container mx-auto max-w-360 px-4 py-32">
-          {/* <HomeTestModule /> */}
+          <HomeTestModule />
         </section>
 
         {/* Built for Zero-Failure */}
@@ -250,11 +249,11 @@ export default function Home() {
               Join 2,000+ developers building safer digital spaces with
               NSFWGuard. No credit card required to start.
             </p>
-            <div className="pt-8">
-              <Link href={"/pricing"}>
+            <div className="pt-8 flex justify-center">
+              <Link href={"/pricing"} className="w-full sm:w-auto">
                 <Button
                   size="lg"
-                  className="h-16 px-12 text-lg font-heading font-bold tracking-widest uppercase rounded-none bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(0,245,255,0.6)] hover:shadow-[0_0_30px_rgba(0,245,255,1)] transition-all"
+                  className="h-16 px-6 sm:px-12 text-base sm:text-lg font-heading font-bold tracking-widest uppercase rounded-none bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(0,245,255,0.6)] hover:shadow-[0_0_30px_rgba(0,245,255,1)] transition-all w-full sm:w-auto"
                 >
                   Get Your API Key Now
                 </Button>
