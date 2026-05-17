@@ -34,6 +34,11 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export default function UsageClient({ stats }: { stats: any }) {
+    const chartData = [
+    { type: "safe", scans: stats.usage.safeDetections, fill: "var(--color-chart-1)" },
+    { type: "nsfw", scans: stats.usage.nsfwDetections, fill: "var(--color-chart-2)" },
+  ];
+
   return (
     <div className="container mx-auto py-10 space-y-8">
       <div>
@@ -101,15 +106,7 @@ export default function UsageClient({ stats }: { stats: any }) {
             >
               <PieChart>
                 <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                <Pie 
-                  data={[
-                    { type: "safe", scans: stats.usage.safeDetections, fill: "hsl(var(--chart-1))" },
-                    { type: "nsfw", scans: stats.usage.nsfwDetections, fill: "hsl(var(--chart-2))" },
-                  ]} 
-                  dataKey="scans" 
-                  label 
-                  nameKey="type" 
-                />
+             <Pie data={chartData} dataKey="scans" label nameKey="type" />
               </PieChart>
             </ChartContainer>
           </CardContent>

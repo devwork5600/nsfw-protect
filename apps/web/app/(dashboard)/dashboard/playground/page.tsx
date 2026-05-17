@@ -11,9 +11,21 @@ import { Upload, ImageIcon, Loader2, ShieldCheck, ShieldAlert, X } from "lucide-
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
+const API_URL = "http://localhost:3001";
+
 interface ClassificationResult {
   label: string;
   confidence: number;
+}
+
+interface JobResponse {
+  jobId: string;
+}
+
+interface ResultResponse {
+  status: "pending" | "done" | "error";
+  result?: ClassificationResult[];
+  error?: string;
 }
 
 export default function PlaygroundPage() {
@@ -21,12 +33,12 @@ export default function PlaygroundPage() {
   const [isClassifying, setIsClassifying] = useState(false);
   const [result, setResult] = useState<ClassificationResult[] | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [polling, setPolling] = useState(false);
 
   // Load API key from local storage if available
   useEffect(() => {
     const savedKey = localStorage.getItem("nsfw_playground_key");
     if (savedKey) setApiKey(savedKey);
-    else setApiKey("sk_live_dummy_key_for_playground");
   }, []);
 
   const handleKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,6 +46,35 @@ export default function PlaygroundPage() {
     setApiKey(newKey);
     localStorage.setItem("nsfw_playground_key", newKey);
   };
+
+  const pollResult = useCallback(async (jobId: string) => {
+    setPolling(true);
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`${API_URL}/result/${jobId}`);
+        if (!res.ok) throw new Error("Failed to fetch result");
+        
+        const data: ResultResponse = await res.json();
+        
+        if (data.status === "done" && data.result) {
+          setResult(data.result);
+          setIsClassifying(false);
+          setPolling(false);
+          clearInterval(interval);
+          toast.success("Classification complete!");
+        } else if (data.status === "error") {
+          throw new Error(data.error || "Processing failed");
+        }
+      } catch (error: any) {
+        toast.error(error.message);
+        setIsClassifying(false);
+        setPolling(false);
+        clearInterval(interval);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (!apiKey) {
@@ -50,21 +91,30 @@ export default function PlaygroundPage() {
     setResult(null);
     setIsClassifying(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      const dummyResults: ClassificationResult[] = [
-        { label: "Drawing", confidence: Math.random() },
-        { label: "Hentai", confidence: Math.random() * 0.1 },
-        { label: "Neutral", confidence: Math.random() },
-        { label: "Porn", confidence: Math.random() * 0.05 },
-        { label: "Sexy", confidence: Math.random() * 0.2 },
-      ].sort((a, b) => b.confidence - a.confidence);
+    const formData = new FormData();
+    formData.append("image", file);
 
-      setResult(dummyResults);
+    try {
+      const response = await fetch(`${API_URL}/classify`, {
+        method: "POST",
+        headers: {
+          "x-api-key": apiKey,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to classify image");
+      }
+
+      const { jobId }: JobResponse = await response.json();
+      pollResult(jobId);
+    } catch (error: any) {
+      toast.error(error.message);
       setIsClassifying(false);
-      toast.success("Classification complete!");
-    }, 2000);
-  }, [apiKey]);
+    }
+  }, [apiKey, pollResult]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

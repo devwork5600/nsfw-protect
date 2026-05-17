@@ -1,13 +1,19 @@
-import { Check, X } from "lucide-react";
+import { Check, X, Shield, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { getUser } from "@/lib/auth/auth-session";
+import { createCheckoutSession } from "@/actions/create-checkout-session";
+import { cancelSubscription } from "@/actions/subscription";
+import { redirect } from "next/navigation";
+import { prisma } from "@nsfw/db";
 
 const plans = [
   {
     name: "Free",
     description: "For hobbyists and small projects.",
     price: "$0",
+    priceId: null,
     features: [
       "100 requests / month",
       "Standard latency",
@@ -15,12 +21,14 @@ const plans = [
       "1 concurrent stream",
     ],
     buttonText: "Get Started",
+    href: "/auth/register",
     recommended: false,
   },
   {
     name: "Starter",
     description: "For growing developers.",
     price: "$29",
+    priceId: process.env.STRIPE_PRICE_STARTER_MONTHLY,
     features: [
       "10,000 requests / month",
       "< 150ms latency SLA",
@@ -29,12 +37,14 @@ const plans = [
       "Basic tag filters",
     ],
     buttonText: "Upgrade to Starter",
+    href: "/auth/register",
     recommended: true,
   },
   {
     name: "Pro",
     description: "For industrial-scale applications.",
     price: "$149",
+    priceId: process.env.STRIPE_PRICE_PRO_MONTHLY,
     features: [
       "100,000 requests / month",
       "< 80ms latency SLA",
@@ -44,6 +54,7 @@ const plans = [
       "Advanced Audit Logs",
     ],
     buttonText: "Upgrade to Pro",
+    href: "/auth/register",
     recommended: false,
   },
 ];
@@ -84,7 +95,29 @@ const faqs = [
   },
 ];
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const user = await getUser();
+
+  if (user) {
+    const customer = await prisma.customer.findUnique({
+      where: { userId: user.id },
+      include: {
+        subscriptions: {
+          where: {
+            status: {
+              in: ["ACTIVE", "PAST_DUE"]
+            }
+          },
+          take: 1
+        }
+      }
+    });
+
+    if (customer?.subscriptions[0]) {
+      redirect("/dashboard/billing");
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
       {/* Hero section */}
@@ -106,45 +139,66 @@ export default function PricingPage() {
       {/* Plans */}
       <section className="px-6 pb-24 max-w-7xl mx-auto">
         <div className="grid md:grid-cols-3 gap-8">
-          {plans.map((plan) => (
-            <div
-              key={plan.name}
-              className={`relative border p-8 flex flex-col justify-between group transition-all duration-500 ${plan.recommended
-                ? "border-primary bg-primary/5 shadow-[0_0_30px_rgba(0,112,255,0.15)] scale-105 z-10"
-                : "border-border bg-card hover:border-muted-foreground"
-                }`}
-            >
-              {plan.recommended && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1">
-                  Recommended
-                </div>
-              )}
-              <div>
-                <h3 className="text-2xl font-bold italic uppercase tracking-tighter mb-1">{plan.name}</h3>
-                <p className="text-sm text-muted-foreground mb-8">{plan.description}</p>
-                <div className="mb-8">
-                  <span className="text-5xl font-bold italic tracking-tighter">{plan.price}</span>
-                  <span className="text-muted-foreground ml-2 uppercase text-xs tracking-widest">/mo</span>
-                </div>
-                <ul className="space-y-4 mb-12">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3 text-sm tracking-wide">
-                      <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <Button
-                className={`w-full rounded-none font-bold uppercase tracking-widest py-6 transition-all ${plan.recommended
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(0,112,255,0.4)]"
-                  : "bg-transparent border border-muted hover:border-foreground text-foreground"
+          {plans.map((plan) => {
+            return (
+              <div
+                key={plan.name}
+                className={`relative border p-8 flex flex-col justify-between group transition-all duration-500 ${plan.recommended
+                  ? "border-primary bg-primary/5 shadow-[0_0_30px_rgba(0,112,255,0.15)] scale-105 z-10"
+                  : "border-border bg-card hover:border-muted-foreground"
                   }`}
               >
-                {plan.buttonText}
-              </Button>
-            </div>
-          ))}
+                {plan.recommended && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1">
+                    Recommended
+                  </div>
+                )}
+                <div>
+                  <h3 className="text-2xl font-bold italic uppercase tracking-tighter mb-1">{plan.name}</h3>
+                  <p className="text-sm text-muted-foreground mb-8">{plan.description}</p>
+                  <div className="mb-8">
+                    <span className="text-5xl font-bold italic tracking-tighter">{plan.price}</span>
+                    {plan.price !== "Custom" && <span className="text-muted-foreground ml-2 uppercase text-xs tracking-widest">/mo</span>}
+                  </div>
+                  <ul className="space-y-4 mb-12">
+                    {plan.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-3 text-sm tracking-wide">
+                        <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {plan.priceId ? (
+                  <form action={async () => {
+                    "use server";
+                    if (!user) return redirect("/auth");
+                    await createCheckoutSession(plan.priceId!);
+                  }}>
+                    <Button
+                      type="submit"
+                      className={`w-full rounded-none font-bold uppercase tracking-widest py-6 transition-all ${plan.recommended
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(0,112,255,0.4)]"
+                        : "bg-transparent border border-muted hover:border-foreground text-foreground"
+                        }`}
+                    >
+                      {plan.buttonText}
+                    </Button>
+                  </form>
+                ) : (
+                  <Button
+                    className={`w-full rounded-none font-bold uppercase tracking-widest py-6 transition-all bg-transparent border border-muted hover:border-foreground text-foreground`}
+                    asChild
+                  >
+                    <Link href={user ? "/dashboard" : plan.href}>
+                      {user && plan.name === "Free" ? "Go to Dashboard" : plan.buttonText}
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -201,10 +255,10 @@ export default function PricingPage() {
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4 relative z-10">
             <Button size="lg" className="rounded-none font-bold uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(0,112,255,0.3)]">
-              Create Developer Account
+              <Link href="/auth/register">Create Developer Account</Link>
             </Button>
             <Button variant="outline" size="lg" className="rounded-none font-bold uppercase tracking-widest border-muted hover:border-foreground">
-              Talk to an Engineer
+              <Link href="/support">Talk to an Engineer</Link>
             </Button>
           </div>
         </div>
