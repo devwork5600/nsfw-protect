@@ -11,13 +11,14 @@ COPY packages/auth/package.json ./packages/auth/
 COPY packages/db/package.json ./packages/db/
 COPY packages/email/package.json ./packages/email/
 
-# Install with legacy-peer-deps to fix your conflict
+# Install with legacy-peer-deps
+# We must ensure all workspaces are linked
 RUN npm install --legacy-peer-deps
 
 # Copy the rest
 COPY . .
 
-# Build
+# Build everything
 RUN npm run build
 
 # Default to running the API (we will override this in Railway settings)
