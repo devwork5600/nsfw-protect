@@ -21,7 +21,7 @@ export default function Home() {
             </Badge>
             <h1 className="text-5xl lg:text-7xl font-heading font-bold tracking-tighter leading-[1.1] text-foreground">
               The API that developers <span className="text-primary italic">actually</span> want to
-              use.
+              use
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl font-sans leading-relaxed">
               Integrate in minutes, protect forever with our military-grade content moderation
