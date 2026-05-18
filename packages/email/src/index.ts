@@ -1,5 +1,5 @@
 import { Resend } from 'resend';
-import { EmailTemplate } from './template.tsx';
+import { EmailTemplate } from './template';
 import * as React from 'react';
 
 let _resend: Resend | null = null;
@@ -58,5 +58,5 @@ export async function sendEmail({
   }
 }
 
-export * from './template.tsx';
+export * from './template';
 export { getResend as resend };

@@ -42,7 +42,7 @@ export const getAuthOptions = (): BetterAuthOptions => ({
   user: {
     changeEmail: {
       enabled: true,
-      sendChangeEmailVerification: async ({ user, newEmail, url }) => {
+      sendChangeEmailConfirmation: async ({ user, newEmail, url }: { user: { email: string; name?: string | null }; newEmail: string; url: string }) => {
         try {
           const username = user.email.split('@')[0];
           await sendEmail({

@@ -25,7 +25,7 @@ const MainNavbar = () => {
               href="/docs"
               className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest font-heading"
             >
-              Documentations
+              Documentations.
             </Link>
             <Link
               href="/billing"
