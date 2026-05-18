@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
 import { prisma } from '@nsfw/db';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
 
 async function getOrCreateSubscription(stripeSub: any) {
   // Ensure we have the full subscription data

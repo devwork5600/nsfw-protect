@@ -5,7 +5,7 @@ import { getUser } from '@/lib/auth/auth-session';
 import { prisma } from '@nsfw/db';
 import { revalidatePath } from 'next/cache';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
 
 export async function previewSubscriptionChange(priceId: string) {
   const user = await getUser();
