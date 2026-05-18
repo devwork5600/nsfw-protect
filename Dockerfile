@@ -11,9 +11,8 @@ COPY packages/auth/package.json ./packages/auth/
 COPY packages/db/package.json ./packages/db/
 COPY packages/email/package.json ./packages/email/
 
-# Install with legacy-peer-deps
-# We must ensure all workspaces are linked
-RUN npm install --legacy-peer-deps
+# Install root dependencies and then link all workspaces
+RUN npm install --legacy-peer-deps && npm install --workspaces --legacy-peer-deps
 
 # Copy the rest
 COPY . .
