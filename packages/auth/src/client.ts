@@ -1,9 +1,15 @@
 import { magicLinkClient } from 'better-auth/client/plugins';
 import { createAuthClient } from 'better-auth/react';
 
-let _client: ReturnType<typeof createAuthClient> | null = null;
+const dummyClient = createAuthClient({
+  plugins: [magicLinkClient()],
+});
 
-export const getAuthClient = () => {
+export type AuthClientType = typeof dummyClient;
+
+let _client: AuthClientType | null = null;
+
+export const getAuthClient = (): AuthClientType => {
   if (!_client) {
     _client = createAuthClient({
       baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL || process.env.BETTER_AUTH_URL,
@@ -14,7 +20,7 @@ export const getAuthClient = () => {
 };
 
 // Proxies for easy use
-export const authClient = new Proxy({} as ReturnType<typeof createAuthClient>, {
+export const authClient = new Proxy({} as AuthClientType, {
   get(_, prop) {
     const instance = getAuthClient();
     return (instance as any)[prop];

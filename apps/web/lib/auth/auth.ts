@@ -2,7 +2,7 @@ import { getAuthOptions } from '@nsfw/auth';
 import { betterAuth } from 'better-auth';
 import { nextCookies } from 'better-auth/next-js';
 
-let _auth: ReturnType<typeof betterAuth> | null = null;
+let _auth: any = null;
 
 export const getAuth = () => {
   if (!_auth) {
@@ -10,7 +10,7 @@ export const getAuth = () => {
     _auth = betterAuth({
       ...options,
       plugins: [...(options.plugins || []), nextCookies()],
-    });
+    } as any);
   }
   return _auth;
 };
