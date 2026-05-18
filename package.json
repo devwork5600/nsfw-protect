@@ -15,7 +15,8 @@
     "db:studio": "prisma studio --schema packages/db/prisma/schema.prisma",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "prepare": "husky"
+    "prepare": "husky",
+    "preinstall": "echo 'legacy-peer-deps=true' > .npmrc"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
