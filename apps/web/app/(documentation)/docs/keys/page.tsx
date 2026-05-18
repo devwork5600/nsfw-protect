@@ -34,7 +34,7 @@ export default function DocsKeysPage() {
               Dashboard → API Keys
             </Link>{' '}
             and click &quot;Generate New Key&quot;. When a new key is generated, all previously
-            active keys are automatically revoked
+            active keys are automatically revoked.
           </p>
           <ul className="list-disc pl-6 text-muted-foreground font-sans space-y-2 marker:text-primary">
             <li>
