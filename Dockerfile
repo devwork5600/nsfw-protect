@@ -19,6 +19,11 @@ RUN npm ci --legacy-peer-deps
 COPY . .
 
 # Build everything
+ARG AUTH_SECRET
+ARG DATABASE_URL
+ENV AUTH_SECRET=$AUTH_SECRET
+ENV DATABASE_URL=$DATABASE_URL
+
 RUN npm run build
 
 # Default to running the API (we will override this in Railway settings)
