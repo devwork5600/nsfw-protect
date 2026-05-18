@@ -204,7 +204,7 @@ print(response.json())`;
                     Configure Webhooks
                   </p>
                   <p className="text-muted-foreground">
-                    Set up endpoints to receive real-time detection alerts.
+                    Set up endpoints to receive real-time detection alerts
                   </p>
                 </div>
               </li>
