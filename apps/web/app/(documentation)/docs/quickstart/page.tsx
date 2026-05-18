@@ -33,7 +33,7 @@ export default function QuickstartPage() {
               API Keys dashboard
             </Link>{' '}
             and click &quot;Generate New Key&quot;. Your key will only be shown once — store it
-            securely.
+            securely
           </p>
         </div>
 
