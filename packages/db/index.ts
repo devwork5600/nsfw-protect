@@ -1,19 +1,34 @@
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import pg from "pg";
+import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import pg from 'pg';
 
-export const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
-const adapter = new PrismaPg(pool);
+let _prisma: PrismaClient | null = null;
+let _pool: pg.Pool | null = null;
 
-const globalForPrisma = global as unknown as {
-  prisma: PrismaClient;
+export const getDb = () => {
+  if (!_prisma) {
+    const connectionString = process.env.DATABASE_URL;
+    if (!connectionString) {
+      throw new Error('DATABASE_URL environment variable is not set');
+    }
+    _pool = new pg.Pool({ connectionString });
+    const adapter = new PrismaPg(_pool);
+    _prisma = new PrismaClient({ adapter });
+  }
+  return { prisma: _prisma, pool: _pool };
 };
 
-export const prisma =
-  globalForPrisma.prisma || new PrismaClient({
-    adapter,
-  });
+// Proxies for backward compatibility
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_, prop) {
+    return (getDb().prisma as any)[prop];
+  },
+});
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+export const pool = new Proxy({} as pg.Pool, {
+  get(_, prop) {
+    return (getDb().pool as any)[prop];
+  },
+});
 
-export * from "@prisma/client";
+export * from '@prisma/client';

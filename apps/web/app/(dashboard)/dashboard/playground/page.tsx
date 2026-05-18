@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import React, { useState, useCallback, useEffect } from "react";
-import { useDropzone } from "react-dropzone";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
-import { Upload, ImageIcon, Loader2, ShieldCheck, ShieldAlert, X } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+import React, { useState, useCallback, useEffect } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
+import { Upload, ImageIcon, Loader2, ShieldCheck, ShieldAlert, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
-const API_URL = "http://localhost:3001";
+const API_URL = 'http://localhost:3001';
 
 interface ClassificationResult {
   label: string;
@@ -23,13 +23,13 @@ interface JobResponse {
 }
 
 interface ResultResponse {
-  status: "pending" | "done" | "error";
+  status: 'pending' | 'done' | 'error';
   result?: ClassificationResult[];
   error?: string;
 }
 
 export default function PlaygroundPage() {
-  const [apiKey, setApiKey] = useState("");
+  const [apiKey, setApiKey] = useState('');
   const [isClassifying, setIsClassifying] = useState(false);
   const [result, setResult] = useState<ClassificationResult[] | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -37,14 +37,14 @@ export default function PlaygroundPage() {
 
   // Load API key from local storage if available
   useEffect(() => {
-    const savedKey = localStorage.getItem("nsfw_playground_key");
+    const savedKey = localStorage.getItem('nsfw_playground_key');
     if (savedKey) setApiKey(savedKey);
   }, []);
 
   const handleKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newKey = e.target.value;
     setApiKey(newKey);
-    localStorage.setItem("nsfw_playground_key", newKey);
+    localStorage.setItem('nsfw_playground_key', newKey);
   };
 
   const pollResult = useCallback(async (jobId: string) => {
@@ -52,18 +52,18 @@ export default function PlaygroundPage() {
     const interval = setInterval(async () => {
       try {
         const res = await fetch(`${API_URL}/result/${jobId}`);
-        if (!res.ok) throw new Error("Failed to fetch result");
-        
+        if (!res.ok) throw new Error('Failed to fetch result');
+
         const data: ResultResponse = await res.json();
-        
-        if (data.status === "done" && data.result) {
+
+        if (data.status === 'done' && data.result) {
           setResult(data.result);
           setIsClassifying(false);
           setPolling(false);
           clearInterval(interval);
-          toast.success("Classification complete!");
-        } else if (data.status === "error") {
-          throw new Error(data.error || "Processing failed");
+          toast.success('Classification complete!');
+        } else if (data.status === 'error') {
+          throw new Error(data.error || 'Processing failed');
         }
       } catch (error: any) {
         toast.error(error.message);
@@ -76,50 +76,53 @@ export default function PlaygroundPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    if (!apiKey) {
-      toast.error("Please enter your API key first");
-      return;
-    }
-
-    const file = acceptedFiles[0];
-    if (!file) return;
-
-    // Create preview
-    const objectUrl = URL.createObjectURL(file);
-    setPreview(objectUrl);
-    setResult(null);
-    setIsClassifying(true);
-
-    const formData = new FormData();
-    formData.append("image", file);
-
-    try {
-      const response = await fetch(`${API_URL}/classify`, {
-        method: "POST",
-        headers: {
-          "x-api-key": apiKey,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to classify image");
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      if (!apiKey) {
+        toast.error('Please enter your API key first');
+        return;
       }
 
-      const { jobId }: JobResponse = await response.json();
-      pollResult(jobId);
-    } catch (error: any) {
-      toast.error(error.message);
-      setIsClassifying(false);
-    }
-  }, [apiKey, pollResult]);
+      const file = acceptedFiles[0];
+      if (!file) return;
+
+      // Create preview
+      const objectUrl = URL.createObjectURL(file);
+      setPreview(objectUrl);
+      setResult(null);
+      setIsClassifying(true);
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const response = await fetch(`${API_URL}/classify`, {
+          method: 'POST',
+          headers: {
+            'x-api-key': apiKey,
+          },
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to classify image');
+        }
+
+        const { jobId }: JobResponse = await response.json();
+        pollResult(jobId);
+      } catch (error: any) {
+        toast.error(error.message);
+        setIsClassifying(false);
+      }
+    },
+    [apiKey, pollResult],
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      "image/*": [".jpeg", ".jpg", ".png", ".webp"],
+      'image/*': ['.jpeg', '.jpg', '.png', '.webp'],
     },
     maxFiles: 1,
     multiple: false,
@@ -130,14 +133,15 @@ export default function PlaygroundPage() {
     setResult(null);
   };
 
-  const nsfwLabels = ["porn", "hentai", "sexy", "nsfw"];
-  
-  const nsfwScore = result?.reduce((acc, r) => {
-    if (nsfwLabels.includes(r.label.trim().toLowerCase())) {
-      return acc + r.confidence;
-    }
-    return acc;
-  }, 0) || 0;
+  const nsfwLabels = ['porn', 'hentai', 'sexy', 'nsfw'];
+
+  const nsfwScore =
+    result?.reduce((acc, r) => {
+      if (nsfwLabels.includes(r.label.trim().toLowerCase())) {
+        return acc + r.confidence;
+      }
+      return acc;
+    }, 0) || 0;
 
   const isNSFW = nsfwScore > 0.5;
 
@@ -172,16 +176,21 @@ export default function PlaygroundPage() {
       </Card>
 
       <div className="grid md:grid-cols-2 gap-8">
-        <Card className={cn("relative overflow-hidden flex flex-col", isDragActive && "border-primary ring-2 ring-primary/20")}>
+        <Card
+          className={cn(
+            'relative overflow-hidden flex flex-col',
+            isDragActive && 'border-primary ring-2 ring-primary/20',
+          )}
+        >
           <div
             {...getRootProps()}
             className={cn(
-              "flex-1 flex flex-col items-center justify-center p-12 border-2 border-dashed border-muted-foreground/25 rounded-lg m-4 cursor-pointer hover:bg-accent/50 transition-colors",
-              preview && "p-4 border-none"
+              'flex-1 flex flex-col items-center justify-center p-12 border-2 border-dashed border-muted-foreground/25 rounded-lg m-4 cursor-pointer hover:bg-accent/50 transition-colors',
+              preview && 'p-4 border-none',
             )}
           >
             <input {...getInputProps()} />
-            
+
             {preview ? (
               <div className="relative w-full aspect-square rounded-md overflow-hidden bg-accent flex items-center justify-center">
                 <img src={preview} alt="Preview" className="max-w-full max-h-full object-contain" />
@@ -212,13 +221,13 @@ export default function PlaygroundPage() {
                 </div>
                 <div className="space-y-1">
                   <p className="font-heading font-bold uppercase tracking-wide">
-                    {isDragActive ? "Drop it here!" : "Drag & Drop Image"}
+                    {isDragActive ? 'Drop it here!' : 'Drag & Drop Image'}
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    Support JPEG, PNG, WEBP (Max 5MB)
-                  </p>
+                  <p className="text-sm text-muted-foreground">Support JPEG, PNG, WEBP (Max 5MB)</p>
                 </div>
-                <Button variant="outline" type="button">Select File</Button>
+                <Button variant="outline" type="button">
+                  Select File
+                </Button>
               </div>
             )}
           </div>
@@ -260,8 +269,15 @@ export default function PlaygroundPage() {
                         <ShieldAlert className="size-10" />
                       </div>
                       <div className="space-y-1">
-                        <Badge variant="destructive" className="uppercase font-bold tracking-widest px-4 py-1">NSFW DETECTED</Badge>
-                        <p className="text-sm text-muted-foreground mt-2">This image contains explicit content.</p>
+                        <Badge
+                          variant="destructive"
+                          className="uppercase font-bold tracking-widest px-4 py-1"
+                        >
+                          NSFW DETECTED
+                        </Badge>
+                        <p className="text-sm text-muted-foreground mt-2">
+                          This image contains explicit content.
+                        </p>
                       </div>
                     </>
                   ) : (
@@ -270,26 +286,40 @@ export default function PlaygroundPage() {
                         <ShieldCheck className="size-10" />
                       </div>
                       <div className="space-y-1">
-                        <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50 uppercase font-bold tracking-widest px-4 py-1">SFW / SAFE</Badge>
-                        <p className="text-sm text-muted-foreground mt-2">No explicit content detected.</p>
+                        <Badge
+                          variant="outline"
+                          className="text-green-600 border-green-200 bg-green-50 uppercase font-bold tracking-widest px-4 py-1"
+                        >
+                          SFW / SAFE
+                        </Badge>
+                        <p className="text-sm text-muted-foreground mt-2">
+                          No explicit content detected.
+                        </p>
                       </div>
                     </>
                   )}
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground border-b pb-2">Confidence Scores</h4>
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground border-b pb-2">
+                    Confidence Scores
+                  </h4>
                   {result.map((r) => (
                     <div key={r.label} className="space-y-1.5">
                       <div className="flex justify-between text-sm">
                         <span className="capitalize font-medium">{r.label}</span>
-                        <span className="text-muted-foreground">{(r.confidence * 100).toFixed(1)}%</span>
+                        <span className="text-muted-foreground">
+                          {(r.confidence * 100).toFixed(1)}%
+                        </span>
                       </div>
                       <div className="h-2 w-full bg-accent rounded-full overflow-hidden">
-                        <div 
+                        <div
                           className={cn(
-                            "h-full transition-all duration-1000",
-                            ["porn", "hentai", "sexy"].includes(r.label.toLowerCase()) && r.confidence > 0.5 ? "bg-destructive" : "bg-primary"
+                            'h-full transition-all duration-1000',
+                            ['porn', 'hentai', 'sexy'].includes(r.label.toLowerCase()) &&
+                              r.confidence > 0.5
+                              ? 'bg-destructive'
+                              : 'bg-primary',
                           )}
                           style={{ width: `${r.confidence * 100}%` }}
                         />

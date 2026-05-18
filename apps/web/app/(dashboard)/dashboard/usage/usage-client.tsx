@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React from "react";
-import { TrendingUp, ShieldCheck, ShieldAlert, BarChart3, ImageIcon } from "lucide-react";
-import { Pie, PieChart } from "recharts";
+import React from 'react';
+import { TrendingUp, ShieldCheck, ShieldAlert, BarChart3, ImageIcon } from 'lucide-react';
+import { Pie, PieChart } from 'recharts';
 import {
   Card,
   CardContent,
@@ -10,39 +10,41 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from "@/components/ui/chart";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/chart';
+import { Badge } from '@/components/ui/badge';
 
 const chartConfig = {
   scans: {
-    label: "Scans",
+    label: 'Scans',
   },
   safe: {
-    label: "Safe",
-    color: "hsl(var(--chart-1))",
+    label: 'Safe',
+    color: 'hsl(var(--chart-1))',
   },
   nsfw: {
-    label: "NSFW",
-    color: "hsl(var(--chart-2))",
+    label: 'NSFW',
+    color: 'hsl(var(--chart-2))',
   },
 } satisfies ChartConfig;
 
 export default function UsageClient({ stats }: { stats: any }) {
-    const chartData = [
-    { type: "safe", scans: stats.usage.safeDetections, fill: "var(--color-chart-1)" },
-    { type: "nsfw", scans: stats.usage.nsfwDetections, fill: "var(--color-chart-2)" },
+  const chartData = [
+    { type: 'safe', scans: stats.usage.safeDetections, fill: 'var(--color-chart-1)' },
+    { type: 'nsfw', scans: stats.usage.nsfwDetections, fill: 'var(--color-chart-2)' },
   ];
 
   return (
     <div className="container mx-auto py-10 space-y-8">
       <div>
-        <h2 className="text-3xl font-heading font-bold tracking-tight uppercase">Usage & Metering</h2>
+        <h2 className="text-3xl font-heading font-bold tracking-tight uppercase">
+          Usage & Metering
+        </h2>
         <p className="text-muted-foreground">Monitor your API consumption and scan limits.</p>
       </div>
 
@@ -75,7 +77,8 @@ export default function UsageClient({ stats }: { stats: any }) {
           <CardContent>
             <div className="text-2xl font-bold">{stats.usage.nsfwDetections.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              {((stats.usage.nsfwDetections / (stats.usage.imageCount || 1)) * 100).toFixed(1)}% of total
+              {((stats.usage.nsfwDetections / (stats.usage.imageCount || 1)) * 100).toFixed(1)}% of
+              total
             </p>
           </CardContent>
         </Card>
@@ -87,7 +90,8 @@ export default function UsageClient({ stats }: { stats: any }) {
           <CardContent>
             <div className="text-2xl font-bold">{stats.usage.safeDetections.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              {((stats.usage.safeDetections / (stats.usage.imageCount || 1)) * 100).toFixed(1)}% of total
+              {((stats.usage.safeDetections / (stats.usage.imageCount || 1)) * 100).toFixed(1)}% of
+              total
             </p>
           </CardContent>
         </Card>
@@ -106,16 +110,19 @@ export default function UsageClient({ stats }: { stats: any }) {
             >
               <PieChart>
                 <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-             <Pie data={chartData} dataKey="scans" label nameKey="type" />
+                <Pie data={chartData} dataKey="scans" label nameKey="type" />
               </PieChart>
             </ChartContainer>
           </CardContent>
           <CardFooter className="flex-col gap-2 text-sm">
             <div className="flex items-center gap-2 leading-none font-medium">
-              Safe images represent {((stats.usage.safeDetections / (stats.usage.imageCount || 1)) * 100).toFixed(1)}% of traffic <TrendingUp className="h-4 w-4 text-green-500" />
+              Safe images represent{' '}
+              {((stats.usage.safeDetections / (stats.usage.imageCount || 1)) * 100).toFixed(1)}% of
+              traffic <TrendingUp className="h-4 w-4 text-green-500" />
             </div>
             <div className="leading-none text-muted-foreground">
-              Showing total detection breakdown for {new Date().toLocaleString('default', { month: 'long' })}
+              Showing total detection breakdown for{' '}
+              {new Date().toLocaleString('default', { month: 'long' })}
             </div>
           </CardFooter>
         </Card>
@@ -125,7 +132,13 @@ export default function UsageClient({ stats }: { stats: any }) {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>Plan Usage</CardTitle>
-                <CardDescription>You are on the <Badge variant="secondary" className="font-bold">{stats.plan}</Badge> plan.</CardDescription>
+                <CardDescription>
+                  You are on the{' '}
+                  <Badge variant="secondary" className="font-bold">
+                    {stats.plan}
+                  </Badge>{' '}
+                  plan.
+                </CardDescription>
               </div>
               <div className="text-right">
                 <span className="text-2xl font-bold">{stats.percentUsed.toFixed(1)}%</span>
@@ -135,21 +148,29 @@ export default function UsageClient({ stats }: { stats: any }) {
           </CardHeader>
           <CardContent className="space-y-6 flex-1">
             <div className="h-4 w-full bg-accent rounded-full overflow-hidden">
-              <div 
+              <div
                 className={`h-full transition-all duration-1000 ${
-                  stats.percentUsed > 90 ? 'bg-destructive' : stats.percentUsed > 70 ? 'bg-yellow-500' : 'bg-primary'
+                  stats.percentUsed > 90
+                    ? 'bg-destructive'
+                    : stats.percentUsed > 70
+                      ? 'bg-yellow-500'
+                      : 'bg-primary'
                 }`}
                 style={{ width: `${stats.percentUsed}%` }}
               />
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="p-4 border rounded-lg bg-card">
-                <p className="text-muted-foreground uppercase text-xs font-bold tracking-widest mb-1">Quota Used</p>
+                <p className="text-muted-foreground uppercase text-xs font-bold tracking-widest mb-1">
+                  Quota Used
+                </p>
                 <p className="text-xl font-bold">{stats.usage.imageCount.toLocaleString()}</p>
               </div>
               <div className="p-4 border rounded-lg bg-card">
-                <p className="text-muted-foreground uppercase text-xs font-bold tracking-widest mb-1">Remaining</p>
+                <p className="text-muted-foreground uppercase text-xs font-bold tracking-widest mb-1">
+                  Remaining
+                </p>
                 <p className="text-xl font-bold">{stats.remaining.toLocaleString()}</p>
               </div>
             </div>

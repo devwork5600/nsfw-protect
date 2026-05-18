@@ -1,9 +1,9 @@
-"use server";
+'use server';
 
-import { getUser } from "@/lib/auth/auth-session";
-import { prisma } from "@nsfw/db";
-import { generateRawApiKey, hashApiKey, getPrefix } from "@/lib/api-keys";
-import { revalidatePath } from "next/cache";
+import { getUser } from '@/lib/auth/auth-session';
+import { prisma } from '@nsfw/db';
+import { generateRawApiKey, hashApiKey, getPrefix } from '@/lib/api-keys';
+import { revalidatePath } from 'next/cache';
 
 export async function isSubscribed() {
   const user = await getUser();
@@ -14,7 +14,7 @@ export async function isSubscribed() {
     include: {
       subscriptions: {
         where: {
-          status: "ACTIVE",
+          status: 'ACTIVE',
         },
       },
     },
@@ -25,15 +25,15 @@ export async function isSubscribed() {
 
 export async function generateApiKey() {
   const user = await getUser();
-  if (!user) throw new Error("Unauthorized");
+  if (!user) throw new Error('Unauthorized');
 
   const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
-  const isAdmin = dbUser?.role === "admin";
+  const isAdmin = dbUser?.role === 'admin';
 
   if (!isAdmin) {
     const subscribed = await isSubscribed();
     if (!subscribed) {
-      throw new Error("You must have an active subscription to generate an API key.");
+      throw new Error('You must have an active subscription to generate an API key.');
     }
   }
 
@@ -50,27 +50,27 @@ export async function generateApiKey() {
   await prisma.apiKey.create({
     data: {
       userId: user.id,
-      name: isAdmin ? "Admin Unlimited Key" : "Default Key",
+      name: isAdmin ? 'Admin Unlimited Key' : 'Default Key',
       keyPrefix: prefix,
       keyHash: hashedKey,
-      environment: "LIVE",
+      environment: 'LIVE',
       isUnlimited: isAdmin,
       requestsPerMinute: isAdmin ? 100000 : 60,
     },
   });
 
-  revalidatePath("/dashboard/api-keys");
-  
+  revalidatePath('/dashboard/api-keys');
+
   return rawKey; // Return raw key ONLY ONCE during generation
 }
 
 export async function generateAdminMagicKey() {
   const user = await getUser();
-  if (!user) throw new Error("Unauthorized");
+  if (!user) throw new Error('Unauthorized');
 
   const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
-  if (dbUser?.role !== "admin") {
-    throw new Error("Only admins can generate magic keys.");
+  if (dbUser?.role !== 'admin') {
+    throw new Error('Only admins can generate magic keys.');
   }
 
   const rawKey = generateRawApiKey();
@@ -80,33 +80,33 @@ export async function generateAdminMagicKey() {
   await prisma.apiKey.create({
     data: {
       userId: user.id,
-      name: "Magic Unlimited Key",
+      name: 'Magic Unlimited Key',
       keyPrefix: prefix,
       keyHash: hashedKey,
-      environment: "LIVE",
+      environment: 'LIVE',
       isUnlimited: true,
       requestsPerMinute: 1000000,
     },
   });
 
-  revalidatePath("/dashboard/api-keys");
-  
+  revalidatePath('/dashboard/api-keys');
+
   return rawKey;
 }
 
 export async function getApiKeys() {
   const user = await getUser();
-  if (!user) throw new Error("Unauthorized");
+  if (!user) throw new Error('Unauthorized');
 
   return prisma.apiKey.findMany({
     where: { userId: user.id, revoked: false },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: 'desc' },
     select: {
       id: true,
       keyPrefix: true,
       createdAt: true,
       lastUsedAt: true,
       revoked: true,
-    }
+    },
   });
 }

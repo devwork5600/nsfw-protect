@@ -1,21 +1,14 @@
-import React from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  LifeBuoy, 
-  MessageSquare, 
-  BookOpen, 
-  FileCode, 
-  Mail, 
-  AlertCircle
-} from 'lucide-react';
+import { LifeBuoy, MessageSquare, BookOpen, FileCode, Mail, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 
-import { FaTwitter, FaGithub } from "react-icons/fa";
+import { FaTwitter, FaGithub } from 'react-icons/fa';
 
 const SupportPage = () => {
   return (
@@ -25,7 +18,10 @@ const SupportPage = () => {
           <h2 className="text-3xl font-heading font-bold tracking-tight uppercase">Support</h2>
           <p className="text-muted-foreground">Get technical assistance and access resources.</p>
         </div>
-        <Badge variant="outline" className="px-4 py-1 text-sm font-bold border-green-500 text-green-500 bg-green-500/5 uppercase tracking-widest">
+        <Badge
+          variant="outline"
+          className="px-4 py-1 text-sm font-bold border-green-500 text-green-500 bg-green-500/5 uppercase tracking-widest"
+        >
           Priority Support Active
         </Badge>
       </div>
@@ -49,7 +45,10 @@ const SupportPage = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="category">Category</Label>
-                <select id="category" className="w-full h-10 px-3 py-2 bg-background border border-input rounded-md text-sm">
+                <select
+                  id="category"
+                  className="w-full h-10 px-3 py-2 bg-background border border-input rounded-md text-sm"
+                >
                   <option>Technical Issue</option>
                   <option>Billing Inquiry</option>
                   <option>Feature Request</option>
@@ -59,13 +58,15 @@ const SupportPage = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="message">Message</Label>
-              <Textarea 
-                id="message" 
-                placeholder="Describe your issue in detail..." 
+              <Textarea
+                id="message"
+                placeholder="Describe your issue in detail..."
                 className="min-h-[150px]"
               />
             </div>
-            <Button className="w-full font-heading uppercase tracking-widest text-xs font-bold">Submit Ticket</Button>
+            <Button className="w-full font-heading uppercase tracking-widest text-xs font-bold">
+              Submit Ticket
+            </Button>
           </CardContent>
         </Card>
 
@@ -78,15 +79,24 @@ const SupportPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Link href="/docs" className="flex items-center gap-3 p-3 rounded-md hover:bg-white/5 transition-colors border border-transparent hover:border-white/10 group">
+              <Link
+                href="/docs"
+                className="flex items-center gap-3 p-3 rounded-md hover:bg-white/5 transition-colors border border-transparent hover:border-white/10 group"
+              >
                 <BookOpen className="size-4 text-muted-foreground group-hover:text-primary" />
                 <span className="text-sm font-medium">Documentation</span>
               </Link>
-              <Link href="/dashboard/integration" className="flex items-center gap-3 p-3 rounded-md hover:bg-white/5 transition-colors border border-transparent hover:border-white/10 group">
+              <Link
+                href="/dashboard/integration"
+                className="flex items-center gap-3 p-3 rounded-md hover:bg-white/5 transition-colors border border-transparent hover:border-white/10 group"
+              >
                 <FileCode className="size-4 text-muted-foreground group-hover:text-primary" />
                 <span className="text-sm font-medium">API Reference</span>
               </Link>
-              <Link href="/status" className="flex items-center gap-3 p-3 rounded-md hover:bg-white/5 transition-colors border border-transparent hover:border-white/10 group">
+              <Link
+                href="/status"
+                className="flex items-center gap-3 p-3 rounded-md hover:bg-white/5 transition-colors border border-transparent hover:border-white/10 group"
+              >
                 <AlertCircle className="size-4 text-muted-foreground group-hover:text-primary" />
                 <span className="text-sm font-medium">System Status</span>
               </Link>
@@ -120,20 +130,25 @@ const SupportPage = () => {
 
       <Card className="bg-primary/5 border-primary/20">
         <CardHeader>
-          <CardTitle className="text-primary uppercase tracking-tighter italic">Enterprise Support</CardTitle>
+          <CardTitle className="text-primary uppercase tracking-tighter italic">
+            Enterprise Support
+          </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
-            Need a dedicated support engineer, custom SLA, or on-premise deployment assistance? 
-            Our Enterprise tier includes 24/7 phone support and a private Slack channel.
+            Need a dedicated support engineer, custom SLA, or on-premise deployment assistance? Our
+            Enterprise tier includes 24/7 phone support and a private Slack channel.
           </p>
-          <Button variant="outline" className="border-primary text-primary hover:bg-primary/10 font-heading uppercase tracking-widest text-[10px] font-bold h-10 px-8 shrink-0">
+          <Button
+            variant="outline"
+            className="border-primary text-primary hover:bg-primary/10 font-heading uppercase tracking-widest text-[10px] font-bold h-10 px-8 shrink-0"
+          >
             Contact Sales
           </Button>
         </CardContent>
       </Card>
     </div>
-  )
-}
+  );
+};
 
-export default SupportPage
+export default SupportPage;

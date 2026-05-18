@@ -1,19 +1,39 @@
-import React from "react";
-import { getApiKeys } from "@/actions/api-key-actions";
-import { getUser } from "@/lib/auth/auth-session";
-import { prisma } from "@nsfw/db";
-import ApiKeysClient from "./api-keys-client";
-
-export const dynamic = "force-dynamic";
+import React from 'react';
+import { getApiKeys, isSubscribed } from '@/actions/api-key-actions';
+import { ApiKeyClient } from './api-keys-client';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { getUser } from '@/lib/auth/auth-session';
+import { prisma } from '@nsfw/db';
 
 export default async function ApiKeysPage() {
   const user = await getUser();
-  if (!user) return null;
+  const dbUser = user ? await prisma.user.findUnique({ where: { id: user.id } }) : null;
+  const isAdmin = dbUser?.role === 'admin';
 
-  const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
-  const isAdmin = dbUser?.role === "admin";
-  
-  const keys = await getApiKeys();
+  const subscribed = await isSubscribed();
+  const apiKeys = await getApiKeys();
+
+  if (!subscribed && !isAdmin) {
+    return (
+      <div className="container mx-auto py-10">
+        <Card>
+          <CardHeader>
+            <CardTitle>API Keys</CardTitle>
+            <CardDescription>
+              You need an active subscription to generate and use API keys.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/dashboard/billing">
+              <Button>Upgrade to Pro</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-10">
@@ -25,7 +45,7 @@ export default async function ApiKeysPage() {
           </p>
         </div>
 
-        <ApiKeysClient initialKeys={keys} isAdmin={isAdmin || false} />
+        <ApiKeyClient initialKeys={apiKeys} isAdmin={isAdmin} />
       </div>
     </div>
   );

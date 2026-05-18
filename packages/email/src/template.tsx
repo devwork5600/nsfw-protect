@@ -9,9 +9,9 @@ import {
   Text,
   Head,
   Font,
-  Tailwind
-} from "react-email";
-
+  Tailwind,
+} from 'react-email';
+import * as React from 'react';
 
 export const EmailTemplate = ({
   username,
@@ -31,8 +31,8 @@ export const EmailTemplate = ({
           fontFamily="Roboto"
           fallbackFontFamily="Verdana"
           webFont={{
-            url: "https://fonts.gstatic.com/s/roboto/v27/KFOmCnqEu92Fr1Mu4mxKKTU1Kg.woff2",
-            format: "woff2",
+            url: 'https://fonts.gstatic.com/s/roboto/v27/KFOmCnqEu92Fr1Mu4mxKKTU1Kg.woff2',
+            format: 'woff2',
           }}
           fontWeight={400}
           fontStyle="normal"
@@ -43,7 +43,7 @@ export const EmailTemplate = ({
           theme: {
             extend: {
               fontFamily: {
-                sans: ["Roboto", "Verdana", "sans-serif"],
+                sans: ['Roboto', 'Verdana', 'sans-serif'],
               },
             },
           },
@@ -56,7 +56,7 @@ export const EmailTemplate = ({
                 src="https://e5qisws5zl.ufs.sh/f/yLB59fCc10rgKMIkwJzPWzvj05tqHZufhxIiXGCly7bswV21"
                 width="40"
                 height="37"
-                alt="La voie de l'info"
+                alt="Logo"
                 className="mx-auto my-0"
               />
             </Section>

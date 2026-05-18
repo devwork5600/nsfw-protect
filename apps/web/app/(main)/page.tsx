@@ -1,16 +1,9 @@
-import { HomeTestModule } from "@/components/HomeTestModule";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  BarChart3Icon,
-  GlobeIcon,
-  ImageIcon,
-  SearchIcon,
-  ShieldIcon,
-  ZapIcon,
-} from "lucide-react";
+import { HomeTestModule } from '@/components/HomeTestModule';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { Card, CardContent } from '@/components/ui/card';
+import { BarChart3Icon, GlobeIcon, ImageIcon, SearchIcon, ShieldIcon, ZapIcon } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -27,13 +20,12 @@ export default function Home() {
               v4.0 API is now live
             </Badge>
             <h1 className="text-5xl lg:text-7xl font-heading font-bold tracking-tighter leading-[1.1] text-foreground">
-              The API that developers{" "}
-              <span className="text-primary italic">actually</span> want to use.
+              The API that developers <span className="text-primary italic">actually</span> want to
+              use.
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl font-sans leading-relaxed">
-              Integrate in minutes, protect forever with our military-grade
-              content moderation infrastructure. Built for scale, optimized for
-              latency.
+              Integrate in minutes, protect forever with our military-grade content moderation
+              infrastructure. Built for scale, optimized for latency.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
@@ -63,71 +55,55 @@ export default function Home() {
                   <div className="w-3 h-3 bg-muted-foreground/30 rounded-none square"></div>
                   <div className="w-3 h-3 bg-muted-foreground/30 rounded-none square"></div>
                 </div>
-                <div className="ml-4 text-xs font-mono text-muted-foreground">
-                  terminal // bash
-                </div>
+                <div className="ml-4 text-xs font-mono text-muted-foreground">terminal // bash</div>
               </div>
               <CardContent className="p-6">
                 <pre className="font-mono text-sm leading-relaxed overflow-x-auto text-primary/80">
                   <code className="block text-accent-foreground">
-                    <span className="text-muted-foreground">$</span> curl -X
-                    POST &quot;https://api.nsfwguard.io/v4&quot; \
+                    <span className="text-muted-foreground">$</span> curl -X POST
+                    &quot;https://api.nsfwguard.io/v4&quot; \
                   </code>
                   <code className="block ml-4">
-                    {" "}
-                    -H{" "}
+                    {' '}
+                    -H{' '}
                     <span className="text-green-400">
                       &quot;Authorization: Bearer $API_KEY&quot;
-                    </span>{" "}
+                    </span>{' '}
                     \
                   </code>
                   <code className="block ml-4">
-                    {" "}
-                    -F{" "}
-                    <span className="text-green-400">
-                      &quot;media=@image.jpg&quot;
-                    </span>{" "}
-                    \
+                    {' '}
+                    -F <span className="text-green-400">&quot;media=@image.jpg&quot;</span> \
                   </code>
                   <code className="block ml-4">
-                    {" "}
-                    -F{" "}
+                    {' '}
+                    -F{' '}
                     <span className="text-green-400">
-                      &quot;detect=[&apos;explicit&apos;,
-                      &apos;suggestive&apos;]&quot;
+                      &quot;detect=[&apos;explicit&apos;, &apos;suggestive&apos;]&quot;
                     </span>
                   </code>
                   <code className="block mt-4 text-muted-foreground">{`// Response: 42ms`}</code>
-                  <code className="block text-muted-foreground">{"{"}</code>
+                  <code className="block text-muted-foreground">{'{'}</code>
                   <code className="block text-muted-foreground">
-                    {" "}
-                    &quot;status&quot;:{" "}
-                    <span className="text-green-400">&quot;success&quot;</span>,
+                    {' '}
+                    &quot;status&quot;: <span className="text-green-400">&quot;success&quot;</span>,
+                  </code>
+                  <code className="block text-muted-foreground"> &quot;result&quot;: {'{'}</code>
+                  <code className="block text-muted-foreground">
+                    {' '}
+                    &quot;safe&quot;: <span className="text-destructive">false</span>,
                   </code>
                   <code className="block text-muted-foreground">
-                    {" "}
-                    &quot;result&quot;: {"{"}
+                    {' '}
+                    &quot;score&quot;: <span className="text-primary">0.998</span>,
                   </code>
                   <code className="block text-muted-foreground">
-                    {" "}
-                    &quot;safe&quot;:{" "}
-                    <span className="text-destructive">false</span>,
-                  </code>
-                  <code className="block text-muted-foreground">
-                    {" "}
-                    &quot;score&quot;:{" "}
-                    <span className="text-primary">0.998</span>,
-                  </code>
-                  <code className="block text-muted-foreground">
-                    {" "}
+                    {' '}
                     &quot;flags&quot;: [
-                    <span className="text-green-400">
-                      &quot;explicit_content&quot;
-                    </span>
-                    ]
+                    <span className="text-green-400">&quot;explicit_content&quot;</span>]
                   </code>
-                  <code className="block text-muted-foreground"> {"}"}</code>
-                  <code className="block text-muted-foreground">{"}"}</code>
+                  <code className="block text-muted-foreground"> {'}'}</code>
+                  <code className="block text-muted-foreground">{'}'}</code>
                 </pre>
               </CardContent>
             </Card>
@@ -139,10 +115,7 @@ export default function Home() {
         </section>
 
         {/* Feature Highlights */}
-        <section
-          className="border-y border-border bg-accent/30 py-24"
-          id="solutions"
-        >
+        <section className="border-y border-border bg-accent/30 py-24" id="solutions">
           <div className="container mx-auto max-w-360 px-4">
             <div className="grid md:grid-cols-3 gap-8">
               <div className="space-y-4 p-8 border border-border bg-card hover:border-primary transition-colors group">
@@ -153,8 +126,8 @@ export default function Home() {
                   Low Latency
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Global average response time under 50ms. Built for scale and
-                  lightning speed execution.
+                  Global average response time under 50ms. Built for scale and lightning speed
+                  execution.
                 </p>
               </div>
 
@@ -166,8 +139,8 @@ export default function Home() {
                   Global Edge
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  24 points of presence globally ensuring minimal hop count for
-                  your users anywhere on earth.
+                  24 points of presence globally ensuring minimal hop count for your users anywhere
+                  on earth.
                 </p>
               </div>
 
@@ -178,9 +151,7 @@ export default function Home() {
                 <h3 className="text-xl font-heading font-bold uppercase tracking-widest text-foreground">
                   Multi-Modal
                 </h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Unified API for images.
-                </p>
+                <p className="text-muted-foreground leading-relaxed">Unified API for images.</p>
               </div>
             </div>
           </div>
@@ -200,8 +171,8 @@ export default function Home() {
               Built for Zero-Failure Environments
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Precision-engineered content moderation that powers the
-              world&apos;s most demanding platforms.
+              Precision-engineered content moderation that powers the world&apos;s most demanding
+              platforms.
             </p>
           </div>
 
@@ -212,8 +183,8 @@ export default function Home() {
                 SOC-2 Type II Certified
               </h4>
               <p className="text-muted-foreground">
-                We adhere to the highest industry standards for data security
-                and privacy management.
+                We adhere to the highest industry standards for data security and privacy
+                management.
               </p>
             </div>
             <div className="p-8 border border-border bg-card space-y-6">
@@ -222,8 +193,8 @@ export default function Home() {
                 Auto-Scaling
               </h4>
               <p className="text-muted-foreground">
-                From 10 to 10M requests per hour, our serverless architecture
-                scales instantly with zero manual config.
+                From 10 to 10M requests per hour, our serverless architecture scales instantly with
+                zero manual config.
               </p>
             </div>
             <div className="p-8 border border-border bg-card space-y-6">
@@ -232,8 +203,8 @@ export default function Home() {
                 Deep Insights
               </h4>
               <p className="text-muted-foreground">
-                Granular analytics dashboard to monitor moderation trends and
-                API consumption in real-time.
+                Granular analytics dashboard to monitor moderation trends and API consumption in
+                real-time.
               </p>
             </div>
           </div>
@@ -246,11 +217,11 @@ export default function Home() {
               Ready to secure your community?
             </h2>
             <p className="text-xl text-muted-foreground">
-              Join 2,000+ developers building safer digital spaces with
-              NSFWGuard. No credit card required to start.
+              Join 2,000+ developers building safer digital spaces with NSFWGuard. No credit card
+              required to start.
             </p>
             <div className="pt-8 flex justify-center">
-              <Link href={"/pricing"} className="w-full sm:w-auto">
+              <Link href={'/pricing'} className="w-full sm:w-auto">
                 <Button
                   size="lg"
                   className="h-16 px-6 sm:px-12 text-base sm:text-lg font-heading font-bold tracking-widest uppercase rounded-none bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(0,245,255,0.6)] hover:shadow-[0_0_30px_rgba(0,245,255,1)] transition-all w-full sm:w-auto"

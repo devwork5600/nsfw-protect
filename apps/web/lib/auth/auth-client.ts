@@ -1,9 +1,4 @@
-import { magicLinkClient } from "better-auth/client/plugins";
-import { createAuthClient } from "better-auth/react";
+import { authClient } from '@nsfw/auth/client';
 
-export const authClient = createAuthClient({
-  baseURL: process.env.BETTER_AUTH_URL,
-  plugins: [magicLinkClient()],
-});
-
+export { authClient };
 export const { signIn, signOut, signUp, useSession, getSession } = authClient;

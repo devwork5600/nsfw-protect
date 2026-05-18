@@ -1,21 +1,19 @@
-"use server";
+'use server';
 
-import Stripe from "stripe";
-import { redirect } from "next/navigation";
-import { getUser } from "@/lib/auth/auth-session";
-import { prisma } from "@nsfw/db";
+import Stripe from 'stripe';
+import { redirect } from 'next/navigation';
+import { getUser } from '@/lib/auth/auth-session';
+import { prisma } from '@nsfw/db';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-import { manageSubscription } from "./subscription";
+import { manageSubscription } from './subscription';
 
-export async function createCheckoutSession(
-  priceId: string
-) {
+export async function createCheckoutSession(priceId: string) {
   const user = await getUser();
 
   if (!user) {
-    throw new Error("Unauthorized");
+    throw new Error('Unauthorized');
   }
 
   const customer = await prisma.customer.findUnique({
@@ -25,7 +23,7 @@ export async function createCheckoutSession(
     include: {
       subscriptions: {
         where: {
-          status: "ACTIVE",
+          status: 'ACTIVE',
         },
       },
     },
@@ -38,13 +36,12 @@ export async function createCheckoutSession(
 
   // Create Stripe customer once
   let stripeCustomerId = customer?.stripeCustomerId;
-  
+
   if (!customer) {
-    const stripeCustomer =
-      await stripe.customers.create({
-        email: user.email,
-        name: `${user.name}`,
-      });
+    const stripeCustomer = await stripe.customers.create({
+      email: user.email,
+      name: `${user.name}`,
+    });
 
     const newCustomer = await prisma.customer.create({
       data: {
@@ -57,27 +54,24 @@ export async function createCheckoutSession(
     stripeCustomerId = customer.stripeCustomerId;
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
-  const session =
-    await stripe.checkout.sessions.create({
-      mode: "subscription",
+  const session = await stripe.checkout.sessions.create({
+    mode: 'subscription',
 
-      customer: stripeCustomerId,
+    customer: stripeCustomerId,
 
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
+    line_items: [
+      {
+        price: priceId,
+        quantity: 1,
+      },
+    ],
 
-      success_url:
-        `${baseUrl}/dashboard/billing?success=1`,
+    success_url: `${baseUrl}/dashboard/billing?success=1`,
 
-      cancel_url:
-        `${baseUrl}/billing?canceled=1`,
-    });
+    cancel_url: `${baseUrl}/billing?canceled=1`,
+  });
 
   redirect(session.url!);
 }

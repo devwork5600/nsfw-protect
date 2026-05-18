@@ -1,9 +1,7 @@
-import Stripe from "stripe";
-import { prisma } from "@nsfw/db";
+import Stripe from 'stripe';
+import { prisma } from '@nsfw/db';
 
-const stripe = new Stripe(
-  process.env.STRIPE_SECRET_KEY!
-);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 async function getOrCreateSubscription(stripeSub: any) {
   // Ensure we have the full subscription data
@@ -27,22 +25,25 @@ async function getOrCreateSubscription(stripeSub: any) {
 
   const priceId = sub.items.data[0].price.id;
 
-  let planTier: "STARTER" | "PRO" | "FREE" = "FREE";
+  let planTier: 'STARTER' | 'PRO' | 'FREE' = 'FREE';
   if (priceId === process.env.STRIPE_PRICE_PRO_MONTHLY) {
-    planTier = "PRO";
+    planTier = 'PRO';
   } else if (priceId === process.env.STRIPE_PRICE_STARTER_MONTHLY) {
-    planTier = "STARTER";
+    planTier = 'STARTER';
   }
 
-  const statusMap: Record<string, "ACTIVE" | "TRIALING" | "PAST_DUE" | "CANCELED" | "INCOMPLETE" | "UNPAID"> = {
-    active: "ACTIVE",
-    trialing: "TRIALING",
-    past_due: "PAST_DUE",
-    canceled: "CANCELED",
-    incomplete: "INCOMPLETE",
-    unpaid: "UNPAID",
+  const statusMap: Record<
+    string,
+    'ACTIVE' | 'TRIALING' | 'PAST_DUE' | 'CANCELED' | 'INCOMPLETE' | 'UNPAID'
+  > = {
+    active: 'ACTIVE',
+    trialing: 'TRIALING',
+    past_due: 'PAST_DUE',
+    canceled: 'CANCELED',
+    incomplete: 'INCOMPLETE',
+    unpaid: 'UNPAID',
   };
-  const subscriptionStatus = statusMap[sub.status] || "ACTIVE";
+  const subscriptionStatus = statusMap[sub.status] || 'ACTIVE';
 
   return await prisma.subscription.upsert({
     where: {
@@ -69,19 +70,15 @@ async function getOrCreateSubscription(stripeSub: any) {
 
 export async function POST(req: Request) {
   const body = await req.text();
-  const sig = req.headers.get("stripe-signature")!;
+  const sig = req.headers.get('stripe-signature')!;
 
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    );
+    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!);
   } catch (err) {
-    console.error("Stripe webhook signature verification failed:", err);
-    return new Response("Invalid signature", {
+    console.error('Stripe webhook signature verification failed:', err);
+    return new Response('Invalid signature', {
       status: 400,
     });
   }
@@ -90,9 +87,9 @@ export async function POST(req: Request) {
 
   try {
     switch (event.type) {
-      case "checkout.session.completed": {
+      case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
-        if (session.mode === "subscription") {
+        if (session.mode === 'subscription') {
           const subscriptionId = session.subscription as string;
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
           await getOrCreateSubscription(subscription);
@@ -101,34 +98,36 @@ export async function POST(req: Request) {
         break;
       }
 
-      case "customer.subscription.created":
-      case "customer.subscription.updated": {
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated': {
         const stripeSub = event.data.object as any;
         await getOrCreateSubscription(stripeSub);
         console.log(`[Stripe Webhook] Processed ${event.type} for subscription ${stripeSub.id}`);
         break;
       }
 
-      case "customer.subscription.deleted": {
+      case 'customer.subscription.deleted': {
         const stripeSub = event.data.object as any;
         await prisma.subscription.update({
           where: {
             stripeSubscriptionId: stripeSub.id,
           },
           data: {
-            status: "CANCELED",
+            status: 'CANCELED',
           },
         });
         console.log(`[Stripe Webhook] Subscription ${stripeSub.id} canceled`);
         break;
       }
 
-      case "invoice.payment_failed":
-      case "invoice.payment_succeeded": {
+      case 'invoice.payment_failed':
+      case 'invoice.payment_succeeded': {
         const stripeInvoice = event.data.object as any;
-        
+
         if (!stripeInvoice.subscription) {
-          console.log(`[Stripe Webhook] Invoice ${stripeInvoice.id} has no subscription attached. Skipping.`);
+          console.log(
+            `[Stripe Webhook] Invoice ${stripeInvoice.id} has no subscription attached. Skipping.`,
+          );
           break;
         }
 
@@ -140,17 +139,23 @@ export async function POST(req: Request) {
 
         // If subscription not found, try to create it from Stripe data
         if (!subscription) {
-          console.log(`[Stripe Webhook] Subscription not found for invoice ${stripeInvoice.id}. Attempting to fetch from Stripe...`);
-          const stripeSub = await stripe.subscriptions.retrieve(stripeInvoice.subscription as string);
+          console.log(
+            `[Stripe Webhook] Subscription not found for invoice ${stripeInvoice.id}. Attempting to fetch from Stripe...`,
+          );
+          const stripeSub = await stripe.subscriptions.retrieve(
+            stripeInvoice.subscription as string,
+          );
           subscription = await getOrCreateSubscription(stripeSub);
         }
 
         if (!subscription) {
-          console.warn(`[Stripe Webhook] Could not process invoice ${stripeInvoice.id}: Subscription ${stripeInvoice.subscription} not found or customer missing.`);
+          console.warn(
+            `[Stripe Webhook] Could not process invoice ${stripeInvoice.id}: Subscription ${stripeInvoice.subscription} not found or customer missing.`,
+          );
           break;
         }
 
-        const isPaid = event.type === "invoice.payment_succeeded";
+        const isPaid = event.type === 'invoice.payment_succeeded';
 
         await prisma.invoice.upsert({
           where: {
@@ -172,14 +177,16 @@ export async function POST(req: Request) {
           },
         });
 
-        if (event.type === "invoice.payment_failed") {
+        if (event.type === 'invoice.payment_failed') {
           await prisma.subscription.update({
             where: { id: subscription.id },
-            data: { status: "PAST_DUE" },
+            data: { status: 'PAST_DUE' },
           });
         }
 
-        console.log(`[Stripe Webhook] Invoice ${stripeInvoice.id} ${isPaid ? "paid" : "marked unpaid"} for subscription ${subscription.id}`);
+        console.log(
+          `[Stripe Webhook] Invoice ${stripeInvoice.id} ${isPaid ? 'paid' : 'marked unpaid'} for subscription ${subscription.id}`,
+        );
         break;
       }
 
@@ -188,13 +195,17 @@ export async function POST(req: Request) {
       }
     }
   } catch (err) {
-    console.error(`[Stripe Webhook] Error processing event ${event.type} (${event.id}):`, err instanceof Error ? err.message : err, err);
+    console.error(
+      `[Stripe Webhook] Error processing event ${event.type} (${event.id}):`,
+      err instanceof Error ? err.message : err,
+      err,
+    );
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: `Webhook handler failed for ${event.type}`,
-        details: err instanceof Error ? err.message : String(err)
+        details: err instanceof Error ? err.message : String(err),
       }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500, headers: { 'Content-Type': 'application/json' } },
     );
   }
 

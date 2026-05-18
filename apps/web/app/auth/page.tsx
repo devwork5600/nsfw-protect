@@ -1,22 +1,19 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Shield, MailIcon, ArrowLeftIcon } from "lucide-react";
-import Link from "next/link";
-import { FaGithub } from "react-icons/fa";
-import { toast } from "sonner";
-import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { FcGoogle } from "react-icons/fc";
-import { authClient } from "@/lib/auth/auth-client";
-import SocialButton from "./social-button";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import {
-  MagicLinkSignInSchema,
-  MagicLinkSignInSchemaType,
-} from "@/lib/validators/email-schemas";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Shield, MailIcon, ArrowLeftIcon } from 'lucide-react';
+import Link from 'next/link';
+import { FaGithub } from 'react-icons/fa';
+import { toast } from 'sonner';
+import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { FcGoogle } from 'react-icons/fc';
+import { authClient } from '@/lib/auth/auth-client';
+import SocialButton from './social-button';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { MagicLinkSignInSchema, MagicLinkSignInSchemaType } from '@/lib/validators/email-schemas';
 
 export default function AuthPage() {
   const [socialLoading, setSocialLoading] = useState(false);
@@ -24,7 +21,7 @@ export default function AuthPage() {
   const form = useForm<MagicLinkSignInSchemaType>({
     resolver: zodResolver(MagicLinkSignInSchema),
     defaultValues: {
-      email: "",
+      email: '',
     },
   });
 
@@ -45,34 +42,37 @@ export default function AuthPage() {
         { email: values.email },
         {
           onSuccess: () => {
-            toast.success("A magic link has been sent to your email.");
+            toast.success('A magic link has been sent to your email.');
           },
           onError: (ctx) => {
-            setError("email", {
-              message: ctx.error?.message || "Failed to send the link.",
+            setError('email', {
+              message: ctx.error?.message || 'Failed to send the link.',
             });
           },
         },
       );
     } catch {
-      setError("email", {
-        message: "An unexpected error occurred. Please try again.",
+      setError('email', {
+        message: 'An unexpected error occurred. Please try again.',
       });
     }
   };
 
   /* ================= OAUTH ================= */
 
-  const handleProviderSignIn = async (provider: "google" | "github") => {
+  const handleProviderSignIn = async (provider: 'google' | 'github') => {
     try {
       setSocialLoading(true);
 
-      await authClient.signIn.social({ provider });
+      await authClient.signIn.social({
+        provider,
+        callbackURL: window.location.origin + '/dashboard',
+      });
       // ⛔ nothing after this line will be seen
     } catch {
       setSocialLoading(false);
-      setError("root", {
-        message: "Unable to sign in.",
+      setError('root', {
+        message: 'Unable to sign in.',
       });
     }
   };
@@ -84,15 +84,12 @@ export default function AuthPage() {
         {/* Glow effect */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-125 bg-primary/10 blur-[100px] rounded-full z-0"></div>
 
-        <Link href={"/"} className="flex gap-2">
+        <Link href={'/'} className="flex gap-2">
           <ArrowLeftIcon />
           Back
         </Link>
         <div className="relative z-10">
-          <Link
-            href="/"
-            className="font-bold text-2xl flex items-center gap-2 mb-16"
-          >
+          <Link href="/" className="font-bold text-2xl flex items-center gap-2 mb-16">
             <Shield className="w-8 h-8 text-primary" />
             NSFWGuard
           </Link>
@@ -102,17 +99,14 @@ export default function AuthPage() {
               Secure content moderation at scale.
             </h1>
             <p className="text-lg text-muted-foreground font-sans leading-relaxed">
-              Our high-performance API detects and filters explicit content with
-              99.9% accuracy using advanced neural networks.
+              Our high-performance API detects and filters explicit content with 99.9% accuracy
+              using advanced neural networks.
             </p>
           </div>
         </div>
 
         <div className="relative z-10 flex gap-6 text-sm font-heading font-bold tracking-widest uppercase text-muted-foreground">
-          <Link
-            href="/privacy"
-            className="hover:text-primary transition-colors"
-          >
+          <Link href="/privacy" className="hover:text-primary transition-colors">
             Privacy
           </Link>
           <Link href="/terms" className="hover:text-primary transition-colors">
@@ -149,7 +143,7 @@ export default function AuthPage() {
 
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className={`space-y-5 ${authLoading ? "pointer-events-none" : ""}`}
+            className={`space-y-5 ${authLoading ? 'pointer-events-none' : ''}`}
             noValidate
           >
             {form.formState.errors.root && (
@@ -178,16 +172,14 @@ export default function AuthPage() {
                     />
                   </div>
 
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
               )}
             />
 
             {/* SUBMIT */}
             <Button type="submit" disabled={authLoading} className="w-full">
-              {authLoading ? "Sending..." : "Send me a Magic Link"}
+              {authLoading ? 'Sending...' : 'Send me a Magic Link'}
             </Button>
 
             {/* DIVIDER */}
@@ -203,7 +195,7 @@ export default function AuthPage() {
                 provider="google"
                 icon={<FcGoogle size={22} />}
                 label="Continue with Google"
-                onClick={() => handleProviderSignIn("google")}
+                onClick={() => handleProviderSignIn('google')}
                 disabled={authLoading}
               />
 
@@ -211,7 +203,7 @@ export default function AuthPage() {
                 provider="github"
                 icon={<FaGithub size={22} />}
                 label="Continue with GitHub"
-                onClick={() => handleProviderSignIn("github")}
+                onClick={() => handleProviderSignIn('github')}
                 disabled={authLoading}
               />
             </div>

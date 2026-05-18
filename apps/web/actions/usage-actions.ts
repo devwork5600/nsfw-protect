@@ -1,11 +1,11 @@
-"use server";
+'use server';
 
-import { getUser } from "@/lib/auth/auth-session";
-import { prisma } from "@nsfw/db";
+import { getUser } from '@/lib/auth/auth-session';
+import { prisma } from '@nsfw/db';
 
 export async function getUsageStats() {
   const user = await getUser();
-  if (!user) throw new Error("Unauthorized");
+  if (!user) throw new Error('Unauthorized');
 
   const now = new Date();
   const periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -16,19 +16,19 @@ export async function getUsageStats() {
     where: { userId: user.id },
     include: {
       subscriptions: {
-        where: { status: "ACTIVE" },
+        where: { status: 'ACTIVE' },
         take: 1,
       },
     },
   });
 
-  const plan = customer?.subscriptions[0]?.plan || "FREE";
+  const plan = customer?.subscriptions[0]?.plan || 'FREE';
 
   const PLAN_LIMITS: Record<string, number> = {
-    'FREE': 1000,
-    'STARTER': 25000,
-    'PRO': 250000,
-    'ENTERPRISE': 1000000000,
+    FREE: 1000,
+    STARTER: 25000,
+    PRO: 250000,
+    ENTERPRISE: 1000000000,
   };
 
   const limit = PLAN_LIMITS[plan] || PLAN_LIMITS.FREE;

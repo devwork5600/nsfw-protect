@@ -1,28 +1,28 @@
-"use server";
+'use server';
 
-import Stripe from "stripe";
-import { getUser } from "@/lib/auth/auth-session";
-import { prisma } from "@nsfw/db";
-import { revalidatePath } from "next/cache";
+import Stripe from 'stripe';
+import { getUser } from '@/lib/auth/auth-session';
+import { prisma } from '@nsfw/db';
+import { revalidatePath } from 'next/cache';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function previewSubscriptionChange(priceId: string) {
   const user = await getUser();
-  if (!user) throw new Error("Unauthorized");
+  if (!user) throw new Error('Unauthorized');
 
   const customer = await prisma.customer.findUnique({
     where: { userId: user.id },
     include: {
       subscriptions: {
-        where: { status: "ACTIVE" },
+        where: { status: 'ACTIVE' },
         take: 1,
       },
     },
   });
 
   if (!customer || !customer.subscriptions[0]) {
-    throw new Error("No active subscription found");
+    throw new Error('No active subscription found');
   }
 
   const subscription = customer.subscriptions[0];
@@ -36,7 +36,8 @@ export async function previewSubscriptionChange(priceId: string) {
     subscription_details: {
       items: [
         {
-          id: (await stripe.subscriptions.retrieve(subscription.stripeSubscriptionId)).items.data[0].id,
+          id: (await stripe.subscriptions.retrieve(subscription.stripeSubscriptionId)).items.data[0]
+            .id,
           price: priceId,
         },
       ],
@@ -47,7 +48,7 @@ export async function previewSubscriptionChange(priceId: string) {
   // Calculate the immediate amount to pay
   // This is the sum of the positive amounts in the upcoming invoice that relate to the current period
   // but simpler is to just look at the invoice total if we are using 'always_invoice'
-  
+
   return {
     amount: upcomingInvoice.amount_due,
     currency: upcomingInvoice.currency,
@@ -57,37 +58,35 @@ export async function previewSubscriptionChange(priceId: string) {
 
 export async function manageSubscription(priceId: string | null, prorationDate?: number) {
   const user = await getUser();
-  if (!user) throw new Error("Unauthorized");
+  if (!user) throw new Error('Unauthorized');
 
   const customer = await prisma.customer.findUnique({
     where: { userId: user.id },
     include: {
       subscriptions: {
-        where: { status: "ACTIVE" },
+        where: { status: 'ACTIVE' },
         take: 1,
       },
     },
   });
 
-  if (!customer) throw new Error("Customer not found");
+  if (!customer) throw new Error('Customer not found');
 
   const subscription = customer.subscriptions[0];
 
   // If no active subscription, we should use createCheckoutSession instead
   if (!subscription) {
-    throw new Error("No active subscription found to manage.");
+    throw new Error('No active subscription found to manage.');
   }
 
-  const stripeSubscription = await stripe.subscriptions.retrieve(
-    subscription.stripeSubscriptionId
-  );
+  const stripeSubscription = await stripe.subscriptions.retrieve(subscription.stripeSubscriptionId);
 
   if (priceId === null) {
     // CANCEL SUBSCRIPTION
     await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
       cancel_at_period_end: true,
     });
-    
+
     await prisma.subscription.update({
       where: { id: subscription.id },
       data: { cancelAtPeriodEnd: true },
@@ -109,7 +108,7 @@ export async function manageSubscription(priceId: string | null, prorationDate?:
       }
       return;
     }
-    
+
     // Determine if it's an upgrade or downgrade
     // In a real app, you might fetch price amounts from Stripe to be sure
     const isProPrice = priceId === process.env.STRIPE_PRICE_PRO_MONTHLY;
@@ -119,17 +118,18 @@ export async function manageSubscription(priceId: string | null, prorationDate?:
 
     // Industry standard: Upgrades are invoiced immediately (always_invoice)
     // Downgrades can be invoiced at the end of the period (create_prorations or none)
-    let prorationBehavior: Stripe.SubscriptionUpdateParams.ProrationBehavior = "always_invoice";
-    
+    let prorationBehavior: Stripe.SubscriptionUpdateParams.ProrationBehavior = 'always_invoice';
+
     // Simple upgrade detection
-    const isUpgrade = (currentIsStarter && isProPrice) || (currentIsFree && (isStarterPrice || isProPrice));
+    const isUpgrade =
+      (currentIsStarter && isProPrice) || (currentIsFree && (isStarterPrice || isProPrice));
 
     if (!isUpgrade) {
-      // Downgrade behavior: 
+      // Downgrade behavior:
       // Option A: "none" - Change happens now, no credit for unused time.
       // Option B: "create_prorations" - Change happens now, credit for unused time added to next invoice.
       // We'll use "always_invoice" for upgrades and "create_prorations" for downgrades to be fair.
-      prorationBehavior = "create_prorations";
+      prorationBehavior = 'create_prorations';
     }
 
     await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
@@ -149,7 +149,7 @@ export async function manageSubscription(priceId: string | null, prorationDate?:
     await prisma.subscription.update({
       where: { id: subscription.id },
       data: {
-        plan: isProPrice ? "PRO" : (isStarterPrice ? "STARTER" : "FREE"),
+        plan: isProPrice ? 'PRO' : isStarterPrice ? 'STARTER' : 'FREE',
         stripePriceId: priceId as string,
         cancelAtPeriodEnd: false,
       },
@@ -158,8 +158,8 @@ export async function manageSubscription(priceId: string | null, prorationDate?:
     // Note: The database will also be synced by the customer.subscription.updated webhook for redundancy
   }
 
-  revalidatePath("/dashboard/billing");
-  revalidatePath("/billing");
+  revalidatePath('/dashboard/billing');
+  revalidatePath('/billing');
 }
 
 export async function cancelSubscription() {
