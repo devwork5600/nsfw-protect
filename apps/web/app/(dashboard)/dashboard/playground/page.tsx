@@ -198,7 +198,7 @@ export default function PlaygroundPage() {
                   <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
                     <Loader2 className="size-10 animate-spin text-primary" />
                     <p className="font-heading font-bold uppercase tracking-widest text-sm">
-                      Analyzing...
+                      Analyzing..
                     </p>
                   </div>
                 )}
