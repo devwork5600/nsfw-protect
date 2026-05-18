@@ -7,7 +7,9 @@ COPY package*.json ./
 COPY apps/api/package.json ./apps/api/
 COPY apps/worker/package.json ./apps/worker/
 COPY apps/web/package.json ./apps/web/
-COPY packages/ ./packages/
+COPY packages/auth/package.json ./packages/auth/
+COPY packages/db/package.json ./packages/db/
+COPY packages/email/package.json ./packages/email/
 
 # Install with legacy-peer-deps to fix your conflict
 RUN npm install --legacy-peer-deps
