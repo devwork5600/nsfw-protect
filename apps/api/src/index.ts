@@ -240,10 +240,12 @@ process.on('SIGINT', shutdown);
 
 const start = async () => {
   try {
-    await fastify.listen({ port: PORT, host: '0.0.0.0' });
-    console.log(`NSFW API (Fastify) running on http://localhost:${PORT}`);
+    const host = '0.0.0.0';
+    console.log(`[NSFW API] Attempting to listen on ${host}:${PORT}`);
+    const address = await fastify.listen({ port: PORT, host });
+    console.log(`[NSFW API] Server listening at ${address}`);
   } catch (err) {
-    fastify.log.error(err);
+    console.error('[NSFW API] Startup error:', err);
     process.exit(1);
   }
 };
