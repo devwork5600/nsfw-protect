@@ -14,7 +14,7 @@ import { prisma, pool } from '@nsfw/db';
 import { auth } from '@nsfw/auth';
 
 const PORT = parseInt(process.env.PORT || '3001');
-const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
+const REDIS_URL = process.env.REDIS_URL || '';
 const RESULT_PREFIX = 'nsfw:result:';
 
 // API Key hashing helpers
