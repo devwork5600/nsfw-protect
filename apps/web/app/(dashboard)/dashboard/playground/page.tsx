@@ -11,7 +11,7 @@ import { Upload, ImageIcon, Loader2, ShieldCheck, ShieldAlert, X } from 'lucide-
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 
-const API_URL = 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 interface ClassificationResult {
   label: string;
