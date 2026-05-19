@@ -60,6 +60,11 @@ fastify.register(multipart, {
   },
 });
 
+// Request logging
+fastify.addHook('onRequest', async (request) => {
+  console.log(`[NSFW API] Incoming request: ${request.method} ${request.url}`);
+});
+
 // Better Auth route
 fastify.all('/api/auth/*', async (request, reply) => {
   const fullUrl = `${request.protocol}://${request.hostname}${request.url}`;
@@ -71,9 +76,15 @@ fastify.all('/api/auth/*', async (request, reply) => {
   return auth.handler(req);
 });
 
-// Health check
+// Health check (Railway)
 fastify.get('/', async () => {
-  return 'NSFW service (Fastify) running';
+  console.log('[NSFW API] Health check hit');
+  return { status: 'ok', service: 'nsfw-api', timestamp: new Date().toISOString() };
+});
+
+fastify.get('/health', async () => {
+  console.log('[NSFW API] /health hit');
+  return { status: 'ok' };
 });
 
 // Get result
