@@ -33,6 +33,14 @@ const connection = new Redis(REDIS_URL, {
   }, 
 });
 
+connection.on('error', (err) => {
+  console.error('[NSFW API] Redis connection error:', err);
+});
+
+connection.on('connect', () => {
+  console.log('[NSFW API] Redis connected successfully');
+});
+
 // Queue
 const nsfwQueue = new Queue('nsfw-queue', { connection });
 
