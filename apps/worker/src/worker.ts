@@ -8,7 +8,9 @@ import { prisma, pool } from '@nsfw/db';
 const connection = new Redis(process.env.REDIS_URL!, {
   maxRetriesPerRequest: null,
   lazyConnect: true,
-  tls: {},
+  tls: {
+    rejectUnauthorized: false
+  },
 });
 const RESULT_PREFIX = 'nsfw:result:';
 

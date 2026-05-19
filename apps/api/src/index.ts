@@ -28,7 +28,9 @@ const fastify = Fastify({
 // Redis connection
 const connection = new Redis(REDIS_URL, { 
   maxRetriesPerRequest: null,
-  tls: {}, 
+  tls: {
+    rejectUnauthorized: false
+  }, 
 });
 
 // Queue
