@@ -253,17 +253,18 @@ process.on('SIGINT', shutdown);
 
 const start = async () => {
   try {
-    const listenHost = '0.0.0.0';
-    console.log(`[NSFW API V4] Attempting to listen on host: ${listenHost}, port: ${PORT}`);
+    // Using '::' binds to all IPv4 and IPv6 interfaces
+    const listenHost = '::';
+    console.log(`[NSFW API V5] Attempting to listen on host: ${listenHost}, port: ${PORT}`);
     
-    await fastify.listen({ 
+    const address = await fastify.listen({ 
       port: PORT, 
       host: listenHost 
     });
     
-    console.log(`[NSFW API V4] Server is up and running on ${listenHost}:${PORT}`);
+    console.log(`[NSFW API V5] SUCCESS! Server listening at: ${address}`);
   } catch (err) {
-    console.error('[NSFW API V4] Fatal startup error:', err);
+    console.error('[NSFW API V5] FATAL: Server failed to start:', err);
     process.exit(1);
   }
 };
