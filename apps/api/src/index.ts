@@ -1,5 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config({ override: true });
+// Force 0.0.0.0 for Docker/Railway environment
+process.env.HOST = '0.0.0.0'; 
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
@@ -241,11 +243,11 @@ process.on('SIGINT', shutdown);
 const start = async () => {
   try {
     const host = '0.0.0.0';
-    console.log(`[NSFW API] Attempting to listen on ${host}:${PORT}`);
+    console.log(`[NSFW API V3] Attempting to listen on ${host}:${PORT}`);
     const address = await fastify.listen({ port: PORT, host });
-    console.log(`[NSFW API] Server listening at ${address}`);
+    console.log(`[NSFW API V3] Server successfully listening at ${address}`);
   } catch (err) {
-    console.error('[NSFW API] Startup error:', err);
+    console.error('[NSFW API V3] Startup error:', err);
     process.exit(1);
   }
 };
