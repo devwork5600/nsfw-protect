@@ -242,12 +242,17 @@ process.on('SIGINT', shutdown);
 
 const start = async () => {
   try {
-    const host = '0.0.0.0';
-    console.log(`[NSFW API V3] Attempting to listen on ${host}:${PORT}`);
-    const address = await fastify.listen({ port: PORT, host });
-    console.log(`[NSFW API V3] Server successfully listening at ${address}`);
+    const listenHost = '0.0.0.0';
+    console.log(`[NSFW API V4] Attempting to listen on host: ${listenHost}, port: ${PORT}`);
+    
+    await fastify.listen({ 
+      port: PORT, 
+      host: listenHost 
+    });
+    
+    console.log(`[NSFW API V4] Server is up and running on ${listenHost}:${PORT}`);
   } catch (err) {
-    console.error('[NSFW API V3] Startup error:', err);
+    console.error('[NSFW API V4] Fatal startup error:', err);
     process.exit(1);
   }
 };
