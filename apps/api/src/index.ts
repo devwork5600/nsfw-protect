@@ -26,7 +26,10 @@ const fastify = Fastify({
 });
 
 // Redis connection
-const connection = new Redis(REDIS_URL, { maxRetriesPerRequest: null });
+const connection = new Redis(REDIS_URL, { 
+  maxRetriesPerRequest: null,
+  tls: {}, 
+});
 
 // Queue
 const nsfwQueue = new Queue('nsfw-queue', { connection });

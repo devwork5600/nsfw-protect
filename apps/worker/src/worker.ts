@@ -5,9 +5,10 @@ import fs from 'fs/promises';
 import 'dotenv/config';
 import { prisma, pool } from '@nsfw/db';
 
-const connection = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
+const connection = new Redis(process.env.REDIS_URL!, {
   maxRetriesPerRequest: null,
   lazyConnect: true,
+  tls: {},
 });
 const RESULT_PREFIX = 'nsfw:result:';
 
