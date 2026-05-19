@@ -21,15 +21,25 @@ const REDIS_URL = process.env.REDIS_URL || '';
 const RESULT_PREFIX = 'nsfw:result:';
 
 // R2 Configuration
+const R2_ENDPOINT = process.env.R2_ENDPOINT;
+const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
+const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY;
+const BUCKET_NAME = process.env.R2_BUCKET_NAME;
+
+if (!R2_ENDPOINT || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !BUCKET_NAME) {
+  console.warn('[NSFW API] R2 storage environment variables are not fully configured. Uploads will fail.');
+}
+
 const s3Client = new S3Client({
   region: 'auto',
-  endpoint: process.env.R2_ENDPOINT,
+  endpoint: R2_ENDPOINT,
   credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+    accessKeyId: R2_ACCESS_KEY_ID || '',
+    secretAccessKey: R2_SECRET_ACCESS_KEY || '',
   },
 });
-const BUCKET_NAME = process.env.R2_BUCKET_NAME;
+
+// Force redeploy to active R2 integration
 
 // API Key hashing helpers
 const hashApiKey = (key: string) => crypto.createHash('sha256').update(key).digest('hex');

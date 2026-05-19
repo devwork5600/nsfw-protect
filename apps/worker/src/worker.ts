@@ -18,15 +18,25 @@ const connection = new Redis(process.env.REDIS_URL!, {
 const RESULT_PREFIX = 'nsfw:result:';
 
 // R2 Configuration
+const R2_ENDPOINT = process.env.R2_ENDPOINT;
+const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
+const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY;
+const BUCKET_NAME = process.env.R2_BUCKET_NAME;
+
+if (!R2_ENDPOINT || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !BUCKET_NAME) {
+  console.error('[WORKER] R2 storage environment variables are not fully configured. Worker cannot download images.');
+}
+
 const s3Client = new S3Client({
   region: 'auto',
-  endpoint: process.env.R2_ENDPOINT,
+  endpoint: R2_ENDPOINT,
   credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+    accessKeyId: R2_ACCESS_KEY_ID || '',
+    secretAccessKey: R2_SECRET_ACCESS_KEY || '',
   },
 });
-const BUCKET_NAME = process.env.R2_BUCKET_NAME;
+
+// Force redeploy to activate R2 integration
 
 connection.on('error', (err) => console.error('Redis connection error:', err));
 connection.on('connect', () => console.log('Redis connected'));
