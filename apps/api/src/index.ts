@@ -12,12 +12,24 @@ import crypto from 'node:crypto';
 import { Queue } from 'bullmq';
 import { Redis } from 'ioredis';
 import sharp from 'sharp';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { prisma, pool } from '@nsfw/db';
 import { auth } from '@nsfw/auth';
 
 const PORT = parseInt(process.env.PORT || '3001');
 const REDIS_URL = process.env.REDIS_URL || '';
 const RESULT_PREFIX = 'nsfw:result:';
+
+// R2 Configuration
+const s3Client = new S3Client({
+  region: 'auto',
+  endpoint: process.env.R2_ENDPOINT,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+  },
+});
+const BUCKET_NAME = process.env.R2_BUCKET_NAME;
 
 // API Key hashing helpers
 const hashApiKey = (key: string) => crypto.createHash('sha256').update(key).digest('hex');
@@ -216,25 +228,35 @@ fastify.post('/classify', async (request, reply) => {
   }
 
   const jobId = crypto.randomUUID();
-  const tempPath = path.join(os.tmpdir(), `nsfw-${jobId}.jpg`);
 
   try {
     const buffer = await fileData.toBuffer();
     console.log(`[NSFW API FASTIFY] Processing image ${jobId}, size: ${buffer.length} bytes`);
 
-    await sharp(buffer).resize(224, 224).removeAlpha().jpeg().toFile(tempPath);
+    const processedBuffer = await sharp(buffer).resize(224, 224).removeAlpha().jpeg().toBuffer();
+    
+    // Upload to R2
+    const key = `uploads/${jobId}.jpg`;
+    await s3Client.send(new PutObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: key,
+      Body: processedBuffer,
+      ContentType: 'image/jpeg',
+    }));
+
+    console.log(`[NSFW API FASTIFY] Image ${jobId} uploaded to R2: ${key}`);
+
+    // Mark as pending in Redis
+    await connection.set(`${RESULT_PREFIX}${jobId}`, JSON.stringify({ status: 'pending' }));
+
+    // Add job to queue
+    await nsfwQueue.add('nsfw-job', { jobId, r2Key: key, usageRecordId }, { attempts: 2 });
+
+    return { jobId };
   } catch (error) {
-    console.error(`[NSFW API FASTIFY] Sharp processing failed for ${jobId}:`, error);
+    console.error(`[NSFW API FASTIFY] Processing or R2 upload failed for ${jobId}:`, error);
     return reply.status(500).send({ error: 'Failed to process image' });
   }
-
-  // Mark as pending in Redis
-  await connection.set(`${RESULT_PREFIX}${jobId}`, JSON.stringify({ status: 'pending' }));
-
-  // Add job to queue
-  await nsfwQueue.add('nsfw-job', { jobId, tempPath, usageRecordId }, { attempts: 2 });
-
-  return { jobId };
 });
 
 // Graceful shutdown

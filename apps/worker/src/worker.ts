@@ -2,7 +2,10 @@ import { Worker } from 'bullmq';
 import { Redis } from 'ioredis';
 import { pipeline } from '@xenova/transformers';
 import fs from 'fs/promises';
+import path from 'node:path';
+import os from 'node:os';
 import 'dotenv/config';
+import { S3Client, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { prisma, pool } from '@nsfw/db';
 
 const connection = new Redis(process.env.REDIS_URL!, {
@@ -13,6 +16,17 @@ const connection = new Redis(process.env.REDIS_URL!, {
   },
 });
 const RESULT_PREFIX = 'nsfw:result:';
+
+// R2 Configuration
+const s3Client = new S3Client({
+  region: 'auto',
+  endpoint: process.env.R2_ENDPOINT,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+  },
+});
+const BUCKET_NAME = process.env.R2_BUCKET_NAME;
 
 connection.on('error', (err) => console.error('Redis connection error:', err));
 connection.on('connect', () => console.log('Redis connected'));
@@ -29,9 +43,22 @@ const worker = new Worker(
   'nsfw-queue',
   async (job) => {
     console.log('[WORKER 2] Processing job:', job.id, job.data.jobId);
-    const { jobId, tempPath, usageRecordId } = job.data;
+    const { jobId, r2Key, usageRecordId } = job.data;
+    const tempPath = path.join(os.tmpdir(), `worker-${jobId}.jpg`);
 
     try {
+      // Download from R2
+      console.log(`[WORKER 2] Downloading image from R2: ${r2Key}`);
+      const { Body } = await s3Client.send(new GetObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: r2Key,
+      }));
+
+      if (!Body) throw new Error('Empty body from R2');
+      
+      const buffer = Buffer.from(await Body.transformToByteArray());
+      await fs.writeFile(tempPath, buffer);
+
       const classifier = await classifierPromise;
       const results = await classifier(tempPath);
 
@@ -61,6 +88,14 @@ const worker = new Worker(
         'EX',
         60 * 60,
       );
+
+      // Delete from R2 after success
+      await s3Client.send(new DeleteObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: r2Key,
+      }));
+      console.log(`[WORKER 2] R2 object deleted: ${r2Key}`);
+
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       console.error('[WORKER 2] Job error:', errorMessage);

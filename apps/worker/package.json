@@ -8,6 +8,7 @@
     "start": "node dist/worker.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.758.0",
     "@fastify/cors": "^10.0.1",
     "@fastify/multipart": "^9.0.1",
     "@nsfw/db": "^1.0.0",
