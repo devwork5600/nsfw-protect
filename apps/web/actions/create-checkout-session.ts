@@ -54,7 +54,10 @@ export async function createCheckoutSession(priceId: string) {
     stripeCustomerId = customer.stripeCustomerId;
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.BETTER_AUTH_URL ||
+    'https://app.nsfw-protect.com';
 
   const session = await stripe.checkout.sessions.create({
     mode: 'subscription',
