@@ -21,10 +21,25 @@ export default async function DashboardBillingPage() {
 
   const subscription = customer?.subscriptions[0] || {
     plan: 'FREE',
-    stripePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_FREE || 'price_free',
+    stripePriceId: 'free',
     cancelAtPeriodEnd: false,
     currentPeriodEnd: new Date(),
   };
 
-  return <BillingClient initialSubscription={subscription} />;
+  const plans = [
+    {
+      name: 'Free',
+      priceId: 'free',
+    },
+    {
+      name: 'Starter',
+      priceId: process.env.STRIPE_PRICE_STARTER_MONTHLY || 'price_starter',
+    },
+    {
+      name: 'Pro',
+      priceId: process.env.STRIPE_PRICE_PRO_MONTHLY || 'price_pro',
+    },
+  ];
+
+  return <BillingClient initialSubscription={subscription} plansConfig={plans} />;
 }

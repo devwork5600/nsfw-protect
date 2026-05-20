@@ -39,16 +39,15 @@ export default function PlaygroundPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [polling, setPolling] = useState(false);
 
-  // Load API key from local storage if available
+  // Load API key from local storage if available (Removed for security)
   useEffect(() => {
-    const savedKey = localStorage.getItem('nsfw_playground_key');
-    if (savedKey) setApiKey(savedKey);
+    // We no longer persist API keys to localStorage for better security
   }, []);
 
   const handleKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newKey = e.target.value;
     setApiKey(newKey);
-    localStorage.setItem('nsfw_playground_key', newKey);
+    // localStorage.setItem('nsfw_playground_key', newKey); (Security: Don't store keys in localStorage)
   };
 
   const pollResult = useCallback(async (jobId: string) => {

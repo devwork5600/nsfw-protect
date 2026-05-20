@@ -25,7 +25,7 @@ const plans = [
     name: 'Starter',
     description: 'For growing developers.',
     price: '$29',
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER || 'price_starter',
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER_MONTHLY || 'price_starter',
     features: [
       '10,000 requests / month',
       '< 150ms latency SLA',
@@ -40,7 +40,7 @@ const plans = [
     name: 'Pro',
     description: 'For industrial-scale applications.',
     price: '$149',
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO || 'price_pro',
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MONTHLY || 'price_pro',
     features: [
       '100,000 requests / month',
       '< 80ms latency SLA',
@@ -54,9 +54,25 @@ const plans = [
   },
 ];
 
-export default function BillingClient({ initialSubscription }: { initialSubscription: any }) {
+export default function BillingClient({
+  initialSubscription,
+  plansConfig,
+}: {
+  initialSubscription: any;
+  plansConfig: { name: string; priceId: string }[];
+}) {
   const [subscription, setSubscription] = useState(initialSubscription);
   const [loading, setLoading] = useState<string | null>(null);
+
+  // Update plans with actual price IDs from server
+  const activePlans = plans.map((plan) => {
+    const config = plansConfig.find((c) => c.name === plan.name);
+    return {
+      ...plan,
+      priceId: config?.priceId || plan.priceId,
+    };
+  });
+
   const [preview, setPreview] = useState<{
     amount: number;
     currency: string;
@@ -75,14 +91,14 @@ export default function BillingClient({ initialSubscription }: { initialSubscrip
         (subscription.plan === 'STARTER' && planName === 'Pro') ||
         (subscription.plan === 'FREE' && (planName === 'Starter' || planName === 'Pro'));
 
-      if (isUpgrade) {
+      if (isUpgrade && planName !== 'Free') {
         const previewData = await previewSubscriptionChange(priceId);
         setPreview({
           ...previewData,
           priceId,
         });
       } else {
-        await manageSubscription(priceId);
+        await manageSubscription(priceId === 'free' ? null : priceId);
         toast.success('Subscription updated successfully');
         setSubscription({
           ...subscription,
@@ -104,7 +120,7 @@ export default function BillingClient({ initialSubscription }: { initialSubscrip
 
     try {
       await manageSubscription(preview.priceId, preview.prorationDate);
-      const planName = plans.find((p) => p.priceId === preview.priceId)?.name || 'PRO';
+      const planName = activePlans.find((p) => p.priceId === preview.priceId)?.name || 'PRO';
       setSubscription({
         ...subscription,
         plan: planName.toUpperCase(),
@@ -160,7 +176,7 @@ export default function BillingClient({ initialSubscription }: { initialSubscrip
       )}
 
       <div className="grid md:grid-cols-3 gap-8">
-        {plans.map((plan) => {
+        {activePlans.map((plan) => {
           const isCurrentPlan = subscription?.plan === plan.name.toUpperCase();
           const isUpgrade =
             (subscription?.plan === 'STARTER' && plan.name === 'Pro') ||

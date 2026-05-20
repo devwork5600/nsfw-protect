@@ -60,6 +60,12 @@ export function HomeTestModule() {
       const file = acceptedFiles[0];
       if (!file) return;
 
+      // Client-side size check (20MB)
+      if (file.size > 20 * 1024 * 1024) {
+        toast.error('Image is too large. Max size is 20MB.');
+        return;
+      }
+
       // Create preview
       const objectUrl = URL.createObjectURL(file);
       setPreview(objectUrl);
@@ -225,7 +231,7 @@ export function HomeTestModule() {
               <h3 className="text-xl font-heading font-bold text-foreground mb-2">
                 {isDragActive ? 'Drop image now' : 'Drop image here'}
               </h3>
-              <p className="text-muted-foreground text-sm">Supports JPG, PNG, WEBP (Max 10MB)</p>
+              <p className="text-muted-foreground text-sm">Supports JPG, PNG, WEBP (Max 20MB)</p>
               <Button
                 variant="outline"
                 className="mt-8 rounded-none border-border group-hover:border-primary group-hover:text-primary transition-all"
