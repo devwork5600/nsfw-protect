@@ -12,7 +12,7 @@ let _client: AuthClientType | null = null;
 export const getAuthClient = (): AuthClientType => {
   if (!_client) {
     _client = createAuthClient({
-      baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL || process.env.BETTER_AUTH_URL,
+      baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL || process.env.BETTER_AUTH_URL || (typeof window !== 'undefined' ? window.location.origin : undefined),
       plugins: [magicLinkClient()],
     });
   }

@@ -69,8 +69,33 @@ connection.on('connect', () => {
 const nsfwQueue = new Queue('nsfw-queue', { connection });
 
 // Plugins
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000', 'http://localhost:3001'];
+
 fastify.register(cors, {
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
+  origin: (origin, cb) => {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) {
+      cb(null, true);
+      return;
+    }
+    
+    const isAllowed = allowedOrigins.some(allowedOrigin => {
+      if (allowedOrigin === '*') return true;
+      try {
+        const allowedUrl = new URL(allowedOrigin);
+        const originUrl = new URL(origin);
+        return allowedUrl.hostname === originUrl.hostname && allowedUrl.protocol === originUrl.protocol;
+      } catch {
+        return allowedOrigin === origin;
+      }
+    });
+
+    if (isAllowed) {
+      cb(null, true);
+    } else {
+      cb(new Error('Not allowed by CORS'), false);
+    }
+  },
   methods: ['POST', 'GET', 'OPTIONS'],
   allowedHeaders: ['x-api-key', 'Content-Type', 'Authorization'],
   credentials: true,

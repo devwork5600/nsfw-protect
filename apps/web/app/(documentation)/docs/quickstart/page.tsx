@@ -56,7 +56,7 @@ export default function QuickstartPage() {
             <pre className="p-4 font-mono text-sm text-muted-foreground overflow-x-auto leading-relaxed">
               <code className="block">
                 <span className="text-secondary-foreground">curl</span> -X POST
-                https://api.nsfwguard.com/classify \
+                https://api.nsfw-protect.com/classify \
               </code>
               <code className="block">
                 {' '}
@@ -96,7 +96,7 @@ export default function QuickstartPage() {
             <pre className="p-4 font-mono text-sm text-muted-foreground overflow-x-auto leading-relaxed">
               <code className="block">
                 <span className="text-secondary-foreground">curl</span>{' '}
-                https://api.nsfwguard.com/result/YOUR_JOB_ID
+                https://api.nsfw-protect.com/result/YOUR_JOB_ID
               </code>
             </pre>
           </div>

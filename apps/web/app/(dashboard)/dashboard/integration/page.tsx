@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 
 export default function IntegrationPage() {
-  const curlCode = `curl -X POST https://api.nsfwguard.com/v1/verify \\
+  const curlCode = `curl -X POST https://api.nsfw-protect.com/v1/verify \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -18,7 +18,7 @@ export default function IntegrationPage() {
     "webhook": "https://your-site.com/webhooks/nsfw"
   }'`;
 
-  const nodeCode = `const response = await fetch('https://api.nsfwguard.com/v1/verify', {
+  const nodeCode = `const response = await fetch('https://api.nsfw-protect.com/v1/verify', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY',
@@ -44,7 +44,7 @@ data = {
 }
 
 response = requests.post(
-    'https://api.nsfwguard.com/v1/verify', 
+    'https://api.nsfw-protect.com/v1/verify', 
     headers=headers, 
     json=data
 )

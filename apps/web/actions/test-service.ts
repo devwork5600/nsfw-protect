@@ -1,6 +1,10 @@
 'use server';
 
-const API_URL = process.env.INTERNAL_API_URL || 'http://localhost:3001';
+const API_URL = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+if (process.env.NODE_ENV === 'production' && API_URL.includes('localhost')) {
+  console.warn('[NSFW] INTERNAL_API_URL or NEXT_PUBLIC_API_URL is pointing to localhost in production.');
+}
 const MAGIC_KEY = process.env.HOME_PAGE_API_KEY;
 
 export async function testImageAction(formData: FormData) {

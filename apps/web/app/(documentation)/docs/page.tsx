@@ -52,7 +52,7 @@ export default function DocsPage() {
             <pre className="p-4 font-mono text-sm text-muted-foreground overflow-x-auto leading-relaxed">
               <code className="block">
                 <span className="text-secondary-foreground">curl</span> -X POST
-                https://api.nsfwguard.com/v2/analyze \
+                https://api.nsfw-protect.com/v2/analyze \
               </code>
               <code className="block">
                 {' '}

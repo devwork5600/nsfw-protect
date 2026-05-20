@@ -11,7 +11,11 @@ import { Upload, ImageIcon, Loader2, ShieldCheck, ShieldAlert, X } from 'lucide-
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:3001' : '');
+
+if (typeof window !== 'undefined' && !API_URL && window.location.hostname !== 'localhost') {
+  console.warn('[NSFW] NEXT_PUBLIC_API_URL is not set. API calls will likely fail.');
+}
 
 interface ClassificationResult {
   label: string;

@@ -10,7 +10,11 @@ export const getAuthOptions = (): BetterAuthOptions => ({
   baseURL: process.env.BETTER_AUTH_URL,
   database: prismaAdapter(prisma, { provider: 'postgresql' }),
 
-  trustedOrigins: ['http://localhost:3000'],
+  trustedOrigins: [
+    'http://localhost:3000',
+    'https://app.nsfw-protect.com',
+    'https://api.nsfw-protect.com',
+  ],
 
   advanced: {
     ipAddress: {
