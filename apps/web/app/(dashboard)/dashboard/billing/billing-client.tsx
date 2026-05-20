@@ -91,7 +91,7 @@ export default function BillingClient({
         (subscription.plan === 'STARTER' && planName === 'Pro') ||
         (subscription.plan === 'FREE' && (planName === 'Starter' || planName === 'Pro'));
 
-      if (isUpgrade && planName !== 'Free') {
+      if (isUpgrade) {
         const previewData = await previewSubscriptionChange(priceId);
         setPreview({
           ...previewData,
