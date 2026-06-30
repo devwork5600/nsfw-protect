@@ -1,0 +1,26 @@
+{
+  "name": "@nsfw/worker",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/worker.ts",
+    "build": "rm -rf dist && tsc",
+    "start": "node dist/worker.js",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.758.0",
+    "@nsfw/db": "*",
+    "@xenova/transformers": "^2.17.2",
+    "bullmq": "^5.71.1",
+    "dotenv": "^17.3.1",
+    "ioredis": "^5.10.1",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "@types/pg": "^8.20.0",
+    "tsx": "^4.7.1",
+    "typescript": "^5.8.3"
+  }
+}

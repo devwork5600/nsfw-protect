@@ -1,0 +1,25 @@
+{
+  "name": "@nsfw/auth",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint ."
+  },
+  "license": "MIT",
+  "dependencies": {
+    "better-auth": "^1.6.11",
+    "@nsfw/db": "*",
+    "@nsfw/email": "*",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "typescript": "^5.8.3"
+  }
+}

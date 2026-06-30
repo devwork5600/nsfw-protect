@@ -1,0 +1,33 @@
+# Dependencies
+**/node_modules
+
+# Build outputs
+**/dist
+**/.next
+**/build
+**/out
+
+# Turbo
+**/.turbo
+
+# Environment files
+.env
+.env.local
+.env*.local
+**/.env
+**/.env.local
+**/.env*.local
+
+# Logs
+*.log
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+
+# Prisma
+**/generated
+**/.prisma
+
+# Misc
+.DS_Store
+*.pem

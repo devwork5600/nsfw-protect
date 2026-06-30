@@ -1,0 +1,27 @@
+{
+  "name": "@nsfw/email",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint ."
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@react-email/ui": "^6.1.4",
+    "react": "^19",
+    "react-dom": "^19",
+    "react-email": "^6.1.4",
+    "resend": "^6.12.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "@types/react": "^19",
+    "typescript": "^5.8.3"
+  }
+}
