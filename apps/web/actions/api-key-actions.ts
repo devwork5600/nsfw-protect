@@ -103,10 +103,12 @@ export async function getApiKeys() {
     orderBy: { createdAt: 'desc' },
     select: {
       id: true,
+      name: true,
       keyPrefix: true,
       createdAt: true,
       lastUsedAt: true,
       revoked: true,
+      isUnlimited: true,
     },
   });
 }

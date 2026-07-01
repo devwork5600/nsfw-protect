@@ -12,16 +12,17 @@ import { Sparkles } from 'lucide-react';
 
 interface ApiKey {
   id: string;
+  name: string;
   keyPrefix: string;
   createdAt: Date;
   lastUsedAt: Date | null;
   revoked: boolean;
-  name?: string;
+  isUnlimited: boolean;
 }
 
 interface ApiKeyClientProps {
   initialKeys: ApiKey[];
-  isAdmin?: boolean;
+  isAdmin: boolean;
 }
 
 export function ApiKeyClient({ initialKeys, isAdmin }: ApiKeyClientProps) {
@@ -56,11 +57,12 @@ export function ApiKeyClient({ initialKeys, isAdmin }: ApiKeyClientProps) {
           ...prev,
           {
             id: crypto.randomUUID(),
+            name: magic ? 'Magic Unlimited Key' : 'Default Key',
             keyPrefix: key.substring(0, 7),
             createdAt: new Date(),
             lastUsedAt: null,
             revoked: false,
-            name: magic ? 'Magic Unlimited Key' : 'Default Key',
+            isUnlimited: magic,
           },
         ]);
       }
@@ -78,7 +80,9 @@ export function ApiKeyClient({ initialKeys, isAdmin }: ApiKeyClientProps) {
   };
 
   const activeKey = keys.find((k) => !k.revoked && k.name !== 'Magic Unlimited Key');
-  const magicKeys = keys.filter((k) => !k.revoked && k.name === 'Magic Unlimited Key');
+  const magicKeys = keys.filter(
+    (k) => !k.revoked && k.name === 'Magic Unlimited Key' && k.isUnlimited,
+  );
 
   return (
     <div className="space-y-6">
