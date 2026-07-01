@@ -1,31 +1,45 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'node:url';
 import { Worker } from 'bullmq';
 import { Redis } from 'ioredis';
-import { pipeline } from '@xenova/transformers';
+import { pipeline, env as xenovaEnv } from '@xenova/transformers';
 import fs from 'fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 import { S3Client, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { prisma, pool } from '@nsfw/db';
 
+// Load .env before reading any env vars — must be the first top-level statement
+dotenv.config({
+  path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../.env'),
+  override: true,
+});
+
+// cacheDir must be set after dotenv so MODEL_CACHE_DIR from .env is visible
+xenovaEnv.cacheDir = process.env.MODEL_CACHE_DIR ?? '/app/.cache';
+
 const REDIS_URL = process.env.REDIS_URL!;
+
+// Enable TLS for rediss:// or Upstash (which uses TLS on plain redis:// port 6379)
+const redisParsed = new URL(REDIS_URL);
+const useTls = REDIS_URL.startsWith('rediss://') || redisParsed.hostname.endsWith('.upstash.io');
 
 // ioredis instance for direct ops (get/set/quit)
 const connection = new Redis(REDIS_URL, {
   maxRetriesPerRequest: null,
   lazyConnect: true,
-  tls: { rejectUnauthorized: false },
+  ...(useTls && { tls: { rejectUnauthorized: false } }),
 });
 
 // Parsed options for BullMQ — avoids ioredis dual-instance type conflict
 // (bullmq bundles its own ioredis, so passing a Redis instance causes TS errors)
 const bullmqConnection = (() => {
-  const { hostname, port, password, protocol } = new URL(REDIS_URL);
+  const { hostname, port, password } = redisParsed;
   return {
     host: hostname,
     port: Number(port || 6379),
     ...(password && { password: decodeURIComponent(password) }),
-    ...(protocol === 'rediss:' && { tls: { rejectUnauthorized: false } }),
+    ...(useTls && { tls: { rejectUnauthorized: false } }),
     maxRetriesPerRequest: null as null,
   };
 })();

@@ -16,7 +16,8 @@
         "RESEND_API_KEY",
         "ALLOWED_ORIGINS",
         "PORT",
-        "REDIS_URL"
+        "REDIS_URL",
+        "HOME_PAGE_API_KEY"
       ]
     },
     "lint": {

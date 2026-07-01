@@ -12,7 +12,8 @@
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,json,md}\"",
-    "prepare": "husky"
+    "prepare": "husky",
+    "postinstall": "turbo run build --filter='./packages/*'"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.0",

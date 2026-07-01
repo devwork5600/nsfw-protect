@@ -4,7 +4,7 @@ import React from 'react';
 const QualitySection = () => {
   return (
     <section className="border-t border-border bg-background py-32 relative overflow-hidden">
-      <div className="absolute w-200 h-200 bg-primary/5 rounded-full blur-[100px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+      {/* <div className="absolute w-200 h-200 bg-primary/5 rounded-full blur-[100px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div> */}
 
       <div className="container mx-auto max-w-360 px-4 text-center mb-16 relative z-10">
         <h2 className="text-4xl md:text-6xl font-heading font-bold tracking-tighter mb-6">

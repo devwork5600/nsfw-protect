@@ -11,11 +11,17 @@ export const getDb = () => {
     if (!connectionString) {
       throw new Error('DATABASE_URL environment variable is not set');
     }
-    _pool = new pg.Pool({ connectionString });
-    const adapter = new PrismaPg(_pool);
-    _prisma = new PrismaClient({ adapter });
+    const pool = new pg.Pool({ connectionString });
+    const adapter = new PrismaPg(pool);
+    try {
+      _prisma = new PrismaClient({ adapter });
+    } catch (err) {
+      void pool.end();
+      throw err;
+    }
+    _pool = pool;
   }
-  return { prisma: _prisma, pool: _pool };
+  return { prisma: _prisma, pool: _pool! };
 };
 
 // Proxies for backward compatibility

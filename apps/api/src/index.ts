@@ -48,10 +48,14 @@ const fastify = Fastify({
   logger: true,
 });
 
+// Enable TLS for rediss:// or Upstash (which uses TLS on plain redis:// port 6379)
+const redisParsed = new URL(REDIS_URL);
+const useTls = REDIS_URL.startsWith('rediss://') || redisParsed.hostname.endsWith('.upstash.io');
+
 // Redis connection (ioredis instance for direct ops)
 const connection = new Redis(REDIS_URL, {
   maxRetriesPerRequest: null,
-  tls: { rejectUnauthorized: false },
+  ...(useTls && { tls: { rejectUnauthorized: false } }),
 });
 
 connection.on('error', (err) => {
@@ -65,12 +69,12 @@ connection.on('connect', () => {
 // Parsed options for BullMQ — avoids ioredis dual-instance type conflict
 // (bullmq bundles its own ioredis, so passing a Redis instance causes TS errors)
 const bullmqConnection = (() => {
-  const { hostname, port, password, protocol } = new URL(REDIS_URL);
+  const { hostname, port, password } = redisParsed;
   return {
     host: hostname,
     port: Number(port || 6379),
     ...(password && { password: decodeURIComponent(password) }),
-    ...(protocol === 'rediss:' && { tls: { rejectUnauthorized: false } }),
+    ...(useTls && { tls: { rejectUnauthorized: false } }),
     maxRetriesPerRequest: null as null,
   };
 })();
@@ -168,114 +172,138 @@ fastify.post('/classify', async (request, reply) => {
     return reply.status(401).send({ error: 'API key missing' });
   }
 
-  const keyHash = hashApiKey(apiKeyRaw);
+  let usageRecordId: string | undefined;
 
-  const apiKey = await prisma.apiKey.findUnique({
-    where: { keyHash },
-    include: { user: true },
-  });
+  // Home page demo key — bypass DB lookup and usage tracking
+  const isHomePageKey =
+    process.env.HOME_PAGE_API_KEY && apiKeyRaw === process.env.HOME_PAGE_API_KEY;
 
-  if (!apiKey || apiKey.revoked || (apiKey.expiresAt && apiKey.expiresAt < new Date())) {
-    return reply.status(401).send({ error: 'Invalid or expired API key' });
-  }
-
-  // Get plan and limits
-  const PLAN_LIMITS: Record<string, number> = {
-    FREE: 1000,
-    STARTER: 25000,
-    PRO: 250000,
-    ENTERPRISE: 1000000000, // Effectively unlimited
+  // Billing context captured after auth/rate-limit but before file read.
+  // The usage increment only runs after we confirm a file is present.
+  type BillingCtx = {
+    apiKeyId: string;
+    userId: string;
+    isUnlimited: boolean;
+    now: Date;
+    periodStart: Date;
+    periodEnd: Date;
+    existingUsageId: string | null;
   };
+  let billingCtx: BillingCtx | null = null;
 
-  const customer = await prisma.customer.findUnique({
-    where: { userId: apiKey.userId },
-    include: {
-      subscriptions: {
-        where: { status: 'ACTIVE' },
-        take: 1,
+  if (!isHomePageKey) {
+    const keyHash = hashApiKey(apiKeyRaw);
+
+    const apiKey = await prisma.apiKey.findUnique({
+      where: { keyHash },
+      include: { user: true },
+    });
+
+    if (!apiKey || apiKey.revoked || (apiKey.expiresAt && apiKey.expiresAt < new Date())) {
+      return reply.status(401).send({ error: 'Invalid or expired API key' });
+    }
+
+    const PLAN_LIMITS: Record<string, number> = {
+      FREE: 1000,
+      STARTER: 25000,
+      PRO: 250000,
+      ENTERPRISE: 1000000000,
+    };
+
+    const customer = await prisma.customer.findUnique({
+      where: { userId: apiKey.userId },
+      include: {
+        subscriptions: {
+          where: { status: 'ACTIVE' },
+          take: 1,
+        },
       },
-    },
-  });
+    });
 
-  const plan = customer?.subscriptions[0]?.plan || 'FREE';
-  const limit = PLAN_LIMITS[plan] || PLAN_LIMITS.FREE;
+    const plan = customer?.subscriptions[0]?.plan || 'FREE';
+    const limit = PLAN_LIMITS[plan] || PLAN_LIMITS.FREE;
+    const now = new Date();
 
-  // Update last used
-  await prisma.apiKey.update({
-    where: { id: apiKey.id },
-    data: { lastUsedAt: new Date() },
-  });
+    if (!apiKey.isUnlimited) {
+      const monthUsage = await prisma.usageRecord.aggregate({
+        where: {
+          userId: apiKey.userId,
+          periodStart: { lte: now },
+          periodEnd: { gte: now },
+        },
+        _sum: { imageCount: true },
+      });
 
-  const now = new Date();
+      const currentCount = monthUsage._sum.imageCount || 0;
 
-  // Skip usage limiting for unlimited keys
-  if (!apiKey.isUnlimited) {
-    // We'll rely on the Postgres usage record check instead of Redis
-    // to save on Upstash quota. The Postgres check below handles the period.
-    const monthUsage = await prisma.usageRecord.aggregate({
+      if (currentCount >= limit) {
+        return reply.status(403).send({
+          error: 'Monthly scan limit reached',
+          plan,
+          limit,
+          currentUsage: currentCount,
+        });
+      }
+    }
+
+    const periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    const existingUsage = await prisma.usageRecord.findFirst({
       where: {
         userId: apiKey.userId,
+        apiKeyId: apiKey.id,
         periodStart: { lte: now },
         periodEnd: { gte: now },
       },
-      _sum: {
-        imageCount: true,
-      },
     });
 
-    const currentCount = monthUsage._sum.imageCount || 0;
-
-    if (currentCount >= limit) {
-      return reply.status(403).send({
-        error: 'Monthly scan limit reached',
-        plan,
-        limit,
-        currentUsage: currentCount,
-      });
-    }
-  }
-
-  // Persist usage to Postgres (non-blocking for the request, but awaited for data integrity)
-  const periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-
-  let usageRecordId: string | undefined;
-
-  const usage = await prisma.usageRecord.findFirst({
-    where: {
-      userId: apiKey.userId,
+    billingCtx = {
       apiKeyId: apiKey.id,
-      periodStart: { lte: now },
-      periodEnd: { gte: now },
-    },
-  });
-
-  if (usage) {
-    await prisma.usageRecord.update({
-      where: { id: usage.id },
-      data: {
-        requestCount: { increment: 1 },
-        imageCount: { increment: 1 },
-      },
-    });
-    usageRecordId = usage.id;
-  } else {
-    const newUsage = await prisma.usageRecord.create({
-      data: {
-        userId: apiKey.userId,
-        apiKeyId: apiKey.id,
-        requestCount: 1,
-        imageCount: 1,
-        periodStart,
-        periodEnd,
-      },
-    });
-    usageRecordId = newUsage.id;
+      userId: apiKey.userId,
+      isUnlimited: apiKey.isUnlimited,
+      now,
+      periodStart,
+      periodEnd,
+      existingUsageId: existingUsage?.id ?? null,
+    };
   }
 
+  // Validate file before billing — a missing file body must never consume quota.
   const fileData = await request.file();
   if (!fileData) {
     return reply.status(400).send({ error: 'No image provided' });
+  }
+
+  // File confirmed present — now record usage and update lastUsedAt.
+  if (billingCtx) {
+    await prisma.apiKey.update({
+      where: { id: billingCtx.apiKeyId },
+      data: { lastUsedAt: billingCtx.now },
+    });
+
+    if (billingCtx.existingUsageId) {
+      await prisma.usageRecord.update({
+        where: { id: billingCtx.existingUsageId },
+        data: {
+          requestCount: { increment: 1 },
+          imageCount: { increment: 1 },
+        },
+      });
+      usageRecordId = billingCtx.existingUsageId;
+    } else {
+      const newUsage = await prisma.usageRecord.create({
+        data: {
+          userId: billingCtx.userId,
+          apiKeyId: billingCtx.apiKeyId,
+          requestCount: 1,
+          imageCount: 1,
+          periodStart: billingCtx.periodStart,
+          periodEnd: billingCtx.periodEnd,
+        },
+      });
+      usageRecordId = newUsage.id;
+    }
   }
 
   const jobId = crypto.randomUUID();
