@@ -126,7 +126,10 @@ export async function POST(req: Request) {
         const newSub = await getOrCreateSubscription(stripeSub);
 
         // New billing period started → unlock plan changes
-        const newPeriodStart = new Date(stripeSub.current_period_start * 1000);
+        const newPeriodStart = new Date(
+          (stripeSub as Stripe.Subscription & { current_period_start: number })
+            .current_period_start * 1000,
+        );
         if (existingSub && existingSub.currentPeriodStart.getTime() !== newPeriodStart.getTime()) {
           await prisma.subscription.update({
             where: { stripeSubscriptionId: stripeSub.id },
