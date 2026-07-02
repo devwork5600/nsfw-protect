@@ -73,6 +73,11 @@ export async function generateAdminMagicKey() {
     throw new Error('Only admins can generate magic keys.');
   }
 
+  await prisma.apiKey.updateMany({
+    where: { userId: user.id, name: 'Magic Unlimited Key', revoked: false },
+    data: { revoked: true },
+  });
+
   const rawKey = generateRawApiKey();
   const hashedKey = hashApiKey(rawKey);
   const prefix = getPrefix(rawKey);

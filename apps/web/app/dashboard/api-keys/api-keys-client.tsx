@@ -53,18 +53,20 @@ export function ApiKeyClient({ initialKeys, isAdmin }: ApiKeyClientProps) {
       toast.success(`${magic ? 'Magic' : 'New'} API key generated successfully!`);
 
       if (keys.length === 0 || magic) {
-        setKeys((prev) => [
-          ...prev,
-          {
-            id: crypto.randomUUID(),
-            name: magic ? 'Magic Unlimited Key' : 'Default Key',
-            keyPrefix: key.substring(0, 7),
-            createdAt: new Date(),
-            lastUsedAt: null,
-            revoked: false,
-            isUnlimited: magic,
-          },
-        ]);
+        const newEntry = {
+          id: crypto.randomUUID(),
+          name: magic ? 'Magic Unlimited Key' : 'Default Key',
+          keyPrefix: key.substring(0, 7),
+          createdAt: new Date(),
+          lastUsedAt: null,
+          revoked: false,
+          isUnlimited: magic,
+        };
+        setKeys((prev) =>
+          magic
+            ? [...prev.filter((k) => k.name !== 'Magic Unlimited Key'), newEntry]
+            : [...prev, newEntry],
+        );
       }
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : 'Failed to generate API key');
@@ -178,7 +180,16 @@ export function ApiKeyClient({ initialKeys, isAdmin }: ApiKeyClientProps) {
                 variant="outline"
                 className="border-amber-500 text-amber-600 hover:bg-amber-500 hover:text-white"
               >
-                {isGeneratingMagic ? 'Generating...' : 'Generate Magic Key'}
+                {isGeneratingMagic ? (
+                  'Generating...'
+                ) : magicKeys.length > 0 ? (
+                  <>
+                    <RotateCcw className="size-4 mr-2" />
+                    Rotate Magic Key
+                  </>
+                ) : (
+                  'Generate Magic Key'
+                )}
               </Button>
             </div>
           </CardContent>
