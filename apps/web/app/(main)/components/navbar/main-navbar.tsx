@@ -34,25 +34,22 @@ const MainNavbar = () => {
             >
               Documentations
             </Link>
-            <Link
-              href="/billing"
-              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest font-heading"
-            >
-              Pricing
-            </Link>
           </div>
         </div>
         <div className="flex items-center gap-2 sm:gap-4">
           <div className="items-center gap-4">
             <AuthStatus />
           </div>
-          <Button
-            variant="default"
-            className="font-heading uppercase tracking-widest px-3 sm:px-4 hidden sm:flex items-center"
-          >
-            <span>Get API Key</span>
-            <ArrowRight className="sm:ml-2 w-4 h-4" />
-          </Button>
+          <Link href="/billing">
+            Pricing
+            <Button
+              variant="default"
+              className="font-heading uppercase tracking-widest px-3 sm:px-4 hidden sm:flex items-center"
+            >
+              <span>Get API Key</span>
+              <ArrowRight className="sm:ml-2 w-4 h-4" />
+            </Button>
+          </Link>
         </div>
       </div>
     </nav>
