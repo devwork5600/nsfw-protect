@@ -159,6 +159,8 @@ model Subscription {
 
   cancelAtPeriodEnd Boolean @default(false)
 
+  planChangedAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
