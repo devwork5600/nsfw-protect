@@ -52,4 +52,6 @@ export async function sendEmail({
 }
 
 export * from './sign-in-template.js';
+export * from './plan-updated-template.js';
+export * from './subscription-success-template.js';
 export { getResend as resend };

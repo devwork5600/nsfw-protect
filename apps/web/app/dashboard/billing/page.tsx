@@ -24,6 +24,8 @@ export default async function DashboardBillingPage() {
     stripePriceId: 'free',
     cancelAtPeriodEnd: false,
     currentPeriodEnd: new Date(),
+    currentPeriodStart: new Date(),
+    planChangedAt: null,
   };
 
   const plans = [

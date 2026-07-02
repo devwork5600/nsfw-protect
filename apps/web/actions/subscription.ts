@@ -81,6 +81,22 @@ export async function manageSubscription(priceId: string | null, prorationDate?:
 
   const stripeSubscription = await stripe.subscriptions.retrieve(subscription.stripeSubscriptionId);
 
+  if (priceId !== null && priceId !== subscription.stripePriceId) {
+    if (
+      subscription.planChangedAt &&
+      subscription.planChangedAt >= subscription.currentPeriodStart
+    ) {
+      const unlockDate = subscription.currentPeriodEnd.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      });
+      throw new Error(
+        `You've already changed your plan this billing cycle. You can change again after ${unlockDate}.`,
+      );
+    }
+  }
+
   if (priceId === null) {
     // CANCEL SUBSCRIPTION
     await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
@@ -152,6 +168,7 @@ export async function manageSubscription(priceId: string | null, prorationDate?:
         plan: isProPrice ? 'PRO' : isStarterPrice ? 'STARTER' : 'FREE',
         stripePriceId: priceId as string,
         cancelAtPeriodEnd: false,
+        planChangedAt: new Date(),
       },
     });
 

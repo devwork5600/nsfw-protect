@@ -59,8 +59,9 @@ type Subscription = {
   stripePriceId: string;
   cancelAtPeriodEnd: boolean;
   currentPeriodEnd: Date;
+  currentPeriodStart: Date;
+  planChangedAt?: Date | null;
   stripeSubscriptionId?: string;
-  currentPeriodStart?: Date;
   status?: string;
 };
 
@@ -73,6 +74,10 @@ export default function BillingClient({
 }) {
   const [subscription, setSubscription] = useState(initialSubscription);
   const [loading, setLoading] = useState<string | null>(null);
+
+  const isPlanChangeLocked =
+    !!subscription.planChangedAt &&
+    new Date(subscription.planChangedAt) >= new Date(subscription.currentPeriodStart);
 
   // Update plans with actual price IDs from server
   const activePlans = plans.map((plan) => {
@@ -115,6 +120,7 @@ export default function BillingClient({
           plan: planName.toUpperCase() as 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE',
           stripePriceId: priceId,
           cancelAtPeriodEnd: false,
+          planChangedAt: new Date(),
         });
       }
     } catch (error: unknown) {
@@ -136,6 +142,7 @@ export default function BillingClient({
         plan: planName.toUpperCase() as 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE',
         stripePriceId: preview.priceId,
         cancelAtPeriodEnd: false,
+        planChangedAt: new Date(),
       });
       toast.success('Subscription upgraded successfully');
       setPreview(null);
@@ -182,6 +189,19 @@ export default function BillingClient({
           <AlertCircle className="w-5 h-5" />
           Your subscription will end on{' '}
           {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+        </div>
+      )}
+
+      {isPlanChangeLocked && (
+        <div className="bg-blue-500/10 border border-blue-500/30 p-4 flex items-center gap-3 text-blue-400 text-sm font-medium uppercase tracking-widest">
+          <AlertCircle className="w-5 h-5" />
+          Plan already changed this cycle. Next change available on{' '}
+          {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+          })}
+          .
         </div>
       )}
 
@@ -238,11 +258,18 @@ export default function BillingClient({
               ) : (
                 <Button
                   onClick={() => onPlanSelect(plan.priceId, plan.name)}
-                  disabled={!!loading}
+                  disabled={!!loading || isPlanChangeLocked}
+                  title={
+                    isPlanChangeLocked
+                      ? `Next plan change available on ${new Date(subscription.currentPeriodEnd).toLocaleDateString()}`
+                      : undefined
+                  }
                   className={`w-full rounded-none font-bold uppercase tracking-widest py-6 transition-all ${
-                    plan.recommended
-                      ? 'bg-primary hover:bg-primary/90'
-                      : 'bg-transparent border border-white/20 hover:border-white text-white'
+                    isPlanChangeLocked
+                      ? 'opacity-40 cursor-not-allowed'
+                      : plan.recommended
+                        ? 'bg-primary hover:bg-primary/90'
+                        : 'bg-transparent border border-white/20 hover:border-white text-white'
                   }`}
                 >
                   {isLoading ? (
