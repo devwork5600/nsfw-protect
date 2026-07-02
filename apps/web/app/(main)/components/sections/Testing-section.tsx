@@ -215,7 +215,7 @@ export function TestingSection() {
                           'h-full transition-all duration-1000',
                           nsfwLabels.includes(r.label.toLowerCase()) && r.confidence > 0.5
                             ? 'bg-destructive'
-                            : 'bg-primary',
+                            : 'bg-green-500',
                         )}
                         style={{ width: `${r.confidence * 100}%` }}
                       />
