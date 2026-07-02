@@ -184,7 +184,7 @@ export function MobileMenu() {
           >
             {session ? (
               <div className="space-y-4">
-                <div className="flex items-center gap-3 px-2">
+                <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
                     {session.user.name?.[0] || session.user.email[0]}
                   </div>

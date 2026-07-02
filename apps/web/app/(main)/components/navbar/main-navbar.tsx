@@ -41,7 +41,6 @@ const MainNavbar = () => {
             <AuthStatus />
           </div>
           <Link href="/billing">
-            Pricing
             <Button
               variant="default"
               className="font-heading uppercase tracking-widest px-3 sm:px-4 hidden sm:flex items-center"
