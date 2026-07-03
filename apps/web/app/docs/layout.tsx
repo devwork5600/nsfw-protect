@@ -70,7 +70,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 
       <div className="p-4 border-b border-border flex items-center justify-between">
         <span className="font-mono text-xs text-muted-foreground">v2.4.0</span>
-        <Badge className="rounded-none border-primary/50 text-primary font-heading px-2 py-0">
+        <Badge className="rounded-none border-primary/50 text-secondary font-heading px-2 py-0">
           PRO
         </Badge>
       </div>

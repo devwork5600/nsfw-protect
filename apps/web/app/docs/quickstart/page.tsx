@@ -1,6 +1,7 @@
-import { Lightbulb, Link as LinkIcon, Copy } from 'lucide-react';
+import { Lightbulb, Link as LinkIcon } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { CodeTabs } from '../_components/code-tabs';
 
 export default function QuickstartPage() {
   return (
@@ -46,28 +47,24 @@ export default function QuickstartPage() {
             <LinkIcon className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </h2>
 
-          <div className="rounded-none border-border border bg-[#111112] overflow-hidden">
-            <div className="h-10 bg-muted/30 border-b border-border flex items-center px-4 justify-between">
-              <span className="text-xs font-heading uppercase tracking-widest text-muted-foreground font-bold">
-                cURL
-              </span>
-              <Copy className="w-4 h-4 text-muted-foreground hover:text-primary cursor-pointer transition-colors" />
-            </div>
-            <pre className="p-4 font-mono text-sm text-muted-foreground overflow-x-auto leading-relaxed">
-              <code className="block">
-                <span className="text-secondary-foreground">curl</span> -X POST
-                https://api.nsfw-protect.com/classify \
-              </code>
-              <code className="block">
-                {' '}
-                -H <span className="text-green-400">&quot;X-API-Key: YOUR_API_KEY&quot;</span> \
-              </code>
-              <code className="block">
-                {' '}
-                -F <span className="text-green-400">&quot;image=@photo.jpg&quot;</span>
-              </code>
-            </pre>
-          </div>
+          <CodeTabs
+            tabs={[
+              {
+                label: 'cURL',
+                code: `curl -X POST https://api.nsfw-protect.com/classify \\
+  -H "X-API-Key: YOUR_API_KEY" \\
+  -F "image=@photo.jpg"`,
+              },
+              {
+                label: 'Node.js',
+                code: `const response = await fetch('https://api.nsfw-protect.com/classify', {
+  method: 'POST',
+  headers: { 'X-API-Key': 'YOUR_API_KEY' },
+  body: form,
+});`,
+              },
+            ]}
+          />
         </div>
 
         <div className="space-y-6">
@@ -86,20 +83,20 @@ export default function QuickstartPage() {
             . Poll the result endpoint to retrieve the classification:
           </p>
 
-          <div className="rounded-none border-border border bg-[#111112] overflow-hidden">
-            <div className="h-10 bg-muted/30 border-b border-border flex items-center px-4 justify-between">
-              <span className="text-xs font-heading uppercase tracking-widest text-muted-foreground font-bold">
-                cURL
-              </span>
-              <Copy className="w-4 h-4 text-muted-foreground hover:text-primary cursor-pointer transition-colors" />
-            </div>
-            <pre className="p-4 font-mono text-sm text-muted-foreground overflow-x-auto leading-relaxed">
-              <code className="block">
-                <span className="text-secondary-foreground">curl</span>{' '}
-                https://api.nsfw-protect.com/result/YOUR_JOB_ID
-              </code>
-            </pre>
-          </div>
+          <CodeTabs
+            tabs={[
+              {
+                label: 'cURL',
+                code: `curl https://api.nsfw-protect.com/result/YOUR_JOB_ID`,
+              },
+              {
+                label: 'Node.js',
+                code: `const response = await fetch('https://api.nsfw-protect.com/result/YOUR_JOB_ID');
+const result = await response.json();
+console.log(result);`,
+              },
+            ]}
+          />
 
           <div className="border border-primary/30 bg-primary/5 p-4 md:p-6 flex gap-4">
             <div className="mt-1">

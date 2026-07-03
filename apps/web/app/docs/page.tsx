@@ -1,6 +1,7 @@
-import { Lightbulb, Link as LinkIcon, Copy } from 'lucide-react';
+import { Lightbulb, Link as LinkIcon } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { CodeTabs } from './_components/code-tabs';
 
 export default function DocsPage() {
   return (
@@ -42,37 +43,34 @@ export default function DocsPage() {
             .
           </p>
 
-          <div className="rounded-none border-border border bg-[#111112] overflow-hidden group">
-            <div className="h-10 bg-muted/30 border-b border-border flex items-center px-4 justify-between">
-              <span className="text-xs font-heading uppercase tracking-widest text-muted-foreground font-bold">
-                cURL Request
-              </span>
-              <Copy className="w-4 h-4 text-muted-foreground hover:text-primary cursor-pointer transition-colors" />
-            </div>
-            <pre className="p-4 font-mono text-sm text-muted-foreground overflow-x-auto leading-relaxed">
-              <code className="block">
-                <span className="text-secondary-foreground">curl</span> -X POST
-                https://api.nsfw-protect.com/v2/analyze \
-              </code>
-              <code className="block">
-                {' '}
-                -H <span className="text-green-400">&quot;X-API-Key: YOUR_API_KEY&quot;</span> \
-              </code>
-              <code className="block">
-                {' '}
-                -H{' '}
-                <span className="text-green-400">&quot;Content-Type: application/json&quot;</span> \
-              </code>
-              <code className="block">
-                {' '}
-                -d{' '}
-                <span className="text-green-400">
-                  &apos;{'{'} &quot;image_url&quot;: &quot;https://example.com/image.jpg&quot;,
-                  &quot;threshold&quot;: 0.85 {'}'}&apos;
-                </span>
-              </code>
-            </pre>
-          </div>
+          <CodeTabs
+            tabs={[
+              {
+                label: 'cURL',
+                code: `curl -X POST https://api.nsfw-protect.com/v2/analyze \\
+  -H "X-API-Key: YOUR_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{ "image_url": "https://example.com/image.jpg", "threshold": 0.85 }'`,
+              },
+              {
+                label: 'Node.js',
+                code: `const response = await fetch('https://api.nsfw-protect.com/v2/analyze', {
+  method: 'POST',
+  headers: {
+    'X-API-Key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    image_url: 'https://example.com/image.jpg',
+    threshold: 0.85,
+  }),
+});
+
+const data = await response.json();
+console.log(data);`,
+              },
+            ]}
+          />
         </div>
 
         <div className="space-y-6">

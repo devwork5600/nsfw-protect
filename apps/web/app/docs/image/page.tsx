@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { CodeTabs } from '../_components/code-tabs';
 
 export default function DocsImagePage() {
   return (
@@ -21,18 +22,24 @@ export default function DocsImagePage() {
           >
             Endpoint
           </h2>
-          <div className="rounded-none border-border border bg-[#111112] overflow-hidden">
-            <div className="h-10 bg-muted/30 border-b border-border flex items-center px-4">
-              <span className="text-xs font-heading uppercase tracking-widest text-primary font-bold">
-                POST /classify
-              </span>
-            </div>
-            <pre className="p-4 font-mono text-sm text-muted-foreground overflow-x-auto leading-relaxed">
-              <code className="block">Content-Type: multipart/form-data</code>
-              <code className="block">X-API-Key: your_api_key</code>
-              <code className="block mt-2">Body: image (file)</code>
-            </pre>
-          </div>
+          <CodeTabs
+            tabs={[
+              {
+                label: 'cURL',
+                code: `curl -X POST https://api.nsfw-protect.com/classify \\
+  -H "X-API-Key: your_api_key" \\
+  -F "image=@photo.jpg"`,
+              },
+              {
+                label: 'Node.js',
+                code: `const response = await fetch('https://api.nsfw-protect.com/classify', {
+  method: 'POST',
+  headers: { 'X-API-Key': 'your_api_key' },
+  body: form,
+});`,
+              },
+            ]}
+          />
         </div>
         <div className="space-y-6">
           <h2
