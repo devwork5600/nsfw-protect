@@ -334,8 +334,7 @@ export default function PlaygroundPage() {
                         <div
                           className={cn(
                             'h-full transition-all duration-1000',
-                            ['porn', 'hentai', 'sexy'].includes(r.label.toLowerCase()) &&
-                              r.confidence > 0.5
+                            nsfwLabels.includes(r.label.toLowerCase()) && r.confidence > 0.5
                               ? 'bg-red-600'
                               : 'bg-green-600',
                           )}
