@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { getUser } from '@/lib/auth/auth-session';
-import { createCheckoutSession } from '@/actions/create-checkout-session';
 import { redirect } from 'next/navigation';
 import { prisma } from '@nsfw/db';
 
@@ -127,7 +126,7 @@ export default async function PricingPage() {
     <div className="min-h-screen bg-background text-foreground font-sans">
       {/* Hero section */}
       <section className="py-24 px-6 text-center space-y-6 max-w-4xl mx-auto">
-        <h1 className="text-5xl md:text-7xl font-bold tracking-tighter leading-tight italic uppercase">
+        <h1 className="text-3xl md:text-5xl font-bold tracking-tighter leading-tight italic uppercase">
           Engineered for <span className="text-primary italic">Precision.</span>
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto tracking-wide">
@@ -186,35 +185,16 @@ export default async function PricingPage() {
                   </ul>
                 </div>
 
-                {plan.priceId ? (
-                  <form
-                    action={async () => {
-                      'use server';
-                      if (!user) return redirect('/auth');
-                      await createCheckoutSession(plan.priceId!);
-                    }}
-                  >
-                    <Button
-                      type="submit"
-                      className={`w-full rounded-none font-bold uppercase tracking-widest py-6 transition-all ${
-                        plan.recommended
-                          ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(0,112,255,0.4)]'
-                          : 'bg-transparent border border-muted hover:border-foreground text-foreground'
-                      }`}
-                    >
-                      {plan.buttonText}
-                    </Button>
-                  </form>
-                ) : (
-                  <Button
-                    className={`w-full rounded-none font-bold uppercase tracking-widest py-6 transition-all bg-transparent border border-muted hover:border-foreground text-foreground`}
-                    asChild
-                  >
-                    <Link href={user ? '/dashboard' : plan.href}>
-                      {user && plan.name === 'Free' ? 'Go to Dashboard' : plan.buttonText}
-                    </Link>
-                  </Button>
-                )}
+                <Button
+                  className={`w-full rounded-none font-bold uppercase tracking-widest py-6 transition-all ${
+                    plan.recommended
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(0,112,255,0.4)]'
+                      : 'bg-transparent border border-muted hover:border-foreground text-foreground'
+                  }`}
+                  asChild
+                >
+                  <Link href={user ? '/dashboard/billing' : '/auth'}>{plan.buttonText}</Link>
+                </Button>
               </div>
             );
           })}
