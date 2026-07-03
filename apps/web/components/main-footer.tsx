@@ -22,9 +22,6 @@ const MainFooter = () => {
           <Link href="/terms" className="hover:text-primary transition-colors font-bold">
             Terms of Service
           </Link>
-          <Link href="/security" className="hover:text-primary transition-colors font-bold">
-            Security Audit
-          </Link>
           <Link href="/support" className="hover:text-primary transition-colors font-bold">
             Contact Support
           </Link>
