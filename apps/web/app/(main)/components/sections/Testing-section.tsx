@@ -231,21 +231,16 @@ export function TestingSection() {
           <input {...getInputProps()} />
           <Card
             className={cn(
-              'rounded-none border-border bg-card h-full min-h-100 flex flex-col items-center justify-center border-dashed border-2 transition-all cursor-pointer overflow-hidden',
+              'rounded-none border-border bg-card h-100 flex flex-col items-center justify-center border-dashed border-2 transition-all cursor-pointer overflow-hidden',
               isDragActive ? 'border-primary bg-primary/5' : 'hover:border-primary/50',
               preview ? 'border-solid' : '',
             )}
           >
             {preview ? (
-              <div className="relative w-full h-full flex items-center justify-center p-4">
-                <Image
-                  src={preview}
-                  alt="Preview"
-                  width={800}
-                  height={600}
-                  unoptimized
-                  className="max-w-full max-h-96 object-contain w-auto h-auto"
-                />
+              <div className="relative w-full h-full">
+                <div className="absolute inset-4">
+                  <Image src={preview} alt="Preview" fill unoptimized className="object-contain" />
+                </div>
                 {isClassifying && (
                   <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
                     <Loader2 className="size-10 animate-spin text-primary" />
