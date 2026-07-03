@@ -2,7 +2,7 @@ import { GlobeIcon, ImageIcon, ZapIcon } from 'lucide-react';
 
 const FeatureSection = () => {
   return (
-    <section className="border-y border-border bg-accent/30 py-24 mx-2" id="solutions">
+    <section className="border-y border-border bg-accent/30 py-24 mx-4" id="solutions">
       <div className="container mx-auto max-w-360 px-4">
         <div className="grid md:grid-cols-3 gap-8">
           <div className="space-y-4 p-8 border border-border bg-card hover:border-primary transition-colors group">
