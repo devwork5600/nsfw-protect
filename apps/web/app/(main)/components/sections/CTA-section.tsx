@@ -14,7 +14,7 @@ const CTASection = () => {
           required to start.
         </p>
         <div className="pt-8 flex justify-center">
-          <Link href={'/pricing'} className="w-full sm:w-auto">
+          <Link href={'/billing'} className="w-full sm:w-auto">
             <Button
               size="lg"
               className="h-16 px-6 sm:px-12 text-base sm:text-lg font-heading font-bold tracking-widest uppercase  w-full sm:w-auto"
