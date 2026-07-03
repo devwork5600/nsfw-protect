@@ -112,9 +112,6 @@ export default function AuthPage() {
           <Link href="/terms" className="hover:text-primary transition-colors">
             Terms
           </Link>
-          <Link href="/status" className="hover:text-primary transition-colors">
-            Status
-          </Link>
         </div>
       </div>
 
