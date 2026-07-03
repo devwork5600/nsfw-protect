@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,15 +44,9 @@ export default function PlaygroundPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [, setPolling] = useState(false);
 
-  // Load API key from local storage if available (Removed for security)
-  useEffect(() => {
-    // We no longer persist API keys to localStorage for better security
-  }, []);
-
   const handleKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newKey = e.target.value;
     setApiKey(newKey);
-    // localStorage.setItem('nsfw_playground_key', newKey); (Security: Don't store keys in localStorage)
   };
 
   const pollResult = useCallback(async (jobId: string) => {
@@ -342,8 +336,8 @@ export default function PlaygroundPage() {
                             'h-full transition-all duration-1000',
                             ['porn', 'hentai', 'sexy'].includes(r.label.toLowerCase()) &&
                               r.confidence > 0.5
-                              ? 'bg-destructive'
-                              : 'bg-primary',
+                              ? 'bg-red-600'
+                              : 'bg-green-600',
                           )}
                           style={{ width: `${r.confidence * 100}%` }}
                         />
