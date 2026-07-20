@@ -28,6 +28,9 @@
 **/generated
 **/.prisma
 
+# Model cache (downloaded by @xenova/transformers)
+**/.cache
+
 # Misc
 .DS_Store
 *.pem

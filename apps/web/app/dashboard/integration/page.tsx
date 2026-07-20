@@ -10,43 +10,28 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 
 export default function IntegrationPage() {
-  const curlCode = `curl -X POST https://api.nsfw-protect.com/v1/verify \\
-  -H "Authorization: Bearer YOUR_API_KEY" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "imageUrl": "https://example.com/image.jpg",
-    "webhook": "https://your-site.com/webhooks/nsfw"
-  }'`;
+  const curlCode = `curl -X POST https://api.nsfw-protect.com/classify \\
+  -H "X-API-Key: YOUR_API_KEY" \\
+  -F "image=@photo.jpg"`;
 
-  const nodeCode = `const response = await fetch('https://api.nsfw-protect.com/v1/verify', {
+  const nodeCode = `const form = new FormData();
+form.append('image', imageFile);
+
+const response = await fetch('https://api.nsfw-protect.com/classify', {
   method: 'POST',
-  headers: {
-    'Authorization': 'Bearer YOUR_API_KEY',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    imageUrl: 'https://example.com/image.jpg'
-  })
+  headers: { 'X-API-Key': 'YOUR_API_KEY' },
+  body: form,
 });
 
-const result = await response.json();
-console.log(result.isSafe); // true/false`;
+const { result } = await response.json();
+// result: [{ label: 'nsfw', score: 0.998 }, { label: 'sfw', score: 0.002 }]`;
 
   const pythonCode = `import requests
 
-headers = {
-    'Authorization': 'Bearer YOUR_API_KEY',
-    'Content-Type': 'application/json'
-}
-
-data = {
-    'imageUrl': 'https://example.com/image.jpg'
-}
-
 response = requests.post(
-    'https://api.nsfw-protect.com/v1/verify', 
-    headers=headers, 
-    json=data
+    'https://api.nsfw-protect.com/classify',
+    headers={'X-API-Key': 'YOUR_API_KEY'},
+    files={'image': open('photo.jpg', 'rb')},
 )
 
 print(response.json())`;
@@ -151,10 +136,10 @@ print(response.json())`;
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              All API requests must include your API key in the Authorization header.
+              All API requests must include your API key in the X-API-Key header.
             </p>
             <div className="p-3 bg-primary/5 border border-primary/20 rounded-md">
-              <code className="text-xs break-all">Authorization: Bearer YOUR_API_KEY</code>
+              <code className="text-xs break-all">X-API-Key: YOUR_API_KEY</code>
             </div>
             <Link href="/dashboard/api-keys">
               <Button
@@ -201,10 +186,10 @@ print(response.json())`;
                 </Badge>
                 <div>
                   <p className="font-bold uppercase tracking-wider text-[11px]">
-                    Configure Webhooks
+                    Test in the Playground
                   </p>
                   <p className="text-muted-foreground">
-                    Set up endpoints to receive real-time detection alerts.
+                    Try your key against real images before going live.
                   </p>
                 </div>
               </li>
@@ -217,10 +202,10 @@ print(response.json())`;
                 </Badge>
                 <div>
                   <p className="font-bold uppercase tracking-wider text-[11px]">
-                    Implement Client Library
+                    Handle the Response
                   </p>
                   <p className="text-muted-foreground">
-                    Use our SDKs for enhanced performance and security.
+                    Act on the scores returned for each label.
                   </p>
                 </div>
               </li>
@@ -239,19 +224,18 @@ print(response.json())`;
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Badge className="bg-green-600">POST</Badge>
-                <code className="text-sm font-bold">/v1/verify</code>
+                <code className="text-sm font-bold">/classify</code>
               </div>
               <p className="text-sm text-muted-foreground">
-                Main endpoint for image and video frame analysis.
+                Upload an image and receive its classification in the response.
               </p>
             </div>
             <div className="space-y-2 border-t pt-4">
-              <div className="flex items-center gap-2">
-                <Badge variant="outline">GET</Badge>
-                <code className="text-sm font-bold">/v1/usage</code>
-              </div>
               <p className="text-sm text-muted-foreground">
-                Retrieve your current quota and usage statistics.
+                Send the image as{' '}
+                <code className="text-xs bg-muted px-1 rounded">multipart/form-data</code> in the{' '}
+                <code className="text-xs bg-muted px-1 rounded">image</code> field. JPEG, PNG and
+                WebP are supported, up to 20MB.
               </p>
             </div>
           </CardContent>

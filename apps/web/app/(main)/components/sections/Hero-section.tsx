@@ -54,45 +54,33 @@ const HeroSection = () => {
             <pre className="font-mono text-sm leading-relaxed overflow-x-auto text-primary/80">
               <code className="block text-accent-foreground">
                 <span className="text-muted-foreground">$</span> curl -X POST
-                &quot;https://api.nsfwguard.io/v4&quot; \`
+                &quot;https://api.nsfw-protect.com/classify&quot; \
               </code>
               <code className="block ml-4">
                 {' '}
-                -H{' '}
-                <span className="text-green-400">&quot;Authorization: Bearer $API_KEY&quot;</span> \
+                -H <span className="text-green-400">&quot;X-API-Key: $API_KEY&quot;</span> \
               </code>
               <code className="block ml-4">
                 {' '}
-                -F <span className="text-green-400">&quot;media=@image.jpg&quot;</span> \`
+                -F <span className="text-green-400">&quot;image=@image.jpg&quot;</span>
               </code>
-              <code className="block ml-4">
-                {' '}
-                -F{' '}
-                <span className="text-green-400">
-                  &quot;detect=[&apos;explicit&apos;, &apos;suggestive&apos;]&quot;
-                </span>
-              </code>
-              <code className="block mt-4 text-muted-foreground">{`// Response: 42ms`}</code>
-              <code className="block text-muted-foreground">{'{'}</code>
+              <code className="block mt-4 text-muted-foreground">{'{'}</code>
               <code className="block text-muted-foreground">
                 {' '}
-                &quot;status&quot;: <span className="text-green-400">&quot;success&quot;</span>,
+                &quot;status&quot;: <span className="text-green-400">&quot;done&quot;</span>,
               </code>
-              <code className="block text-muted-foreground"> &quot;result&quot;: {'{'}</code>
+              <code className="block text-muted-foreground"> &quot;result&quot;: [</code>
               <code className="block text-muted-foreground">
                 {' '}
-                &quot;safe&quot;: <span className="text-destructive">false</span>,
+                {'{'} &quot;label&quot;: <span className="text-destructive">&quot;nsfw&quot;</span>,
+                &quot;score&quot;: <span className="text-primary">0.998</span> {'}'},
               </code>
               <code className="block text-muted-foreground">
                 {' '}
-                &quot;score&quot;: <span className="text-primary">0.998</span>,
+                {'{'} &quot;label&quot;: <span className="text-green-400">&quot;sfw&quot;</span>,
+                &quot;score&quot;: <span className="text-primary">0.002</span> {'}'}
               </code>
-              <code className="block text-muted-foreground">
-                {' '}
-                &quot;flags&quot;: [
-                <span className="text-green-400">&quot;explicit_content&quot;</span>]
-              </code>
-              <code className="block text-muted-foreground"> {'}'}</code>
+              <code className="block text-muted-foreground"> ]</code>
               <code className="block text-muted-foreground">{'}'}</code>
             </pre>
           </CardContent>

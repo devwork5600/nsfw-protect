@@ -95,7 +95,7 @@ export function ApiKeyClient({ initialKeys, isAdmin }: ApiKeyClientProps) {
               <div>
                 <CardTitle>Your New API Key</CardTitle>
                 <CardDescription className="text-destructive font-semibold">
-                  Copy this key now. You won't be able to see it again!
+                  Copy this key now. You won&apos;t be able to see it again!
                 </CardDescription>
               </div>
               <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
@@ -145,8 +145,8 @@ export function ApiKeyClient({ initialKeys, isAdmin }: ApiKeyClientProps) {
               <CardTitle>Admin Magic Keys</CardTitle>
             </div>
             <CardDescription>
-              Create "Magic" API keys with no limits. These are for personal use and home page
-              testing.
+              Create &quot;Magic&quot; API keys with no limits. These are for personal use and home
+              page testing.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

@@ -1,0 +1,21 @@
+{
+  "name": "@nsfw/storage",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.758.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "typescript": "^5.8.3"
+  }
+}

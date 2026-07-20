@@ -5,7 +5,10 @@ export function generateRawApiKey() {
   return `sk_${randomBytes(24).toString('hex')}`;
 }
 
-export function hashApiKey(key: string) {
+// Name is pinned to the algorithm so a future swap (e.g. to bcrypt) can't happen without
+// the mismatch being obvious — apps/api/src/app.ts hashes incoming keys the same way to
+// look up this value, so the two must stay byte-for-byte identical.
+export function hashApiKeySha256(key: string) {
   return createHash('sha256').update(key).digest('hex');
 }
 

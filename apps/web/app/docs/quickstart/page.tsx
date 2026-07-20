@@ -57,11 +57,19 @@ export default function QuickstartPage() {
               },
               {
                 label: 'Node.js',
-                code: `const response = await fetch('https://api.nsfw-protect.com/classify', {
+                code: `import { readFile } from 'node:fs/promises';
+
+const form = new FormData();
+form.append('image', new Blob([await readFile('photo.jpg')], { type: 'image/jpeg' }), 'photo.jpg');
+
+const response = await fetch('https://api.nsfw-protect.com/classify', {
   method: 'POST',
   headers: { 'X-API-Key': 'YOUR_API_KEY' },
   body: form,
-});`,
+});
+
+const data = await response.json();
+console.log(data); // { status: 'done', result: [...] }`,
               },
             ]}
           />
@@ -72,28 +80,26 @@ export default function QuickstartPage() {
             className="text-2xl font-heading font-bold tracking-tighter text-foreground group flex items-center gap-2"
             id="step-3"
           >
-            Step 3: Poll for Results
+            Step 3: Read the Response
             <LinkIcon className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </h2>
           <p className="text-muted-foreground font-sans leading-relaxed">
-            The classify endpoint returns a{' '}
-            <code className="font-mono text-sm bg-muted text-primary px-1 border border-border">
-              jobId
-            </code>
-            . Poll the result endpoint to retrieve the classification:
+            The classification comes back directly in the response — one request, one result. The
+            JSON body is identical whichever client you use; each label gets a score between 0 and
+            1:
           </p>
 
           <CodeTabs
             tabs={[
               {
-                label: 'cURL',
-                code: `curl https://api.nsfw-protect.com/result/YOUR_JOB_ID`,
-              },
-              {
-                label: 'Node.js',
-                code: `const response = await fetch('https://api.nsfw-protect.com/result/YOUR_JOB_ID');
-const result = await response.json();
-console.log(result);`,
+                label: 'Response',
+                code: `{
+  "status": "done",
+  "result": [
+    { "label": "nsfw", "score": 0.998 },
+    { "label": "sfw", "score": 0.002 }
+  ]
+}`,
               },
             ]}
           />
@@ -107,10 +113,44 @@ console.log(result);`,
                 Pro Tip
               </h4>
               <p className="text-sm font-sans text-muted-foreground leading-relaxed">
-                Results are cached in Redis for 1 hour. For high-throughput applications, consider
-                implementing a webhook callback instead of polling.
+                Treat an image as NSFW when the{' '}
+                <code className="font-mono text-xs bg-muted text-primary px-1 border border-border">
+                  nsfw
+                </code>{' '}
+                label&apos;s score exceeds 0.5 — that&apos;s the same threshold our own dashboard
+                uses.
               </p>
             </div>
+          </div>
+
+          <div className="border border-border bg-muted/30 p-4 md:p-6">
+            <h4 className="font-heading uppercase tracking-widest text-sm font-bold text-foreground mb-1">
+              Handling busy responses
+            </h4>
+            <p className="text-sm font-sans text-muted-foreground leading-relaxed">
+              In rare cases (heavy load), the API answers{' '}
+              <code className="font-mono text-xs bg-muted text-primary px-1 border border-border">
+                202
+              </code>{' '}
+              with{' '}
+              <code className="font-mono text-xs bg-muted text-primary px-1 border border-border">
+                {'{ "status": "pending" }'}
+              </code>{' '}
+              instead of a result. You are not charged for that request — simply retry the same
+              upload after a short delay. Note that a{' '}
+              <code className="font-mono text-xs bg-muted text-primary px-1 border border-border">
+                202
+              </code>{' '}
+              passes checks like{' '}
+              <code className="font-mono text-xs bg-muted text-primary px-1 border border-border">
+                response.ok
+              </code>
+              , so check for{' '}
+              <code className="font-mono text-xs bg-muted text-primary px-1 border border-border">
+                status === &quot;done&quot;
+              </code>{' '}
+              before reading the result.
+            </p>
           </div>
         </div>
 

@@ -69,12 +69,8 @@ const sections = [
             model.
           </li>
           <li>
-            The classification result (labels and confidence scores) is cached for up to 1 hour so
-            you can retrieve it via{' '}
-            <code className="font-mono text-sm bg-muted text-primary px-1 border border-border">
-              GET /result/:jobId
-            </code>
-            , then it is automatically purged.
+            The classification result (labels and scores) is returned directly in the API response
+            and cached for up to 1 hour, then it is automatically purged.
           </li>
           <li>
             We retain only aggregate usage metadata — timestamps, request counts, and whether

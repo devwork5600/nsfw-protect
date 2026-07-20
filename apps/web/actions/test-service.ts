@@ -20,6 +20,9 @@ export async function testImageAction(formData: FormData) {
   }
 
   try {
+    // /classify is synchronous: the response body is the final classification
+    // ({ status: 'done', result: [...] }), or 202 { status: 'pending' } if the
+    // worker couldn't finish within the API's wait window.
     const response = await fetch(`${API_URL}/classify`, {
       method: 'POST',
       headers: {
@@ -33,18 +36,6 @@ export async function testImageAction(formData: FormData) {
       return { error: error.error || 'Failed to classify image' };
     }
 
-    return await response.json();
-  } catch (error: unknown) {
-    return { error: error instanceof Error ? error.message : 'Failed to connect to API' };
-  }
-}
-
-export async function getTestResultAction(jobId: string) {
-  try {
-    const response = await fetch(`${API_URL}/result/${jobId}`);
-    if (!response.ok) {
-      return { error: 'Failed to fetch result' };
-    }
     return await response.json();
   } catch (error: unknown) {
     return { error: error instanceof Error ? error.message : 'Failed to connect to API' };

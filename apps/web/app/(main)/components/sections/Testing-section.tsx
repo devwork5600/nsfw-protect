@@ -9,28 +9,19 @@ import { toast } from 'sonner';
 import { Upload, Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { testImageAction, getTestResultAction } from '@/actions/test-service';
+import { testImageAction } from '@/actions/test-service';
 
 interface ClassificationResult {
   label: string;
-  confidence: number;
+  score: number;
 }
 
 export function TestingSection() {
   const [isClassifying, setIsClassifying] = useState(false);
   const [result, setResult] = useState<ClassificationResult[] | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [polling, setPolling] = useState(false);
   const [latency, setLatency] = useState<number | null>(null);
   const startTimeRef = useRef<number>(0);
-  const pollCleanupRef = useRef<(() => void) | null>(null);
-
-  // Cancel poll and revoke blob URL on unmount
-  useEffect(() => {
-    return () => {
-      pollCleanupRef.current?.();
-    };
-  }, []);
 
   // Revoke the previous blob URL whenever preview changes (fixes memory leak)
   useEffect(() => {
@@ -39,88 +30,45 @@ export function TestingSection() {
     };
   }, [preview]);
 
-  const pollResult = useCallback((jobId: string) => {
-    setPolling(true);
-    let attempts = 0;
-    const MAX_ATTEMPTS = 15;
-    let timerId: ReturnType<typeof setTimeout> | undefined;
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
+    if (!file) return;
 
-    const tick = async () => {
-      attempts++;
+    // Client-side size check (20MB)
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error('Image is too large. Max size is 20MB.');
+      return;
+    }
 
-      if (attempts > MAX_ATTEMPTS) {
-        setIsClassifying(false);
-        setPolling(false);
-        toast.error('Analysis timed out. Please try again.');
-        return;
+    // Create preview
+    const objectUrl = URL.createObjectURL(file);
+    setPreview(objectUrl);
+    setResult(null);
+    setIsClassifying(true);
+    startTimeRef.current = Date.now();
+    setLatency(null);
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      // The API responds with the classification directly — no polling needed.
+      const data = await testImageAction(formData);
+
+      if (data.error) throw new Error(data.error);
+      if (data.status !== 'done' || !data.result) {
+        throw new Error('Analysis timed out. Please try again.');
       }
 
-      try {
-        const data = await getTestResultAction(jobId);
-
-        if (data.error) throw new Error(data.error);
-
-        if (data.status === 'done' && data.result) {
-          setResult(data.result);
-          setIsClassifying(false);
-          setPolling(false);
-          setLatency(Date.now() - startTimeRef.current);
-          toast.success('Analysis complete!');
-        } else if (data.status === 'error') {
-          throw new Error(data.error || 'Processing failed');
-        } else {
-          // Still pending — schedule next check only after this one completes
-          timerId = setTimeout(tick, 2000);
-        }
-      } catch (error: unknown) {
-        toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
-        setIsClassifying(false);
-        setPolling(false);
-      }
-    };
-
-    timerId = setTimeout(tick, 2000);
-    return () => clearTimeout(timerId);
+      setResult(data.result);
+      setLatency(Date.now() - startTimeRef.current);
+      toast.success('Analysis complete!');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
+    } finally {
+      setIsClassifying(false);
+    }
   }, []);
-
-  const onDrop = useCallback(
-    async (acceptedFiles: File[]) => {
-      const file = acceptedFiles[0];
-      if (!file) return;
-
-      // Client-side size check (20MB)
-      if (file.size > 20 * 1024 * 1024) {
-        toast.error('Image is too large. Max size is 20MB.');
-        return;
-      }
-
-      // Create preview
-      const objectUrl = URL.createObjectURL(file);
-      setPreview(objectUrl);
-      setResult(null);
-      setIsClassifying(true);
-      startTimeRef.current = Date.now();
-      setLatency(null);
-
-      const formData = new FormData();
-      formData.append('image', file);
-
-      try {
-        const data = await testImageAction(formData);
-
-        if (data.error) {
-          throw new Error(data.error);
-        }
-
-        pollCleanupRef.current?.(); // cancel any previous poll
-        pollCleanupRef.current = pollResult(data.jobId);
-      } catch (error: unknown) {
-        toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
-        setIsClassifying(false);
-      }
-    },
-    [pollResult],
-  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -132,24 +80,14 @@ export function TestingSection() {
   });
 
   const clearImage = () => {
-    pollCleanupRef.current?.();
-    pollCleanupRef.current = null;
     setIsClassifying(false);
-    setPolling(false);
     setPreview(null);
     setResult(null);
     setLatency(null);
   };
 
-  const nsfwLabels = ['porn', 'hentai', 'sexy', 'nsfw'];
-
-  const nsfwScore =
-    result?.reduce((acc, r) => {
-      if (nsfwLabels.includes(r.label.trim().toLowerCase())) {
-        return acc + r.confidence;
-      }
-      return acc;
-    }, 0) || 0;
+  // The model is binary: it returns exactly 'nsfw' and 'sfw' labels.
+  const nsfwScore = result?.find((r) => r.label.trim().toLowerCase() === 'nsfw')?.score ?? 0;
 
   const isNSFW = nsfwScore > 0.5;
 
@@ -207,17 +145,17 @@ export function TestingSection() {
                   <div key={r.label} className="space-y-1">
                     <div className="flex justify-between text-xs uppercase font-bold tracking-tighter">
                       <span>{r.label}</span>
-                      <span>{(r.confidence * 100).toFixed(1)}%</span>
+                      <span>{(r.score * 100).toFixed(1)}%</span>
                     </div>
                     <div className="h-1.5 w-full bg-accent overflow-hidden">
                       <div
                         className={cn(
                           'h-full transition-all duration-1000',
-                          nsfwLabels.includes(r.label.toLowerCase()) && r.confidence > 0.5
+                          r.label.toLowerCase() === 'nsfw' && r.score > 0.5
                             ? 'bg-red-600'
                             : 'bg-green-600',
                         )}
-                        style={{ width: `${r.confidence * 100}%` }}
+                        style={{ width: `${r.score * 100}%` }}
                       />
                     </div>
                   </div>
@@ -245,7 +183,7 @@ export function TestingSection() {
                   <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
                     <Loader2 className="size-10 animate-spin text-primary" />
                     <p className="font-heading font-bold uppercase tracking-widest text-sm">
-                      {polling ? 'Analyzing...' : 'Uploading...'}
+                      Analyzing...
                     </p>
                   </div>
                 )}

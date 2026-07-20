@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/sonner';
+import { SITE_URL } from '@/lib/site';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -14,16 +15,46 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'NSFWGuard',
-  description: 'AI-powered NSFW content detection for developers and enterprises',
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: 'NSFWGuard - AI-Powered Content Moderation',
+    template: '%s | NSFWGuard',
+  },
+  description:
+    'Real-time NSFW detection with 99%+ accuracy. Protect your users and brand with advanced AI moderation. Easy API integration, enterprise-grade performance.',
+  keywords: [
+    'NSFW detection',
+    'content moderation API',
+    'image moderation',
+    'AI content moderation',
+    'NSFW classifier',
+    'image classification API',
+  ],
+  authors: [{ name: 'NSFWGuard' }],
+  creator: 'NSFWGuard',
+  publisher: 'NSFWGuard',
   icons: {
     icon: '/favicon.ico',
+  },
+  alternates: {
+    canonical: '/',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
   },
   openGraph: {
     title: 'NSFWGuard - AI-Powered Content Moderation',
     description:
       'Real-time NSFW detection with 99%+ accuracy. Protect your users and brand with advanced AI moderation. Easy API integration, enterprise-grade performance.',
-    url: 'https://nsfwguard.com',
+    url: SITE_URL,
     siteName: 'NSFWGuard',
     images: [
       {

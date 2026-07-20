@@ -24,14 +24,10 @@ if (typeof window !== 'undefined' && !API_URL && window.location.hostname !== 'l
 
 interface ClassificationResult {
   label: string;
-  confidence: number;
+  score: number;
 }
 
-interface JobResponse {
-  jobId: string;
-}
-
-interface ResultResponse {
+interface ClassifyResponse {
   status: 'pending' | 'done' | 'error';
   result?: ClassificationResult[];
   error?: string;
@@ -42,53 +38,11 @@ export default function PlaygroundPage() {
   const [isClassifying, setIsClassifying] = useState(false);
   const [result, setResult] = useState<ClassificationResult[] | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [, setPolling] = useState(false);
 
   const handleKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newKey = e.target.value;
     setApiKey(newKey);
   };
-
-  const pollResult = useCallback(async (jobId: string) => {
-    setPolling(true);
-    let attempts = 0;
-    const MAX_ATTEMPTS = 30;
-
-    const interval = setInterval(async () => {
-      attempts++;
-      if (attempts >= MAX_ATTEMPTS) {
-        clearInterval(interval);
-        setIsClassifying(false);
-        setPolling(false);
-        toast.error('Analysis timed out.');
-        return;
-      }
-
-      try {
-        const res = await fetch(`${API_URL}/result/${jobId}`);
-        if (!res.ok) throw new Error('Failed to fetch result');
-
-        const data: ResultResponse = await res.json();
-
-        if (data.status === 'done' && data.result) {
-          setResult(data.result);
-          setIsClassifying(false);
-          setPolling(false);
-          clearInterval(interval);
-          toast.success('Classification complete!');
-        } else if (data.status === 'error') {
-          throw new Error(data.error || 'Processing failed');
-        }
-      } catch (error: unknown) {
-        toast.error(error instanceof Error ? error.message : 'An error occurred');
-        setIsClassifying(false);
-        setPolling(false);
-        clearInterval(interval);
-      }
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -110,6 +64,7 @@ export default function PlaygroundPage() {
       formData.append('image', file);
 
       try {
+        // The API responds with the classification directly — no polling needed.
         const response = await fetch(`${API_URL}/classify`, {
           method: 'POST',
           headers: {
@@ -123,14 +78,20 @@ export default function PlaygroundPage() {
           throw new Error(errorData.error || 'Failed to classify image');
         }
 
-        const { jobId }: JobResponse = await response.json();
-        pollResult(jobId);
+        const data: ClassifyResponse = await response.json();
+        if (data.status !== 'done' || !data.result) {
+          throw new Error('Analysis timed out. Please try again.');
+        }
+
+        setResult(data.result);
+        toast.success('Classification complete!');
       } catch (error: unknown) {
         toast.error(error instanceof Error ? error.message : 'An error occurred');
+      } finally {
         setIsClassifying(false);
       }
     },
-    [apiKey, pollResult],
+    [apiKey],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -147,15 +108,8 @@ export default function PlaygroundPage() {
     setResult(null);
   };
 
-  const nsfwLabels = ['porn', 'hentai', 'sexy', 'nsfw'];
-
-  const nsfwScore =
-    result?.reduce((acc, r) => {
-      if (nsfwLabels.includes(r.label.trim().toLowerCase())) {
-        return acc + r.confidence;
-      }
-      return acc;
-    }, 0) || 0;
+  // The model is binary: it returns exactly 'nsfw' and 'sfw' labels.
+  const nsfwScore = result?.find((r) => r.label.trim().toLowerCase() === 'nsfw')?.score ?? 0;
 
   const isNSFW = nsfwScore > 0.5;
 
@@ -320,25 +274,23 @@ export default function PlaygroundPage() {
 
                 <div className="space-y-4">
                   <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground border-b pb-2">
-                    Confidence Scores
+                    Scores
                   </h4>
                   {result.map((r) => (
                     <div key={r.label} className="space-y-1.5">
                       <div className="flex justify-between text-sm">
                         <span className="capitalize font-medium">{r.label}</span>
-                        <span className="text-muted-foreground">
-                          {(r.confidence * 100).toFixed(1)}%
-                        </span>
+                        <span className="text-muted-foreground">{(r.score * 100).toFixed(1)}%</span>
                       </div>
                       <div className="h-2 w-full bg-accent rounded-full overflow-hidden">
                         <div
                           className={cn(
                             'h-full transition-all duration-1000',
-                            nsfwLabels.includes(r.label.toLowerCase()) && r.confidence > 0.5
+                            r.label.toLowerCase() === 'nsfw' && r.score > 0.5
                               ? 'bg-red-600'
                               : 'bg-green-600',
                           )}
-                          style={{ width: `${r.confidence * 100}%` }}
+                          style={{ width: `${r.score * 100}%` }}
                         />
                       </div>
                     </div>

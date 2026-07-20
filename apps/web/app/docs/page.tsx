@@ -47,23 +47,19 @@ export default function DocsPage() {
             tabs={[
               {
                 label: 'cURL',
-                code: `curl -X POST https://api.nsfw-protect.com/v2/analyze \\
+                code: `curl -X POST https://api.nsfw-protect.com/classify \\
   -H "X-API-Key: YOUR_API_KEY" \\
-  -H "Content-Type: application/json" \\
-  -d '{ "image_url": "https://example.com/image.jpg", "threshold": 0.85 }'`,
+  -F "image=@photo.jpg"`,
               },
               {
                 label: 'Node.js',
-                code: `const response = await fetch('https://api.nsfw-protect.com/v2/analyze', {
+                code: `const form = new FormData();
+form.append('image', imageFile);
+
+const response = await fetch('https://api.nsfw-protect.com/classify', {
   method: 'POST',
-  headers: {
-    'X-API-Key': 'YOUR_API_KEY',
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    image_url: 'https://example.com/image.jpg',
-    threshold: 0.85,
-  }),
+  headers: { 'X-API-Key': 'YOUR_API_KEY' },
+  body: form,
 });
 
 const data = await response.json();
@@ -82,12 +78,19 @@ console.log(data);`,
             <LinkIcon className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </h2>
           <p className="text-muted-foreground font-sans leading-relaxed">
-            The API returns a JSON object containing detection scores across five main categories. A
-            score closer to{' '}
+            The API responds with the classification directly: a{' '}
+            <code className="font-mono text-sm bg-muted text-primary px-1 border border-border">
+              result
+            </code>{' '}
+            array scoring each label between 0 and 1. A score closer to{' '}
             <code className="font-mono text-sm bg-muted text-primary px-1 border border-border">
               1.0
             </code>{' '}
-            indicates a high probability of sensitive content.
+            on the{' '}
+            <code className="font-mono text-sm bg-muted text-primary px-1 border border-border">
+              nsfw
+            </code>{' '}
+            label indicates a high probability of sensitive content.
           </p>
 
           <div className="border border-primary/30 bg-primary/5 p-4 md:p-6 flex gap-4">
@@ -99,8 +102,8 @@ console.log(data);`,
                 Pro Tip
               </h4>
               <p className="text-sm font-sans text-muted-foreground leading-relaxed">
-                Use our Webhooks feature to get asynchronous notifications for long-form video
-                processing.
+                Images are automatically resized to 224×224 before analysis, so there&apos;s no need
+                to preprocess them on your side.
               </p>
             </div>
           </div>

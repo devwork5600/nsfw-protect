@@ -265,5 +265,8 @@ model UsageRecord {
 
   @@index([userId, periodStart])
   @@index([apiKeyId])
+  // One usage row per API key per billing period, so the check-then-increment
+  // in apps/api/src/app.ts can be a single upsert instead of a findFirst+update/create.
+  @@unique([apiKeyId, periodStart, periodEnd])
   @@map("usage_record")
 }

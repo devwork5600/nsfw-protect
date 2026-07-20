@@ -9,8 +9,8 @@ WORKDIR /app
 FROM base AS deps
 COPY package.json package-lock.json turbo.json ./
 COPY packages/db/package.json      ./packages/db/
-COPY packages/auth/package.json    ./packages/auth/
-COPY packages/email/package.json   ./packages/email/
+COPY packages/redis/package.json   ./packages/redis/
+COPY packages/storage/package.json ./packages/storage/
 COPY apps/worker/package.json      ./apps/worker/
 RUN npm ci --ignore-scripts
 
@@ -37,16 +37,16 @@ COPY packages/ ./packages/
 COPY apps/worker/ ./apps/worker/
 
 RUN npm run build --workspace=packages/db
-RUN npm run build --workspace=packages/email
-RUN npm run build --workspace=packages/auth
+RUN npm run build --workspace=packages/redis
+RUN npm run build --workspace=packages/storage
 RUN npm run build --workspace=apps/worker
 
 # ── 4. Production dependencies only ──────────────────────────────────────────
 FROM base AS prod-deps
 COPY package.json package-lock.json ./
 COPY packages/db/package.json      ./packages/db/
-COPY packages/auth/package.json    ./packages/auth/
-COPY packages/email/package.json   ./packages/email/
+COPY packages/redis/package.json   ./packages/redis/
+COPY packages/storage/package.json ./packages/storage/
 COPY apps/worker/package.json      ./apps/worker/
 RUN npm ci --omit=dev --ignore-scripts
 
@@ -67,10 +67,10 @@ COPY --from=model-cache /app/.cache                ./.cache
 # Package compiled artifacts
 COPY --from=builder /app/packages/db/dist          ./packages/db/dist
 COPY --from=builder /app/packages/db/package.json  ./packages/db/package.json
-COPY --from=builder /app/packages/auth/dist        ./packages/auth/dist
-COPY --from=builder /app/packages/auth/package.json ./packages/auth/package.json
-COPY --from=builder /app/packages/email/dist       ./packages/email/dist
-COPY --from=builder /app/packages/email/package.json ./packages/email/package.json
+COPY --from=builder /app/packages/redis/dist       ./packages/redis/dist
+COPY --from=builder /app/packages/redis/package.json ./packages/redis/package.json
+COPY --from=builder /app/packages/storage/dist     ./packages/storage/dist
+COPY --from=builder /app/packages/storage/package.json ./packages/storage/package.json
 
 # Worker compiled output
 COPY --from=builder /app/apps/worker/dist          ./apps/worker/dist

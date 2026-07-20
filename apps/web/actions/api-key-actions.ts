@@ -2,7 +2,7 @@
 
 import { getUser } from '@/lib/auth/auth-session';
 import { prisma } from '@nsfw/db';
-import { generateRawApiKey, hashApiKey, getPrefix } from '@/lib/api-keys';
+import { generateRawApiKey, hashApiKeySha256, getPrefix } from '@/lib/api-keys';
 import { revalidatePath } from 'next/cache';
 
 export async function isSubscribed() {
@@ -44,7 +44,7 @@ export async function generateApiKey() {
   });
 
   const rawKey = generateRawApiKey();
-  const hashedKey = hashApiKey(rawKey);
+  const hashedKey = hashApiKeySha256(rawKey);
   const prefix = getPrefix(rawKey);
 
   await prisma.apiKey.create({
@@ -79,7 +79,7 @@ export async function generateAdminMagicKey() {
   });
 
   const rawKey = generateRawApiKey();
-  const hashedKey = hashApiKey(rawKey);
+  const hashedKey = hashApiKeySha256(rawKey);
   const prefix = getPrefix(rawKey);
 
   await prisma.apiKey.create({

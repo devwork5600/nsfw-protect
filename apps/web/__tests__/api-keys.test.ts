@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateRawApiKey, hashApiKey, getPrefix } from '../lib/api-keys';
+import { generateRawApiKey, hashApiKeySha256, getPrefix } from '../lib/api-keys';
 
 describe('generateRawApiKey', () => {
   it('starts with sk_', () => {
@@ -21,31 +21,31 @@ describe('generateRawApiKey', () => {
   });
 });
 
-describe('hashApiKey', () => {
+describe('hashApiKeySha256', () => {
   it('returns a 64-character hex string (SHA-256)', () => {
-    const hash = hashApiKey('sk_test');
+    const hash = hashApiKeySha256('sk_test');
     expect(hash).toHaveLength(64);
     expect(hash).toMatch(/^[a-f0-9]{64}$/);
   });
 
   it('is deterministic — same input always produces the same hash', () => {
     const key = 'sk_abc123';
-    expect(hashApiKey(key)).toBe(hashApiKey(key));
+    expect(hashApiKeySha256(key)).toBe(hashApiKeySha256(key));
   });
 
   it('produces different hashes for different inputs', () => {
-    expect(hashApiKey('sk_key_a')).not.toBe(hashApiKey('sk_key_b'));
+    expect(hashApiKeySha256('sk_key_a')).not.toBe(hashApiKeySha256('sk_key_b'));
   });
 
   it('matches known SHA-256 test vector', () => {
     // echo -n "hello" | sha256sum → 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824
-    expect(hashApiKey('hello')).toBe(
+    expect(hashApiKeySha256('hello')).toBe(
       '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824',
     );
   });
 
   it('is sensitive to a single character difference', () => {
-    expect(hashApiKey('sk_key1')).not.toBe(hashApiKey('sk_key2'));
+    expect(hashApiKeySha256('sk_key1')).not.toBe(hashApiKeySha256('sk_key2'));
   });
 });
 

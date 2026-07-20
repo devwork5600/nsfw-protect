@@ -9,8 +9,8 @@ WORKDIR /app
 FROM base AS deps
 COPY package.json package-lock.json turbo.json ./
 COPY packages/db/package.json      ./packages/db/
-COPY packages/auth/package.json    ./packages/auth/
-COPY packages/email/package.json   ./packages/email/
+COPY packages/redis/package.json   ./packages/redis/
+COPY packages/storage/package.json ./packages/storage/
 COPY apps/api/package.json         ./apps/api/
 RUN npm ci --ignore-scripts
 
@@ -25,16 +25,16 @@ COPY apps/api/ ./apps/api/
 
 # Build in dependency order
 RUN npm run build --workspace=packages/db
-RUN npm run build --workspace=packages/email
-RUN npm run build --workspace=packages/auth
+RUN npm run build --workspace=packages/redis
+RUN npm run build --workspace=packages/storage
 RUN npm run build --workspace=apps/api
 
 # ── 3. Production dependencies only ──────────────────────────────────────────
 FROM base AS prod-deps
 COPY package.json package-lock.json ./
 COPY packages/db/package.json      ./packages/db/
-COPY packages/auth/package.json    ./packages/auth/
-COPY packages/email/package.json   ./packages/email/
+COPY packages/redis/package.json   ./packages/redis/
+COPY packages/storage/package.json ./packages/storage/
 COPY apps/api/package.json         ./apps/api/
 RUN npm ci --omit=dev --ignore-scripts
 
@@ -51,10 +51,10 @@ COPY --from=builder   /app/node_modules/.prisma    ./node_modules/.prisma
 # Package compiled artifacts — workspace symlinks resolve through these
 COPY --from=builder /app/packages/db/dist          ./packages/db/dist
 COPY --from=builder /app/packages/db/package.json  ./packages/db/package.json
-COPY --from=builder /app/packages/auth/dist        ./packages/auth/dist
-COPY --from=builder /app/packages/auth/package.json ./packages/auth/package.json
-COPY --from=builder /app/packages/email/dist       ./packages/email/dist
-COPY --from=builder /app/packages/email/package.json ./packages/email/package.json
+COPY --from=builder /app/packages/redis/dist       ./packages/redis/dist
+COPY --from=builder /app/packages/redis/package.json ./packages/redis/package.json
+COPY --from=builder /app/packages/storage/dist     ./packages/storage/dist
+COPY --from=builder /app/packages/storage/package.json ./packages/storage/package.json
 
 # API compiled output
 COPY --from=builder /app/apps/api/dist             ./apps/api/dist
