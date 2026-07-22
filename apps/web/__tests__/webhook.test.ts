@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
   subscriptionUpsert: vi.fn(),
   subscriptionUpdate: vi.fn(),
   subscriptionUpdateMany: vi.fn(),
+  invoiceFindUnique: vi.fn(),
   invoiceUpsert: vi.fn(),
   // Email
   sendEmail: vi.fn(),
@@ -37,7 +38,7 @@ vi.mock('@nsfw/db', () => ({
       update: mocks.subscriptionUpdate,
       updateMany: mocks.subscriptionUpdateMany,
     },
-    invoice: { upsert: mocks.invoiceUpsert },
+    invoice: { findUnique: mocks.invoiceFindUnique, upsert: mocks.invoiceUpsert },
   },
 }));
 
@@ -87,15 +88,29 @@ const DB_SUBSCRIPTION = {
   customer: { ...DB_CUSTOMER },
 };
 
+function makeItems(
+  priceId: string,
+  periodStartUnix: number = PERIOD_START_UNIX,
+  periodEndUnix: number = PERIOD_END_UNIX,
+) {
+  return {
+    data: [
+      {
+        price: { id: priceId, recurring: { interval: 'month' } },
+        current_period_start: periodStartUnix,
+        current_period_end: periodEndUnix,
+      },
+    ],
+  };
+}
+
 function makeStripeSub(overrides: Record<string, unknown> = {}) {
   return {
     id: STRIPE_SUB_ID,
     customer: STRIPE_CUSTOMER_ID,
     status: 'active',
-    items: { data: [{ price: { id: PRICE_STARTER, recurring: { interval: 'month' } } }] },
+    items: makeItems(PRICE_STARTER),
     cancel_at_period_end: false,
-    current_period_start: PERIOD_START_UNIX,
-    current_period_end: PERIOD_END_UNIX,
     ...overrides,
   };
 }
@@ -103,7 +118,10 @@ function makeStripeSub(overrides: Record<string, unknown> = {}) {
 function makeStripeInvoice(overrides: Record<string, unknown> = {}) {
   return {
     id: STRIPE_INVOICE_ID,
-    subscription: STRIPE_SUB_ID,
+    parent: {
+      type: 'subscription_details',
+      subscription_details: { subscription: STRIPE_SUB_ID },
+    },
     amount_paid: 2900,
     total: 2900,
     currency: 'usd',
@@ -133,9 +151,16 @@ function makeRequest(body: string = '{}', sig: string = 'test-sig') {
 describe('POST /api/webhook', () => {
   beforeEach(() => {
     mocks.sendEmail.mockResolvedValue({ success: true });
+    mocks.pricesRetrieve.mockResolvedValue({
+      id: PRICE_STARTER,
+      currency: 'usd',
+      unit_amount: 2900,
+      recurring: { interval: 'month' },
+    });
     mocks.subscriptionUpsert.mockResolvedValue(DB_SUBSCRIPTION);
     mocks.subscriptionUpdate.mockResolvedValue(DB_SUBSCRIPTION);
     mocks.subscriptionUpdateMany.mockResolvedValue({ count: 1 });
+    mocks.invoiceFindUnique.mockResolvedValue(null);
     mocks.invoiceUpsert.mockResolvedValue({});
     mocks.customerFindUnique.mockResolvedValue(DB_CUSTOMER);
     mocks.subscriptionFindUnique.mockResolvedValue(null);
@@ -210,7 +235,7 @@ describe('POST /api/webhook', () => {
 
   it('customer.subscription.updated upserts subscription with correct plan', async () => {
     const stripeSub = makeStripeSub({
-      items: { data: [{ price: { id: PRICE_PRO, recurring: { interval: 'month' } } }] },
+      items: makeItems(PRICE_PRO),
     });
     mocks.constructEvent.mockReturnValue(makeEvent('customer.subscription.updated', stripeSub));
     mocks.subscriptionFindUnique.mockResolvedValue(null);
@@ -230,7 +255,7 @@ describe('POST /api/webhook', () => {
     const existingStarter = { ...DB_SUBSCRIPTION, plan: 'STARTER' as const };
     const newProSub = { ...DB_SUBSCRIPTION, plan: 'PRO' as const, stripePriceId: PRICE_PRO };
     const stripeSub = makeStripeSub({
-      items: { data: [{ price: { id: PRICE_PRO, recurring: { interval: 'month' } } }] },
+      items: makeItems(PRICE_PRO),
     });
 
     mocks.constructEvent.mockReturnValue(makeEvent('customer.subscription.updated', stripeSub));
@@ -267,8 +292,7 @@ describe('POST /api/webhook', () => {
     const newPeriodStartUnix = Math.floor(new Date('2026-08-01T00:00:00Z').getTime() / 1000);
     const newPeriodEndUnix = Math.floor(new Date('2026-09-01T00:00:00Z').getTime() / 1000);
     const stripeSub = makeStripeSub({
-      current_period_start: newPeriodStartUnix,
-      current_period_end: newPeriodEndUnix,
+      items: makeItems(PRICE_STARTER, newPeriodStartUnix, newPeriodEndUnix),
     });
 
     const existingWithChange = {
@@ -308,6 +332,20 @@ describe('POST /api/webhook', () => {
       (call) => call[0]?.data?.planChangedAt === null,
     );
     expect(planChangedAtResetCall).toBeUndefined();
+  });
+
+  it('customer.subscription.updated does not resurrect an already-canceled subscription', async () => {
+    const stripeSub = makeStripeSub({ status: 'active' });
+    const canceledSub = { ...DB_SUBSCRIPTION, status: 'CANCELED' as const };
+    mocks.constructEvent.mockReturnValue(makeEvent('customer.subscription.updated', stripeSub));
+    mocks.subscriptionFindUnique.mockResolvedValue(canceledSub);
+
+    const res = await POST(makeRequest());
+
+    expect(res.status).toBe(200);
+    expect(mocks.subscriptionUpsert).not.toHaveBeenCalled();
+    expect(mocks.subscriptionUpdate).not.toHaveBeenCalled();
+    expect(mocks.sendEmail).not.toHaveBeenCalled();
   });
 
   // ── customer.subscription.deleted ─────────────────────────────────────────
@@ -373,6 +411,31 @@ describe('POST /api/webhook', () => {
     );
   });
 
+  it('invoice.payment_succeeded does not re-send the confirmation email on a redelivered event', async () => {
+    const invoice = makeStripeInvoice();
+    mocks.constructEvent.mockReturnValue(makeEvent('invoice.payment_succeeded', invoice));
+    mocks.subscriptionFindUnique.mockResolvedValue(DB_SUBSCRIPTION);
+    // Invoice was already marked paid by a prior delivery of this same event.
+    mocks.invoiceFindUnique.mockResolvedValue({ paid: true });
+
+    const res = await POST(makeRequest());
+
+    expect(res.status).toBe(200);
+    expect(mocks.sendEmail).not.toHaveBeenCalled();
+  });
+
+  it('invoice.payment_succeeded does not resurrect an already-canceled subscription', async () => {
+    const invoice = makeStripeInvoice();
+    const canceledSub = { ...DB_SUBSCRIPTION, status: 'CANCELED' as const };
+    mocks.constructEvent.mockReturnValue(makeEvent('invoice.payment_succeeded', invoice));
+    mocks.subscriptionFindUnique.mockResolvedValue(canceledSub);
+
+    const res = await POST(makeRequest());
+
+    expect(res.status).toBe(200);
+    expect(mocks.subscriptionUpdate).not.toHaveBeenCalled();
+  });
+
   it('invoice.payment_succeeded fetches subscription from Stripe if not in DB', async () => {
     const invoice = makeStripeInvoice();
     const stripeSub = makeStripeSub();
@@ -388,7 +451,7 @@ describe('POST /api/webhook', () => {
   });
 
   it('invoice.payment_succeeded skips invoices with no subscription', async () => {
-    const invoice = makeStripeInvoice({ subscription: null });
+    const invoice = makeStripeInvoice({ parent: null });
     mocks.constructEvent.mockReturnValue(makeEvent('invoice.payment_succeeded', invoice));
 
     const res = await POST(makeRequest());
@@ -411,6 +474,18 @@ describe('POST /api/webhook', () => {
       where: { id: DB_SUBSCRIPTION.id },
       data: { status: 'PAST_DUE' },
     });
+  });
+
+  it('invoice.payment_failed does not overwrite an already-canceled subscription with PAST_DUE', async () => {
+    const invoice = makeStripeInvoice();
+    const canceledSub = { ...DB_SUBSCRIPTION, status: 'CANCELED' as const };
+    mocks.constructEvent.mockReturnValue(makeEvent('invoice.payment_failed', invoice));
+    mocks.subscriptionFindUnique.mockResolvedValue(canceledSub);
+
+    const res = await POST(makeRequest());
+
+    expect(res.status).toBe(200);
+    expect(mocks.subscriptionUpdate).not.toHaveBeenCalled();
   });
 
   it('invoice.payment_failed does not send payment email', async () => {
@@ -446,7 +521,7 @@ describe('POST /api/webhook', () => {
 
   it('maps unknown price ID to FREE plan', async () => {
     const stripeSub = makeStripeSub({
-      items: { data: [{ price: { id: 'price_unknown', recurring: { interval: 'month' } } }] },
+      items: makeItems('price_unknown'),
     });
     mocks.constructEvent.mockReturnValue(makeEvent('customer.subscription.updated', stripeSub));
     mocks.subscriptionFindUnique.mockResolvedValue(null);

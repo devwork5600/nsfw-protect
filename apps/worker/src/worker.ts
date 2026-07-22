@@ -87,8 +87,13 @@ const worker = new Worker(
       await fs.writeFile(tempPath, buffer);
 
       const classifier = await classifierPromise;
-      // The model's output shape ({ label, score }) is the public result format.
-      const result = (await classifier(tempPath)) as { label: string; score: number }[];
+      // topk defaults to 1 in the library, which would return only the
+      // top-scoring label. This model is binary (nsfw/sfw) — topk: 2 returns
+      // both, matching the { label, score }[] shape assumed everywhere else.
+      const result = (await classifier(tempPath, { topk: 2 })) as {
+        label: string;
+        score: number;
+      }[];
 
       log.info({ result }, 'Classification done');
 

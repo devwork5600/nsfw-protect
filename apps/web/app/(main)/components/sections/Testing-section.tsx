@@ -88,7 +88,7 @@ export function TestingSection() {
 
   // The model is binary: it returns exactly 'nsfw' and 'sfw' labels.
   const nsfwScore = result?.find((r) => r.label.trim().toLowerCase() === 'nsfw')?.score ?? 0;
-
+  console.log(nsfwScore);
   const isNSFW = nsfwScore > 0.5;
 
   return (
@@ -103,7 +103,7 @@ export function TestingSection() {
           </p>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="border border-border p-4 bg-accent/30">
+            <div className="border border-border p-4 bg-linear-to-br from-[#07234a] via-[#1a3f74] to-[#3463a6]">
               <div className="text-sm font-heading tracking-widest text-muted-foreground uppercase mb-1">
                 Latency
               </div>
@@ -112,7 +112,7 @@ export function TestingSection() {
                 <span className="text-sm text-primary/70">ms</span>
               </div>
             </div>
-            <div className="border border-border p-4 bg-accent/30">
+            <div className="border border-border p-4 bg-linear-to-br from-[#07234a] via-[#1a3f74] to-[#3463a6]">
               <div className="text-sm font-heading tracking-widest text-muted-foreground uppercase mb-1">
                 Edge Node
               </div>

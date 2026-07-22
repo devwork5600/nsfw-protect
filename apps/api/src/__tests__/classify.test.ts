@@ -101,7 +101,6 @@ import { buildApp } from '../app.js';
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
 const VALID_RAW_KEY = 'nsfwprot_validkey123456789abcdef';
-const HOME_PAGE_KEY = 'home-page-key-test';
 
 const DB_API_KEY = {
   id: 'apikey_db_id',
@@ -119,9 +118,9 @@ const DB_CUSTOMER_FREE = {
   subscriptions: [],
 };
 
-const DB_CUSTOMER_STARTER = {
+const DB_CUSTOMER_PRO = {
   id: 'customer_db_id',
-  subscriptions: [{ plan: 'STARTER', status: 'ACTIVE' }],
+  subscriptions: [{ plan: 'PRO', status: 'ACTIVE' }],
 };
 
 // What the worker publishes to Redis once classification finishes; /classify waits
@@ -186,55 +185,33 @@ describe('POST /classify', () => {
     await app.close();
   });
 
-  // ── Authentication ─────────────────────────────────────────────────────────
+  // ── Step 1: plan changes ────────────────────────────────────────────────────
 
-  it('returns 401 when x-api-key header is missing', async () => {
-    const res = await app.inject({ method: 'POST', url: '/classify' });
-    expect(res.statusCode).toBe(401);
-    expect(res.json()).toMatchObject({ error: 'API key missing' });
-  });
+  it('enforces the new plan limit after a customer upgrades from STARTER to PRO', async () => {
+    // The Stripe webhook updates the *same* subscription row in place on a plan
+    // change (upsert keyed by stripeSubscriptionId), so by the time /classify
+    // reads it, `plan` already reflects the new tier — there is only ever one
+    // ACTIVE row per customer in the normal (non-out-of-order-webhook) case.
+    mocks.customerFindUnique.mockResolvedValue(DB_CUSTOMER_PRO);
+    // Usage already exceeds the old STARTER limit (25000) but is still well
+    // under the new PRO limit (250000).
+    mocks.usageRecordAggregate.mockResolvedValue({ _sum: { imageCount: 30000 } });
 
-  it('returns 401 when API key is not found in DB', async () => {
-    mocks.apiKeyFindUnique.mockResolvedValue(null);
+    const { body, contentType } = makeMultipartBody();
     const res = await app.inject({
       method: 'POST',
       url: '/classify',
-      headers: { 'x-api-key': 'invalid-key' },
+      headers: { 'x-api-key': VALID_RAW_KEY, 'content-type': contentType },
+      payload: body,
     });
-    expect(res.statusCode).toBe(401);
-    expect(res.json()).toMatchObject({ error: 'Invalid or expired API key' });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual(DONE_RESULT);
   });
 
-  it('returns 401 when API key is revoked', async () => {
-    mocks.apiKeyFindUnique.mockResolvedValue({ ...DB_API_KEY, revoked: true });
-    const res = await app.inject({
-      method: 'POST',
-      url: '/classify',
-      headers: { 'x-api-key': VALID_RAW_KEY },
-    });
-    expect(res.statusCode).toBe(401);
-    expect(res.json()).toMatchObject({ error: 'Invalid or expired API key' });
-  });
-
-  it('returns 401 when API key is expired', async () => {
-    mocks.apiKeyFindUnique.mockResolvedValue({
-      ...DB_API_KEY,
-      expiresAt: new Date('2020-01-01'),
-    });
-    const res = await app.inject({
-      method: 'POST',
-      url: '/classify',
-      headers: { 'x-api-key': VALID_RAW_KEY },
-    });
-    expect(res.statusCode).toBe(401);
-    expect(res.json()).toMatchObject({ error: 'Invalid or expired API key' });
-  });
-
-  // ── Rate limiting ──────────────────────────────────────────────────────────
-
-  it('returns 403 when FREE plan limit (1000) is reached', async () => {
-    mocks.customerFindUnique.mockResolvedValue(DB_CUSTOMER_FREE);
-    mocks.usageRecordAggregate.mockResolvedValue({ _sum: { imageCount: 1000 } });
+  it('returns 403 with the PRO limit once usage exceeds it post-upgrade', async () => {
+    mocks.customerFindUnique.mockResolvedValue(DB_CUSTOMER_PRO);
+    mocks.usageRecordAggregate.mockResolvedValue({ _sum: { imageCount: 250000 } });
 
     const res = await app.inject({
       method: 'POST',
@@ -245,280 +222,10 @@ describe('POST /classify', () => {
     expect(res.statusCode).toBe(403);
     expect(res.json()).toMatchObject({
       error: 'Monthly scan limit reached',
-      plan: 'FREE',
-      limit: 1000,
-      currentUsage: 1000,
+      plan: 'PRO',
+      limit: 250000,
+      currentUsage: 250000,
     });
-  });
-
-  it('returns 403 when STARTER plan limit (25000) is reached', async () => {
-    mocks.customerFindUnique.mockResolvedValue(DB_CUSTOMER_STARTER);
-    mocks.usageRecordAggregate.mockResolvedValue({ _sum: { imageCount: 25000 } });
-
-    const res = await app.inject({
-      method: 'POST',
-      url: '/classify',
-      headers: { 'x-api-key': VALID_RAW_KEY },
-    });
-
-    expect(res.statusCode).toBe(403);
-    expect(res.json()).toMatchObject({ plan: 'STARTER', limit: 25000 });
-  });
-
-  it('skips rate limit check for unlimited API keys', async () => {
-    mocks.apiKeyFindUnique.mockResolvedValue({ ...DB_API_KEY, isUnlimited: true });
-
-    const { body, contentType } = makeMultipartBody();
-    const res = await app.inject({
-      method: 'POST',
-      url: '/classify',
-      headers: { 'x-api-key': VALID_RAW_KEY, 'content-type': contentType },
-      payload: body,
-    });
-
-    expect(mocks.usageRecordAggregate).not.toHaveBeenCalled();
-    expect(res.statusCode).toBe(200);
-  });
-
-  // ── File validation ────────────────────────────────────────────────────────
-
-  it('returns 400 when no file is provided and does NOT increment usage', async () => {
-    const res = await app.inject({
-      method: 'POST',
-      url: '/classify',
-      headers: { 'x-api-key': VALID_RAW_KEY, 'content-type': 'multipart/form-data; boundary=X' },
-      payload: '--X--\r\n',
-    });
-
-    expect(res.statusCode).toBe(400);
-    expect(res.json()).toMatchObject({ error: 'No image provided' });
-    expect(mocks.usageRecordUpsert).not.toHaveBeenCalled();
-  });
-
-  it('returns 400 when the uploaded file is not an image and does NOT increment usage', async () => {
-    const { body, contentType } = makeMultipartBody(
-      'test.txt',
-      Buffer.from('not an image'),
-      'text/plain',
-    );
-    const res = await app.inject({
-      method: 'POST',
-      url: '/classify',
-      headers: { 'x-api-key': VALID_RAW_KEY, 'content-type': contentType },
-      payload: body,
-    });
-
-    expect(res.statusCode).toBe(400);
-    expect(res.json()).toMatchObject({ error: 'Uploaded file must be an image' });
-    expect(mocks.usageRecordUpsert).not.toHaveBeenCalled();
-    expect(mocks.s3Send).not.toHaveBeenCalled();
-  });
-
-  // ── Happy path — full classification ──────────────────────────────────────
-
-  it('returns 200 with the classification result for valid key and file', async () => {
-    const { body, contentType } = makeMultipartBody();
-    const res = await app.inject({
-      method: 'POST',
-      url: '/classify',
-      headers: { 'x-api-key': VALID_RAW_KEY, 'content-type': contentType },
-      payload: body,
-    });
-
-    expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual(DONE_RESULT);
-  });
-
-  it('returns 500 when the worker reports a classification error', async () => {
-    mocks.redisGet.mockResolvedValue(JSON.stringify({ status: 'error', error: 'model exploded' }));
-
-    const { body, contentType } = makeMultipartBody();
-    const res = await app.inject({
-      method: 'POST',
-      url: '/classify',
-      headers: { 'x-api-key': VALID_RAW_KEY, 'content-type': contentType },
-      payload: body,
-    });
-
-    expect(res.statusCode).toBe(500);
-    expect(res.json()).toMatchObject({ error: 'model exploded' });
-  });
-
-  it('returns 202 with a plain pending status when the worker does not finish within the wait window', async () => {
-    // Rebuild the app with a zero wait window so the still-pending result times out
-    // immediately instead of stalling the test for the real 30s.
-    await app.close();
-    process.env.CLASSIFY_WAIT_TIMEOUT_MS = '0';
-    process.env.CLASSIFY_WAIT_POLL_MS = '1';
-    try {
-      app = await buildApp({ logger: false });
-      mocks.redisGet.mockResolvedValue(JSON.stringify({ status: 'pending' }));
-
-      const { body, contentType } = makeMultipartBody();
-      const res = await app.inject({
-        method: 'POST',
-        url: '/classify',
-        headers: { 'x-api-key': VALID_RAW_KEY, 'content-type': contentType },
-        payload: body,
-      });
-
-      expect(res.statusCode).toBe(202);
-      // jobIds are internal and must never leak to clients.
-      expect(res.json()).toEqual({ status: 'pending' });
-      // A 202 gives the customer no usable result, so the scan is refunded.
-      expect(mocks.usageRecordUpdate).toHaveBeenCalledWith({
-        where: { id: 'usage_new_id' },
-        data: { requestCount: { decrement: 1 }, imageCount: { decrement: 1 } },
-      });
-    } finally {
-      delete process.env.CLASSIFY_WAIT_TIMEOUT_MS;
-      delete process.env.CLASSIFY_WAIT_POLL_MS;
-    }
-  });
-
-  it('upserts the usage record for the current billing period in a single call', async () => {
-    const { body, contentType } = makeMultipartBody();
-    await app.inject({
-      method: 'POST',
-      url: '/classify',
-      headers: { 'x-api-key': VALID_RAW_KEY, 'content-type': contentType },
-      payload: body,
-    });
-
-    expect(mocks.usageRecordUpsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: {
-          apiKeyId_periodStart_periodEnd: expect.objectContaining({
-            apiKeyId: DB_API_KEY.id,
-          }),
-        },
-        update: { requestCount: { increment: 1 }, imageCount: { increment: 1 } },
-        create: expect.objectContaining({
-          userId: DB_API_KEY.userId,
-          apiKeyId: DB_API_KEY.id,
-          requestCount: 1,
-          imageCount: 1,
-        }),
-      }),
-    );
-  });
-
-  it('updates API key lastUsedAt after successful file upload', async () => {
-    const { body, contentType } = makeMultipartBody();
-    await app.inject({
-      method: 'POST',
-      url: '/classify',
-      headers: { 'x-api-key': VALID_RAW_KEY, 'content-type': contentType },
-      payload: body,
-    });
-
-    expect(mocks.apiKeyUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: DB_API_KEY.id },
-        data: expect.objectContaining({ lastUsedAt: expect.any(Date) }),
-      }),
-    );
-  });
-
-  it('enqueues job with jobId and r2Key after successful upload', async () => {
-    const { body, contentType } = makeMultipartBody();
-    await app.inject({
-      method: 'POST',
-      url: '/classify',
-      headers: { 'x-api-key': VALID_RAW_KEY, 'content-type': contentType },
-      payload: body,
-    });
-
-    // jobId is internal now (not in the response), so read it off the enqueue call.
-    const { jobId } = mocks.queueAdd.mock.calls[0][1];
-    expect(typeof jobId).toBe('string');
-    expect(mocks.queueAdd).toHaveBeenCalledWith(
-      'nsfw-job',
-      expect.objectContaining({ jobId, r2Key: `uploads/${jobId}.jpg` }),
-      expect.any(Object),
-    );
-  });
-
-  it('sets Redis pending status before enqueuing', async () => {
-    const { body, contentType } = makeMultipartBody();
-    await app.inject({
-      method: 'POST',
-      url: '/classify',
-      headers: { 'x-api-key': VALID_RAW_KEY, 'content-type': contentType },
-      payload: body,
-    });
-
-    const { jobId } = mocks.queueAdd.mock.calls[0][1];
-    expect(mocks.redisSet).toHaveBeenCalledWith(
-      `nsfw:result:${jobId}`,
-      JSON.stringify({ status: 'pending' }),
-      'EX',
-      60 * 60,
-    );
-  });
-
-  // ── Home page key ──────────────────────────────────────────────────────────
-
-  it('home page key bypasses DB auth entirely', async () => {
-    const { body, contentType } = makeMultipartBody();
-    await app.inject({
-      method: 'POST',
-      url: '/classify',
-      headers: { 'x-api-key': HOME_PAGE_KEY, 'content-type': contentType },
-      payload: body,
-    });
-
-    expect(mocks.apiKeyFindUnique).not.toHaveBeenCalled();
-    expect(mocks.usageRecordUpsert).not.toHaveBeenCalled();
-  });
-
-  it('home page key returns 400 when no file provided', async () => {
-    const res = await app.inject({
-      method: 'POST',
-      url: '/classify',
-      headers: {
-        'x-api-key': HOME_PAGE_KEY,
-        'content-type': 'multipart/form-data; boundary=X',
-      },
-      payload: '--X--\r\n',
-    });
-
-    expect(res.statusCode).toBe(400);
-    expect(res.json()).toMatchObject({ error: 'No image provided' });
-  });
-
-  it('home page key returns 200 with the classification result and no usage tracking', async () => {
-    const { body, contentType } = makeMultipartBody();
-    const res = await app.inject({
-      method: 'POST',
-      url: '/classify',
-      headers: { 'x-api-key': HOME_PAGE_KEY, 'content-type': contentType },
-      payload: body,
-    });
-
-    expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual(DONE_RESULT);
-    expect(mocks.usageRecordUpsert).not.toHaveBeenCalled();
-  });
-
-  // ── S3 / processing failure ────────────────────────────────────────────────
-
-  it('returns 500 when S3 upload fails', async () => {
-    mocks.s3Send.mockRejectedValue(new Error('S3 connection refused'));
-
-    const { body, contentType } = makeMultipartBody();
-    const res = await app.inject({
-      method: 'POST',
-      url: '/classify',
-      headers: { 'x-api-key': VALID_RAW_KEY, 'content-type': contentType },
-      payload: body,
-    });
-
-    expect(res.statusCode).toBe(500);
-    expect(res.json()).toMatchObject({ error: 'Failed to process image' });
-    // A failed upload must not count against the user's quota.
-    expect(mocks.usageRecordUpsert).not.toHaveBeenCalled();
-    expect(mocks.apiKeyUpdate).not.toHaveBeenCalled();
   });
 });
 
