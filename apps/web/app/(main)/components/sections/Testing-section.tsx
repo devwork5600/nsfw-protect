@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { Upload, Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { ScoreBar } from '@/components/score-bar';
 import { testImageAction } from '@/actions/test-service';
 
 interface ClassificationResult {
@@ -88,8 +89,9 @@ export function TestingSection() {
 
   // The model is binary: it returns exactly 'nsfw' and 'sfw' labels.
   const nsfwScore = result?.find((r) => r.label.trim().toLowerCase() === 'nsfw')?.score ?? 0;
-  console.log(nsfwScore);
   const isNSFW = nsfwScore > 0.5;
+  // Only show the score for the predicted class, not both nsfw and sfw.
+  const topResult = result?.find((r) => r.label.trim().toLowerCase() === (isNSFW ? 'nsfw' : 'sfw'));
 
   return (
     <section className="container mx-auto max-w-360 px-4 py-32">
@@ -103,7 +105,7 @@ export function TestingSection() {
           </p>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="border border-border p-4 bg-linear-to-br from-[#07234a] via-[#1a3f74] to-[#3463a6]">
+            <div className="border border-border p-4 bg-card">
               <div className="text-sm font-heading tracking-widest text-muted-foreground uppercase mb-1">
                 Latency
               </div>
@@ -112,7 +114,7 @@ export function TestingSection() {
                 <span className="text-sm text-primary/70">ms</span>
               </div>
             </div>
-            <div className="border border-border p-4 bg-linear-to-br from-[#07234a] via-[#1a3f74] to-[#3463a6]">
+            <div className="border border-border p-4 bg-card">
               <div className="text-sm font-heading tracking-widest text-muted-foreground uppercase mb-1">
                 Edge Node
               </div>
@@ -140,27 +142,17 @@ export function TestingSection() {
                 )}
               </div>
 
-              <div className="space-y-3">
-                {result.map((r) => (
-                  <div key={r.label} className="space-y-1">
+              {topResult && (
+                <div className="space-y-3">
+                  <div className="space-y-1">
                     <div className="flex justify-between text-xs uppercase font-bold tracking-tighter">
-                      <span>{r.label}</span>
-                      <span>{(r.score * 100).toFixed(1)}%</span>
+                      <span>{topResult.label}</span>
+                      <span>{(topResult.score * 100).toFixed(1)}%</span>
                     </div>
-                    <div className="h-1.5 w-full bg-accent overflow-hidden">
-                      <div
-                        className={cn(
-                          'h-full transition-all duration-1000',
-                          r.label.toLowerCase() === 'nsfw' && r.score > 0.5
-                            ? 'bg-red-600'
-                            : 'bg-green-600',
-                        )}
-                        style={{ width: `${r.score * 100}%` }}
-                      />
-                    </div>
+                    <ScoreBar label={topResult.label} score={topResult.score} />
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { Upload, ImageIcon, Loader2, ShieldCheck, ShieldAlert, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { ScoreBar } from '@/components/score-bar';
 import Image from 'next/image';
 
 const API_URL =
@@ -282,17 +283,11 @@ export default function PlaygroundPage() {
                         <span className="capitalize font-medium">{r.label}</span>
                         <span className="text-muted-foreground">{(r.score * 100).toFixed(1)}%</span>
                       </div>
-                      <div className="h-2 w-full bg-accent rounded-full overflow-hidden">
-                        <div
-                          className={cn(
-                            'h-full transition-all duration-1000',
-                            r.label.toLowerCase() === 'nsfw' && r.score > 0.5
-                              ? 'bg-red-600'
-                              : 'bg-green-600',
-                          )}
-                          style={{ width: `${r.score * 100}%` }}
-                        />
-                      </div>
+                      <ScoreBar
+                        label={r.label}
+                        score={r.score}
+                        className="h-2 w-full bg-accent rounded-full overflow-hidden"
+                      />
                     </div>
                   ))}
                 </div>

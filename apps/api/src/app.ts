@@ -122,6 +122,21 @@ export async function buildApp({ logger = true }: { logger?: boolean | object } 
 
     let usageRecordId: string | undefined;
 
+    // Best-effort refund: decrements the usage row counted for this request so a
+    // failure after billing (enqueue failure, classify timeout) doesn't leave the
+    // customer charged for a scan they never got a result for.
+    const rollbackUsage = async (reason: string) => {
+      if (!usageRecordId) return;
+      await prisma.usageRecord
+        .update({
+          where: { id: usageRecordId },
+          data: { requestCount: { decrement: 1 }, imageCount: { decrement: 1 } },
+        })
+        .catch((err) =>
+          request.log.error({ err, usageRecordId }, `Failed to roll back usage record ${reason}`),
+        );
+    };
+
     // The public homepage demo uses a single shared key that bypasses per-user
     // billing/rate-limiting entirely (it isn't tied to a customer account).
     const isHomePageKey =
@@ -348,19 +363,7 @@ export async function buildApp({ logger = true }: { logger?: boolean | object } 
         await s3Client
           .send(new DeleteObjectCommand({ Bucket: BUCKET_NAME, Key: key }))
           .catch((err) => request.log.error({ err, key }, 'Failed to clean up orphaned upload'));
-        if (usageRecordId) {
-          await prisma.usageRecord
-            .update({
-              where: { id: usageRecordId },
-              data: { requestCount: { decrement: 1 }, imageCount: { decrement: 1 } },
-            })
-            .catch((err) =>
-              request.log.error(
-                { err, usageRecordId },
-                'Failed to roll back usage record after enqueue failure',
-              ),
-            );
-        }
+        await rollbackUsage('after enqueue failure');
         throw enqueueError;
       }
 
@@ -373,19 +376,7 @@ export async function buildApp({ logger = true }: { logger?: boolean | object } 
         // The customer got no usable result, so refund the scan and make the retry
         // free. The worker may still finish this job after the 202 goes out — an
         // occasional given-away classification beats double-billing.
-        if (usageRecordId) {
-          await prisma.usageRecord
-            .update({
-              where: { id: usageRecordId },
-              data: { requestCount: { decrement: 1 }, imageCount: { decrement: 1 } },
-            })
-            .catch((err) =>
-              request.log.error(
-                { err, usageRecordId },
-                'Failed to roll back usage record after classify timeout',
-              ),
-            );
-        }
+        await rollbackUsage('after classify timeout');
         return reply.status(202).send({ status: 'pending' });
       }
 
