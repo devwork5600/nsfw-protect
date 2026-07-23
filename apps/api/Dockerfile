@@ -43,6 +43,12 @@ FROM node:22-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
+# node:22-slim has no OpenSSL, so Prisma's CLI (used below for migrate deploy)
+# can't detect a libssl version and silently falls back to a guess. Installing
+# it explicitly avoids depending on that fallback being correct.
+RUN apt-get update -y && apt-get install -y --no-install-recommends openssl \
+    && rm -rf /var/lib/apt/lists/*
+
 # Production node_modules (with workspace symlinks intact)
 COPY --from=prod-deps /app/node_modules            ./node_modules
 # Generated Prisma client (produced by prisma generate in builder)
@@ -51,6 +57,8 @@ COPY --from=builder   /app/node_modules/.prisma    ./node_modules/.prisma
 # Package compiled artifacts — workspace symlinks resolve through these
 COPY --from=builder /app/packages/db/dist          ./packages/db/dist
 COPY --from=builder /app/packages/db/package.json  ./packages/db/package.json
+COPY --from=builder /app/packages/db/prisma.config.ts ./packages/db/prisma.config.ts
+COPY --from=builder /app/packages/db/prisma        ./packages/db/prisma
 COPY --from=builder /app/packages/redis/dist       ./packages/redis/dist
 COPY --from=builder /app/packages/redis/package.json ./packages/redis/package.json
 COPY --from=builder /app/packages/storage/dist     ./packages/storage/dist
@@ -62,4 +70,8 @@ COPY --from=builder /app/apps/api/package.json     ./apps/api/package.json
 COPY --from=builder /app/package.json              ./
 
 EXPOSE 3001
-CMD ["node", "apps/api/dist/index.js"]
+# Applies any pending migrations before every boot, so a merged migration can
+# never again sit unapplied against production while the app that assumes it
+# exists is already live (see the ON CONFLICT failure from the missing
+# usage_record unique constraint).
+CMD ["sh", "-c", "cd packages/db && npx prisma migrate deploy && cd /app && node apps/api/dist/index.js"]
