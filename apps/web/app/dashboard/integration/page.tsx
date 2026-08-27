@@ -87,6 +87,7 @@ print(response.json())`;
                     onClick={() => copyToClipboard(curlCode)}
                     variant="ghost"
                     size="icon"
+                    aria-label="Copy code"
                     className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <Copy className="size-4" />
@@ -102,6 +103,7 @@ print(response.json())`;
                     onClick={() => copyToClipboard(nodeCode)}
                     variant="ghost"
                     size="icon"
+                    aria-label="Copy code"
                     className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <Copy className="size-4" />
@@ -117,6 +119,7 @@ print(response.json())`;
                     onClick={() => copyToClipboard(pythonCode)}
                     variant="ghost"
                     size="icon"
+                    aria-label="Copy code"
                     className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <Copy className="size-4" />

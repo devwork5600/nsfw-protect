@@ -182,7 +182,8 @@ export function TestingSection() {
                 <Button
                   variant="destructive"
                   size="icon"
-                  className="absolute top-4 right-4 rounded-none size-10 z-20"
+                  aria-label="Remove image"
+                  className="absolute top-4 right-4 rounded-none size-11 z-20"
                   onClick={(e) => {
                     e.stopPropagation();
                     clearImage();

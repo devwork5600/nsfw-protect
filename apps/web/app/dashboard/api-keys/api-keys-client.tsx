@@ -116,6 +116,7 @@ export function ApiKeyClient({ initialKeys, isAdmin }: ApiKeyClientProps) {
                 <Button
                   variant="ghost"
                   size="sm"
+                  aria-label={showKey ? 'Hide API key' : 'Show API key'}
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                   onClick={() => setShowKey(!showKey)}
                 >

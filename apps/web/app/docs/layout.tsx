@@ -62,6 +62,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         {onClose && (
           <button
             onClick={onClose}
+            aria-label="Close menu"
             className="p-2 hover:bg-accent border border-transparent hover:border-border transition-colors"
           >
             <X className="w-5 h-5" />

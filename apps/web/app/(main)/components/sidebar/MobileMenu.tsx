@@ -77,6 +77,7 @@ export function MobileMenu() {
           </Link>
           <button
             onClick={close}
+            aria-label="Close menu"
             className="p-2 hover:bg-accent transition-colors rounded-none border border-transparent hover:border-border"
           >
             <X className="w-6 h-6" />

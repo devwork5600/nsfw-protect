@@ -178,7 +178,8 @@ export default function PlaygroundPage() {
                 <Button
                   variant="destructive"
                   size="icon"
-                  className="absolute top-2 right-2 rounded-full size-8"
+                  aria-label="Remove image"
+                  className="absolute top-2 right-2 rounded-full size-11"
                   onClick={(e) => {
                     e.stopPropagation();
                     clearImage();
