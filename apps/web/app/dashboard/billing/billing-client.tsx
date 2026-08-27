@@ -224,9 +224,9 @@ export default function BillingClient({
               }`}
             >
               <div>
-                <h3 className="text-2xl font-bold italic uppercase tracking-tighter mb-1">
+                <h2 className="text-2xl font-bold italic uppercase tracking-tighter mb-1">
                   {plan.name}
-                </h3>
+                </h2>
                 <p className="text-sm text-muted-foreground mb-8">{plan.description}</p>
                 <div className="mb-8">
                   <span className="text-5xl font-bold italic tracking-tighter">{plan.price}</span>

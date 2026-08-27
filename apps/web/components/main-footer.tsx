@@ -30,24 +30,28 @@ const MainFooter = () => {
         <div className="flex gap-4">
           <Link
             href="#"
+            aria-label="Terminal / CLI"
             className="w-10 h-10 border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-colors"
           >
             <Terminal className="w-4 h-4" />
           </Link>
           <Link
             href="#"
+            aria-label="Twitter"
             className="w-10 h-10 border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-colors"
           >
             <FaTwitter className="w-4 h-4" />
           </Link>
           <Link
             href="#"
+            aria-label="Email us"
             className="w-10 h-10 border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-colors"
           >
             <Mail className="w-4 h-4" />
           </Link>
           <Link
             href="#"
+            aria-label="GitHub"
             className="w-10 h-10 border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-colors"
           >
             <FaGithub className="w-4 h-4" />

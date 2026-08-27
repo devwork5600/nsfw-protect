@@ -51,7 +51,7 @@ const HeroSection = () => {
             <div className="ml-4 text-xs font-mono text-muted-foreground">terminal // bash</div>
           </div>
           <CardContent className="p-6">
-            <pre className="font-mono text-sm leading-relaxed overflow-x-auto text-primary/80">
+            <pre className="font-mono text-sm leading-relaxed overflow-x-auto text-primary">
               <code className="block text-accent-foreground">
                 <span className="text-muted-foreground">$</span> curl -X POST
                 &quot;https://api.nsfw-protect.com/classify&quot; \

@@ -176,9 +176,9 @@ export default async function PricingPage() {
                   </div>
                 )}
                 <div>
-                  <h3 className="text-2xl font-bold italic uppercase tracking-tighter mb-1">
+                  <h2 className="text-2xl font-bold italic uppercase tracking-tighter mb-1">
                     {plan.name}
-                  </h3>
+                  </h2>
                   <p className="text-sm text-muted-foreground mb-8">{plan.description}</p>
                   <div className="mb-8">
                     <span className="text-5xl font-bold italic tracking-tighter">{plan.price}</span>
@@ -288,9 +288,9 @@ export default async function PricingPage() {
               key={faq.question}
               className="relative z-10 p-8 border border-border bg-card space-y-4"
             >
-              <h4 className="text-sm font-bold uppercase tracking-widest text-primary leading-relaxed">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-primary leading-relaxed">
                 {faq.question}
-              </h4>
+              </h3>
               <p className="text-sm text-muted-foreground leading-relaxed font-sans">
                 {faq.answer}
               </p>

@@ -108,6 +108,7 @@ export function ApiKeyClient({ initialKeys, isAdmin }: ApiKeyClientProps) {
               <div className="relative flex-1">
                 <Input
                   readOnly
+                  aria-label="Generated API key"
                   value={newKey}
                   type={showKey ? 'text' : 'password'}
                   className="pr-10 font-mono"

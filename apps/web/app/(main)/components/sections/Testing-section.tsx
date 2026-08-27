@@ -111,7 +111,7 @@ export function TestingSection() {
               </div>
               <div className="text-3xl font-mono text-primary">
                 {latency !== null ? latency.toFixed(0) : '—'}
-                <span className="text-sm text-primary/70">ms</span>
+                <span className="text-sm text-primary">ms</span>
               </div>
             </div>
             <div className="relative z-10 border border-border p-4 bg-card">
@@ -125,9 +125,9 @@ export function TestingSection() {
           {result && (
             <div className="p-6 border border-border bg-card space-y-4 animate-in fade-in slide-in-from-bottom-4">
               <div className="flex items-center justify-between">
-                <h4 className="font-heading font-bold uppercase tracking-widest text-sm">
+                <h3 className="font-heading font-bold uppercase tracking-widest text-sm">
                   Results
-                </h4>
+                </h3>
                 {isNSFW ? (
                   <Badge variant="destructive" className="uppercase font-bold tracking-widest">
                     NSFW DETECTED
@@ -158,7 +158,7 @@ export function TestingSection() {
         </div>
 
         <div {...getRootProps()} className="relative z-10 group">
-          <input {...getInputProps()} />
+          <input {...getInputProps({ 'aria-label': 'Upload an image to test the classifier' })} />
           <Card
             className={cn(
               'rounded-none border-border bg-card h-100 flex flex-col items-center justify-center border-dashed border-2 transition-all cursor-pointer overflow-hidden',

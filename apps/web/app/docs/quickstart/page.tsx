@@ -109,9 +109,9 @@ console.log(data); // { status: 'done', result: [...] }`,
               <Lightbulb className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h4 className="font-heading uppercase tracking-widest text-sm font-bold text-primary mb-1">
+              <h3 className="font-heading uppercase tracking-widest text-sm font-bold text-primary mb-1">
                 Pro Tip
-              </h4>
+              </h3>
               <p className="text-sm font-sans text-muted-foreground leading-relaxed">
                 Treat an image as NSFW when the{' '}
                 <code className="font-mono text-xs bg-muted text-primary px-1 border border-border">
@@ -124,9 +124,9 @@ console.log(data); // { status: 'done', result: [...] }`,
           </div>
 
           <div className="border border-border bg-card p-4 md:p-6">
-            <h4 className="font-heading uppercase tracking-widest text-sm font-bold text-foreground mb-1">
+            <h3 className="font-heading uppercase tracking-widest text-sm font-bold text-foreground mb-1">
               Handling busy responses
-            </h4>
+            </h3>
             <p className="text-sm font-sans text-muted-foreground leading-relaxed">
               In rare cases (heavy load), the API answers{' '}
               <code className="font-mono text-xs bg-muted text-primary px-1 border border-border">

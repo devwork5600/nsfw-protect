@@ -79,7 +79,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col md:flex-row bg-background relative overflow-hidden">
+    <main className="h-screen flex flex-col md:flex-row bg-background relative overflow-hidden">
       <ForceField
         style={{ position: 'absolute', inset: 0 }}
         shape="hexagon"
@@ -221,6 +221,6 @@ export default function AuthPage() {
           </form>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

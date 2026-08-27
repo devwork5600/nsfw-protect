@@ -9,9 +9,9 @@ const FeatureSection = () => {
             <div className="w-12 h-12 bg-primary/10 border border-primary/30 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
               <ZapIcon className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-heading font-bold uppercase tracking-widest text-foreground">
+            <h2 className="text-xl font-heading font-bold uppercase tracking-widest text-foreground">
               Low Latency
-            </h3>
+            </h2>
             <p className="text-muted-foreground leading-relaxed">
               Global average response time under 50ms. Built for scale and lightning speed
               execution.
@@ -22,9 +22,9 @@ const FeatureSection = () => {
             <div className="w-12 h-12 bg-primary/10 border border-primary/30 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
               <GlobeIcon className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-heading font-bold uppercase tracking-widest text-foreground">
+            <h2 className="text-xl font-heading font-bold uppercase tracking-widest text-foreground">
               Global Edge
-            </h3>
+            </h2>
             <p className="text-muted-foreground leading-relaxed">
               24 points of presence globally ensuring minimal hop count for your users anywhere on
               earth.
@@ -35,9 +35,9 @@ const FeatureSection = () => {
             <div className="w-12 h-12 bg-primary/10 border border-primary/30 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
               <ImageIcon className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-heading font-bold uppercase tracking-widest text-foreground">
+            <h2 className="text-xl font-heading font-bold uppercase tracking-widest text-foreground">
               Multi-Modal
-            </h3>
+            </h2>
             <p className="text-muted-foreground leading-relaxed">Unified API for images.</p>
           </div>
         </div>

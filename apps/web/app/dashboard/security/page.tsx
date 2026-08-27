@@ -153,7 +153,7 @@ export default function SecurityPage() {
               Security Recommendations
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-yellow-700/80 space-y-2 leading-relaxed">
+          <CardContent className="text-sm text-yellow-600 space-y-2 leading-relaxed">
             <p>• Enable two-factor authentication to prevent unauthorized access.</p>
             <p>• Review your API keys regularly and revoke any that are no longer in use.</p>
             <p>• Ensure your recovery email is up to date in your social provider settings.</p>

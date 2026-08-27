@@ -25,9 +25,9 @@ export default function DocsBatchPage() {
           </p>
         </div>
         <div className="border border-primary/30 bg-card p-6 space-y-3">
-          <h4 className="font-heading uppercase tracking-widest text-sm font-bold text-primary">
+          <h2 className="font-heading uppercase tracking-widest text-sm font-bold text-primary">
             Planned Features
-          </h4>
+          </h2>
           <ul className="list-disc pl-6 text-muted-foreground font-sans space-y-2 marker:text-primary text-sm">
             <li>Submit up to 100 images per batch request</li>
             <li>Webhook notification on batch completion</li>

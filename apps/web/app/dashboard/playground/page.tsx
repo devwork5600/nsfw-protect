@@ -158,7 +158,7 @@ export default function PlaygroundPage() {
               preview && 'p-4 border-none',
             )}
           >
-            <input {...getInputProps()} />
+            <input {...getInputProps({ 'aria-label': 'Upload an image to test the classifier' })} />
 
             {preview ? (
               <div className="relative w-full aspect-square rounded-md overflow-hidden bg-accent flex items-center justify-center">
@@ -274,9 +274,9 @@ export default function PlaygroundPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground border-b pb-2">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground border-b pb-2">
                     Scores
-                  </h4>
+                  </h3>
                   {result.map((r) => (
                     <div key={r.label} className="space-y-1.5">
                       <div className="flex justify-between text-sm">

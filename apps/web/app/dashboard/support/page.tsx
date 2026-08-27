@@ -112,13 +112,18 @@ const SupportPage = () => {
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">Prefer other channels? Reach us here:</p>
               <div className="flex gap-4">
-                <Button variant="outline" size="icon" className="rounded-full">
+                <Button variant="outline" size="icon" className="rounded-full" aria-label="Twitter">
                   <FaTwitter className="size-4" />
                 </Button>
-                <Button variant="outline" size="icon" className="rounded-full">
+                <Button variant="outline" size="icon" className="rounded-full" aria-label="GitHub">
                   <FaGithub className="size-4" />
                 </Button>
-                <Button variant="outline" size="icon" className="rounded-full">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="rounded-full"
+                  aria-label="Email support"
+                >
                   <Mail className="size-4" />
                 </Button>
               </div>

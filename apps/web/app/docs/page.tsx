@@ -98,9 +98,9 @@ console.log(data);`,
               <Lightbulb className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h4 className="font-heading uppercase tracking-widest text-sm font-bold text-primary mb-1">
+              <h3 className="font-heading uppercase tracking-widest text-sm font-bold text-primary mb-1">
                 Pro Tip
-              </h4>
+              </h3>
               <p className="text-sm font-sans text-muted-foreground leading-relaxed">
                 Images are automatically resized to 224×224 before analysis, so there&apos;s no need
                 to preprocess them on your side.

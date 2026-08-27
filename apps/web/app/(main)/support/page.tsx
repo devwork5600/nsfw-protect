@@ -44,7 +44,7 @@ export default async function SupportPage() {
 
         <div className="space-y-6">
           <div className="relative z-10 p-8 border border-border bg-card space-y-4">
-            <h3 className="font-bold uppercase tracking-tighter text-sm">Quick Resources</h3>
+            <h2 className="font-bold uppercase tracking-tighter text-sm">Quick Resources</h2>
             <div className="space-y-1">
               <Link
                 href="/docs"
@@ -64,13 +64,14 @@ export default async function SupportPage() {
           </div>
 
           <div className="relative z-10 p-8 border border-border bg-card space-y-4">
-            <h3 className="font-bold uppercase tracking-tighter text-sm">Direct Contact</h3>
+            <h2 className="font-bold uppercase tracking-tighter text-sm">Direct Contact</h2>
             <p className="text-sm text-muted-foreground">Prefer other channels? Reach us here:</p>
             <div className="flex gap-4">
               <a
                 href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Twitter"
                 className="w-10 h-10 border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-colors"
               >
                 <FaTwitter className="size-4" />
@@ -79,12 +80,14 @@ export default async function SupportPage() {
                 href="https://github.com"
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="GitHub"
                 className="w-10 h-10 border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-colors"
               >
                 <FaGithub className="size-4" />
               </a>
               <a
                 href="mailto:support@nsfw-protect.com"
+                aria-label="Email support"
                 className="w-10 h-10 border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-colors"
               >
                 <Mail className="size-4" />
@@ -93,9 +96,9 @@ export default async function SupportPage() {
           </div>
 
           <div className="relative z-10 p-8 border border-primary/30 bg-card space-y-3">
-            <h3 className="font-bold uppercase tracking-tighter text-sm text-primary">
+            <h2 className="font-bold uppercase tracking-tighter text-sm text-primary">
               Response Times
-            </h3>
+            </h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Starter and Pro plans typically get a reply within 4–8 hours. Enterprise customers get
               priority routing and a dedicated Slack channel.
