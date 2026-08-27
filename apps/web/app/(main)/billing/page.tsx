@@ -288,8 +288,7 @@ export default async function PricingPage() {
 
       {/* CTA */}
       <section className="px-6 py-24">
-        <div className="max-w-4xl mx-auto bg-linear-to-br from-muted to-background border border-border p-12 md:p-20 text-center space-y-8 relative z-10 overflow-hidden group">
-          <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 h-full" />
+        <div className="max-w-4xl mx-auto bg-linear-to-br from-muted to-background border border-border p-12 md:p-20 text-center space-y-8 relative z-10 overflow-hidden">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tighter italic uppercase relative z-10">
             Ready to secure your platform?
           </h2>
