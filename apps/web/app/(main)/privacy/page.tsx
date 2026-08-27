@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ForceField } from '@/components/canvasui/ForceField';
 
 export const metadata = {
   title: 'Privacy Policy — NSFWGuard',
@@ -264,7 +265,19 @@ const sections = [
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans">
+    <ForceField
+      className="flex flex-col flex-1 h-dvh bg-background text-foreground font-sans scrollbar-hide"
+      shape="hexagon"
+      color={[0.15, 0.68, 1]}
+      cellScale={26}
+      gridReveal="always"
+      gridOpacity={0.2}
+      hoverGlow={0}
+      hoverCharge={0}
+      clickRipples={false}
+      refraction={0}
+      opacity={0.35}
+    >
       <section className="py-24 px-6 text-center space-y-6 max-w-4xl mx-auto">
         <h1 className="text-3xl md:text-5xl font-bold tracking-tighter leading-tight italic uppercase">
           Privacy <span className="text-primary italic">Policy.</span>
@@ -283,7 +296,7 @@ export default function PrivacyPolicyPage() {
           <div
             key={section.id}
             id={section.id}
-            className="p-8 border border-border bg-card space-y-4 scroll-mt-24"
+            className="relative z-10 p-8 border border-border bg-card space-y-4 scroll-mt-24"
           >
             <h2 className="text-xl font-bold uppercase tracking-tighter">{section.title}</h2>
             <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
@@ -292,6 +305,6 @@ export default function PrivacyPolicyPage() {
           </div>
         ))}
       </section>
-    </div>
+    </ForceField>
   );
 }

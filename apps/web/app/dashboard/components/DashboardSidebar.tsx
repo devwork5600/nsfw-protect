@@ -118,7 +118,7 @@ export function DashboardSidebar({ plan = 'PRO' }: { plan?: string }) {
   return (
     <>
       {/* Desktop sidebar — always visible */}
-      <aside className="w-64 border-r border-border bg-card hidden md:flex flex-col">
+      <aside className="relative z-10 w-64 border-r border-border bg-card hidden md:flex flex-col">
         <SidebarContent plan={plan} />
       </aside>
 

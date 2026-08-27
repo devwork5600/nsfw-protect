@@ -11,6 +11,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FcGoogle } from 'react-icons/fc';
 import { authClient } from '@/lib/auth/auth-client';
+import { ForceField } from '@/components/canvasui/ForceField';
 import SocialButton from './social-button';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { MagicLinkSignInSchema, MagicLinkSignInSchemaType } from '@/lib/validators/email-schemas';
@@ -78,17 +79,30 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col md:flex-row bg-background">
-      {/* Left panel (Marketing) */}
-      <div className="hidden md:flex md:w-1/2 p-12 lg:p-24 flex-col justify-between relative overflow-hidden bg-muted/30 border-r border-border">
-        {/* Glow effect */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-125 bg-primary/10 blur-[100px] rounded-full z-0"></div>
+    <div className="h-screen flex flex-col md:flex-row bg-background relative overflow-hidden">
+      <ForceField
+        style={{ position: 'absolute', inset: 0 }}
+        shape="hexagon"
+        color={[0.15, 0.68, 1]}
+        cellScale={13}
+        gridReveal="always"
+        gridOpacity={0.2}
+        hoverGlow={0}
+        hoverCharge={0}
+        clickRipples={false}
+        refraction={0}
+        opacity={0.35}
+      >
+        <></>
+      </ForceField>
 
+      {/* Left panel (Marketing) */}
+      <div className="hidden md:flex md:w-1/2 p-12 lg:p-24 flex-col justify-between relative z-10 overflow-hidden border-r border-border">
         <Link href={'/'} className="flex gap-2">
           <ArrowLeftIcon />
           Back
         </Link>
-        <div className="relative z-10">
+        <div>
           <Link href="/" className="font-bold text-2xl flex items-center gap-2 mb-16">
             <Shield className="w-8 h-8 text-primary" />
             NSFWGuard
@@ -105,7 +119,7 @@ export default function AuthPage() {
           </div>
         </div>
 
-        <div className="relative z-10 flex gap-6 text-sm font-heading font-bold tracking-widest uppercase text-muted-foreground">
+        <div className="flex gap-6 text-sm font-heading font-bold tracking-widest uppercase text-muted-foreground">
           <Link href="/privacy" className="hover:text-primary transition-colors">
             Privacy
           </Link>
@@ -128,7 +142,7 @@ export default function AuthPage() {
           </Link>
         </div>
 
-        <div className="w-full max-w-md mx-auto space-y-8">
+        <div className="w-full max-w-md mx-auto space-y-8 border border-border rounded-lg p-8">
           <div>
             <h2 className="text-3xl font-heading font-bold tracking-tighter text-foreground mb-2">
               Welcome
@@ -163,7 +177,7 @@ export default function AuthPage() {
                       id={field.name}
                       type="email"
                       placeholder="Email address"
-                      className="pl-12"
+                      className="pl-12 border-border"
                       disabled={authLoading}
                       aria-invalid={fieldState.invalid}
                     />

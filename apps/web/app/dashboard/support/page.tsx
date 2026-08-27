@@ -19,7 +19,7 @@ const SupportPage = () => {
         </div>
         <Badge
           variant="outline"
-          className="px-4 py-1 text-sm font-bold border-green-500 text-green-500 bg-green-500/5 uppercase tracking-widest"
+          className="px-4 py-1 text-sm font-bold border-green-500 text-green-500 bg-card uppercase tracking-widest"
         >
           Priority Support Active
         </Badge>
@@ -127,7 +127,7 @@ const SupportPage = () => {
         </div>
       </div>
 
-      <Card className="bg-primary/5 border-primary/20">
+      <Card className="border-primary/20">
         <CardHeader>
           <CardTitle className="text-primary uppercase tracking-tighter italic">
             Enterprise Support

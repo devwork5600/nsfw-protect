@@ -105,7 +105,7 @@ export function TestingSection() {
           </p>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="border border-border p-4 bg-card">
+            <div className="relative z-10 border border-border p-4 bg-card">
               <div className="text-sm font-heading tracking-widest text-muted-foreground uppercase mb-1">
                 Latency
               </div>
@@ -114,7 +114,7 @@ export function TestingSection() {
                 <span className="text-sm text-primary/70">ms</span>
               </div>
             </div>
-            <div className="border border-border p-4 bg-card">
+            <div className="relative z-10 border border-border p-4 bg-card">
               <div className="text-sm font-heading tracking-widest text-muted-foreground uppercase mb-1">
                 Edge Node
               </div>
@@ -157,7 +157,7 @@ export function TestingSection() {
           )}
         </div>
 
-        <div {...getRootProps()} className="relative group">
+        <div {...getRootProps()} className="relative z-10 group">
           <input {...getInputProps()} />
           <Card
             className={cn(

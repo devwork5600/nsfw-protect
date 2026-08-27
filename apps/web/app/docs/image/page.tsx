@@ -86,7 +86,7 @@ const data = await response.json();`,
         <div className="pt-12 mt-12 border-t border-border flex flex-col md:flex-row justify-between gap-4">
           <Link href="/docs/security" className="flex-1">
             <Button
-              variant="outline"
+              variant="card"
               className="w-full h-16 justify-between rounded-none border-border group hover:border-primary transition-colors"
             >
               <div className="flex flex-col items-start gap-1">
@@ -97,15 +97,16 @@ const data = await response.json();`,
               </div>
             </Button>
           </Link>
-          <Link href="/docs/video" className="flex-1">
+          <Link href="/docs/batch" className="flex-1">
             <Button
-              variant="outline"
+              variant="card"
               className="w-full h-16 justify-between rounded-none border-border group hover:border-primary transition-colors flex-row-reverse text-right"
             >
               <div className="flex flex-col items-end gap-1">
                 <span className="text-[10px] font-heading uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">
                   Next
                 </span>
+                <span className="font-heading font-bold text-sm">Batch Processing</span>
               </div>
             </Button>
           </Link>

@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { useMobileMenu } from '@/lib/store/use-mobile-menu';
+import { ForceField } from '@/components/canvasui/ForceField';
 
 const navSections = [
   {
@@ -142,7 +143,7 @@ function DocsSidebar() {
   return (
     <>
       {/* Desktop sidebar — always visible */}
-      <aside className="w-64 lg:w-72 border-r border-border bg-card hidden lg:flex flex-col sticky top-0 h-screen shrink-0">
+      <aside className="relative z-10 w-64 lg:w-72 border-r border-border bg-card hidden lg:flex flex-col sticky top-0 h-screen shrink-0">
         <SidebarContent />
       </aside>
 
@@ -179,10 +180,26 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
   const { toggle } = useMobileMenu();
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-background relative">
+      <ForceField
+        style={{ position: 'absolute', inset: 0 }}
+        shape="hexagon"
+        color={[0.15, 0.68, 1]}
+        cellScale={17}
+        gridReveal="always"
+        gridOpacity={0.2}
+        hoverGlow={0}
+        hoverCharge={0}
+        clickRipples={false}
+        refraction={0}
+        opacity={0.35}
+      >
+        <></>
+      </ForceField>
+
       <DocsSidebar />
 
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="relative z-10 flex-1 flex flex-col min-w-0">
         {/* Mobile-only sticky header with menu toggle */}
         <header className="lg:hidden h-16 border-b border-border bg-background/80 backdrop-blur-md flex items-center gap-4 px-4 shrink-0 sticky top-0 z-10">
           <button

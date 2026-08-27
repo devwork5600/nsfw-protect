@@ -104,7 +104,7 @@ console.log(data); // { status: 'done', result: [...] }`,
             ]}
           />
 
-          <div className="border border-primary/30 bg-primary/5 p-4 md:p-6 flex gap-4">
+          <div className="border border-primary/30 bg-card p-4 md:p-6 flex gap-4">
             <div className="mt-1">
               <Lightbulb className="w-5 h-5 text-primary" />
             </div>
@@ -123,7 +123,7 @@ console.log(data); // { status: 'done', result: [...] }`,
             </div>
           </div>
 
-          <div className="border border-border bg-muted/30 p-4 md:p-6">
+          <div className="border border-border bg-card p-4 md:p-6">
             <h4 className="font-heading uppercase tracking-widest text-sm font-bold text-foreground mb-1">
               Handling busy responses
             </h4>
@@ -158,7 +158,7 @@ console.log(data); // { status: 'done', result: [...] }`,
         <div className="pt-12 mt-12 border-t border-border flex flex-col md:flex-row justify-between gap-4">
           <Link href="/docs" className="flex-1">
             <Button
-              variant="outline"
+              variant="card"
               className="w-full h-16 justify-between rounded-none border-border group hover:border-primary transition-colors"
             >
               <div className="flex flex-col items-start gap-1">
@@ -171,7 +171,7 @@ console.log(data); // { status: 'done', result: [...] }`,
           </Link>
           <Link href="/docs/keys" className="flex-1">
             <Button
-              variant="outline"
+              variant="card"
               className="w-full h-16 justify-between rounded-none border-border group hover:border-primary transition-colors flex-row-reverse text-right"
             >
               <div className="flex flex-col items-end gap-1">

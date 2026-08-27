@@ -3,6 +3,7 @@ import { BookOpen, FileCode, Mail } from 'lucide-react';
 import { FaTwitter, FaGithub } from 'react-icons/fa';
 import { getUser } from '@/lib/auth/auth-session';
 import { SupportForm } from './support-form';
+import { ForceField } from '@/components/canvasui/ForceField';
 
 export const metadata = {
   title: 'Contact Support — NSFWGuard',
@@ -13,7 +14,19 @@ export default async function SupportPage() {
   const user = await getUser();
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans">
+    <ForceField
+      className="flex flex-col flex-1 h-dvh bg-background text-foreground font-sans scrollbar-hide"
+      shape="hexagon"
+      color={[0.15, 0.68, 1]}
+      cellScale={13}
+      gridReveal="always"
+      gridOpacity={0.2}
+      hoverGlow={0}
+      hoverCharge={0}
+      clickRipples={false}
+      refraction={0}
+      opacity={0.35}
+    >
       <section className="py-24 px-6 text-center space-y-6 max-w-4xl mx-auto">
         <h1 className="text-3xl md:text-5xl font-bold tracking-tighter leading-tight italic uppercase">
           Contact <span className="text-primary italic">Support.</span>
@@ -25,12 +38,12 @@ export default async function SupportPage() {
       </section>
 
       <section className="px-6 pb-24 max-w-5xl mx-auto grid md:grid-cols-3 gap-8">
-        <div className="md:col-span-2 p-8 border border-border bg-card">
+        <div className="relative z-10 md:col-span-2 p-8 border border-border bg-card">
           <SupportForm defaultName={user?.name ?? undefined} defaultEmail={user?.email} />
         </div>
 
         <div className="space-y-6">
-          <div className="p-8 border border-border bg-card space-y-4">
+          <div className="relative z-10 p-8 border border-border bg-card space-y-4">
             <h3 className="font-bold uppercase tracking-tighter text-sm">Quick Resources</h3>
             <div className="space-y-1">
               <Link
@@ -50,7 +63,7 @@ export default async function SupportPage() {
             </div>
           </div>
 
-          <div className="p-8 border border-border bg-card space-y-4">
+          <div className="relative z-10 p-8 border border-border bg-card space-y-4">
             <h3 className="font-bold uppercase tracking-tighter text-sm">Direct Contact</h3>
             <p className="text-sm text-muted-foreground">Prefer other channels? Reach us here:</p>
             <div className="flex gap-4">
@@ -79,7 +92,7 @@ export default async function SupportPage() {
             </div>
           </div>
 
-          <div className="p-8 border border-primary/30 bg-primary/5 space-y-3">
+          <div className="relative z-10 p-8 border border-primary/30 bg-card space-y-3">
             <h3 className="font-bold uppercase tracking-tighter text-sm text-primary">
               Response Times
             </h3>
@@ -90,6 +103,6 @@ export default async function SupportPage() {
           </div>
         </div>
       </section>
-    </div>
+    </ForceField>
   );
 }

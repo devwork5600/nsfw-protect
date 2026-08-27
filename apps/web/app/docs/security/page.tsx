@@ -44,7 +44,7 @@ export default function DocsSecurityPage() {
         <div className="pt-12 mt-12 border-t border-border flex flex-col md:flex-row justify-between gap-4">
           <Link href="/docs/keys" className="flex-1">
             <Button
-              variant="outline"
+              variant="card"
               className="w-full h-16 justify-between rounded-none border-border group hover:border-primary transition-colors"
             >
               <div className="flex flex-col items-start gap-1">
@@ -57,7 +57,7 @@ export default function DocsSecurityPage() {
           </Link>
           <Link href="/docs/image" className="flex-1">
             <Button
-              variant="outline"
+              variant="card"
               className="w-full h-16 justify-between rounded-none border-border group hover:border-primary transition-colors flex-row-reverse text-right"
             >
               <div className="flex flex-col items-end gap-1">

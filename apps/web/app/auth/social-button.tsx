@@ -23,7 +23,7 @@ const SocialButton: React.FC<SocialButtonProps> = ({
       aria-label={`Sign in with ${provider}`}
       onClick={onClick}
       disabled={disabled}
-      className="my-3 flex w-full items-center justify-center space-x-2 text-lg"
+      className="my-3 flex w-full items-center justify-center space-x-2 text-lg border-border dark:border-border"
       size="lg"
       variant="outline"
     >

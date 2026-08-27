@@ -24,7 +24,7 @@ export default function DocsBatchPage() {
             imports.
           </p>
         </div>
-        <div className="border border-primary/30 bg-primary/5 p-6 space-y-3">
+        <div className="border border-primary/30 bg-card p-6 space-y-3">
           <h4 className="font-heading uppercase tracking-widest text-sm font-bold text-primary">
             Planned Features
           </h4>
@@ -36,15 +36,16 @@ export default function DocsBatchPage() {
           </ul>
         </div>
         <div className="pt-12 mt-12 border-t border-border flex flex-col md:flex-row justify-between gap-4">
-          <Link href="/docs/video" className="flex-1">
+          <Link href="/docs/image" className="flex-1">
             <Button
-              variant="outline"
+              variant="card"
               className="w-full h-16 justify-between rounded-none border-border group hover:border-primary transition-colors"
             >
               <div className="flex flex-col items-start gap-1">
                 <span className="text-[10px] font-heading uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">
                   Previous
                 </span>
+                <span className="font-heading font-bold text-sm">Image Analysis</span>
               </div>
             </Button>
           </Link>

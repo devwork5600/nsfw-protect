@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getUser } from '@/lib/auth/auth-session';
 import { redirect } from 'next/navigation';
 import { prisma } from '@nsfw/db';
+import { ForceField } from '@/components/canvasui/ForceField';
 
 const plans = [
   {
@@ -123,7 +124,19 @@ export default async function PricingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans">
+    <ForceField
+      className="flex flex-col flex-1 h-dvh bg-background text-foreground font-sans scrollbar-hide"
+      shape="hexagon"
+      color={[0.15, 0.68, 1]}
+      cellScale={26}
+      gridReveal="always"
+      gridOpacity={0.2}
+      hoverGlow={0}
+      hoverCharge={0}
+      clickRipples={false}
+      refraction={0}
+      opacity={0.35}
+    >
       {/* Hero section */}
       <section className="py-24 px-6 text-center space-y-6 max-w-4xl mx-auto">
         <h1 className="text-3xl md:text-5xl font-bold tracking-tighter leading-tight italic uppercase">
@@ -151,9 +164,9 @@ export default async function PricingPage() {
             return (
               <div
                 key={plan.name}
-                className={`relative border p-8 flex flex-col justify-between group transition-all duration-500 ${
+                className={`relative z-10 border p-8 flex flex-col justify-between group transition-all duration-500 ${
                   plan.recommended
-                    ? 'border-primary bg-primary/5 scale-105 z-10'
+                    ? 'border-primary bg-card scale-105'
                     : 'border-border bg-card hover:border-muted-foreground'
                 }`}
               >
@@ -206,7 +219,7 @@ export default async function PricingPage() {
         <h2 className="text-3xl font-bold text-center italic uppercase tracking-tighter">
           Detailed Feature Comparison
         </h2>
-        <div className="border border-border bg-card/50">
+        <div className="relative z-10 border border-border bg-card">
           <div className="grid grid-cols-4 p-6 border-b border-border text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
             <div>Feature</div>
             <div className="text-center">Free</div>
@@ -271,7 +284,10 @@ export default async function PricingPage() {
         </div>
         <div className="grid md:grid-cols-3 gap-6">
           {faqs.map((faq) => (
-            <div key={faq.question} className="p-8 border border-border bg-card space-y-4">
+            <div
+              key={faq.question}
+              className="relative z-10 p-8 border border-border bg-card space-y-4"
+            >
               <h4 className="text-sm font-bold uppercase tracking-widest text-primary leading-relaxed">
                 {faq.question}
               </h4>
@@ -284,8 +300,8 @@ export default async function PricingPage() {
       </section>
 
       {/* CTA */}
-      <section className="px-6 pt-24">
-        <div className="max-w-4xl mx-auto bg-linear-to-br from-muted to-background border border-border p-12 md:p-20 text-center space-y-8 relative overflow-hidden group">
+      <section className="px-6 py-24">
+        <div className="max-w-4xl mx-auto bg-linear-to-br from-muted to-background border border-border p-12 md:p-20 text-center space-y-8 relative z-10 overflow-hidden group">
           <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 h-full" />
           <h2 className="text-3xl md:text-5xl font-bold tracking-tighter italic uppercase relative z-10">
             Ready to secure your platform?
@@ -310,6 +326,6 @@ export default async function PricingPage() {
           </div>
         </div>
       </section>
-    </div>
+    </ForceField>
   );
 }

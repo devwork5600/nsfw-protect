@@ -93,7 +93,7 @@ console.log(data);`,
             label indicates a high probability of sensitive content.
           </p>
 
-          <div className="border border-primary/30 bg-primary/5 p-4 md:p-6 flex gap-4">
+          <div className="border border-primary/30 bg-card p-4 md:p-6 flex gap-4">
             <div className="mt-1">
               <Lightbulb className="w-5 h-5 text-primary" />
             </div>
@@ -124,23 +124,10 @@ console.log(data);`,
         </div>
 
         {/* Pagination */}
-        <div className="pt-12 mt-12 border-t border-border flex flex-col md:flex-row justify-between gap-4">
-          <Link href="/docs/intro" className="flex-1">
+        <div className="pt-12 mt-12 border-t border-border flex flex-col md:flex-row justify-end gap-4">
+          <Link href="/docs/quickstart" className="w-full md:w-auto md:min-w-72">
             <Button
-              variant="outline"
-              className="w-full h-16 justify-between rounded-none border-border group hover:border-primary transition-colors"
-            >
-              <div className="flex flex-col items-start gap-1">
-                <span className="text-[10px] font-heading uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">
-                  Previous
-                </span>
-                <span className="font-heading font-bold text-sm">Introduction</span>
-              </div>
-            </Button>
-          </Link>
-          <Link href="/docs/quickstart" className="flex-1">
-            <Button
-              variant="outline"
+              variant="card"
               className="w-full h-16 justify-between rounded-none border-border group hover:border-primary transition-colors flex-row-reverse text-right"
             >
               <div className="flex flex-col items-end gap-1">
@@ -152,17 +139,6 @@ console.log(data);`,
             </Button>
           </Link>
         </div>
-
-        {/* Footer */}
-        <footer className="pt-12 pb-4 text-xs font-heading uppercase tracking-widest text-muted-foreground flex flex-wrap gap-x-6 gap-y-2">
-          <span>© {new Date().getFullYear()} NSFWGuard API. Secure. Private. Fast.</span>
-          <Link href="/privacy" className="hover:text-primary transition-colors">
-            Privacy Policy
-          </Link>
-          <Link href="/terms" className="hover:text-primary transition-colors">
-            Terms of Service
-          </Link>
-        </footer>
       </div>
     </div>
   );

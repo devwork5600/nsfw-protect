@@ -89,7 +89,7 @@ export function ApiKeyClient({ initialKeys, isAdmin }: ApiKeyClientProps) {
   return (
     <div className="space-y-6">
       {newKey && (
-        <Card className="border-primary bg-primary/5">
+        <Card className="border-primary">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -138,7 +138,7 @@ export function ApiKeyClient({ initialKeys, isAdmin }: ApiKeyClientProps) {
       )}
 
       {isAdmin && (
-        <Card className="border-amber-500/50 bg-amber-500/5">
+        <Card className="border-amber-500/50 bg-card">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Sparkles className="size-5 text-amber-500" />

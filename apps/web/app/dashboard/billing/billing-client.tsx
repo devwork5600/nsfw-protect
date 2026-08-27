@@ -185,7 +185,7 @@ export default function BillingClient({
       </div>
 
       {subscription?.cancelAtPeriodEnd && (
-        <div className="bg-yellow-500/10 border border-yellow-500/30 p-4 flex items-center gap-3 text-yellow-500 text-sm font-medium uppercase tracking-widest">
+        <div className="bg-card border border-yellow-500/30 p-4 flex items-center gap-3 text-yellow-500 text-sm font-medium uppercase tracking-widest">
           <AlertCircle className="w-5 h-5" />
           Your subscription will end on{' '}
           {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
@@ -193,7 +193,7 @@ export default function BillingClient({
       )}
 
       {isPlanChangeLocked && (
-        <div className="bg-blue-500/10 border border-blue-500/30 p-4 flex items-center gap-3 text-blue-400 text-sm font-medium uppercase tracking-widest">
+        <div className="bg-card border border-blue-500/30 p-4 flex items-center gap-3 text-blue-400 text-sm font-medium uppercase tracking-widest">
           <AlertCircle className="w-5 h-5" />
           Plan already changed this cycle. Next change available on{' '}
           {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-US', {
@@ -219,8 +219,8 @@ export default function BillingClient({
               key={plan.name}
               className={`relative border p-8 flex flex-col justify-between group transition-all duration-500 ${
                 isCurrentPlan
-                  ? 'border-primary bg-primary/5 scale-105 z-10'
-                  : 'border-white/10 bg-white/2 hover:border-white/20'
+                  ? 'border-primary bg-card scale-105 z-10'
+                  : 'border-white/10 bg-card hover:border-white/20'
               }`}
             >
               <div>

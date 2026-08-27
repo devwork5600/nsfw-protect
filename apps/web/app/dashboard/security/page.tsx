@@ -146,7 +146,7 @@ export default function SecurityPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-yellow-500/20 bg-yellow-500/5">
+        <Card className="border-yellow-500/20 bg-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-yellow-600">
               <AlertTriangle className="size-5" />

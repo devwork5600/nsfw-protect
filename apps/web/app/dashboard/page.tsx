@@ -22,14 +22,14 @@ const DashboardPage = async () => {
         </div>
         <Badge
           variant="outline"
-          className="px-4 py-1 text-sm font-bold border-primary text-primary bg-primary/5 uppercase tracking-widest"
+          className="px-4 py-1 text-sm font-bold border-primary text-primary bg-card uppercase tracking-widest"
         >
           {stats.plan} Plan
         </Badge>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="bg-primary/5 border-primary/20">
+        <Card className="border-primary/20">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-primary uppercase tracking-wider">
               Usage This Month
