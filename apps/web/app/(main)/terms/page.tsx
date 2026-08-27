@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { ForceField } from '@/components/canvasui/ForceField';
 
 export const metadata = {
   title: 'Terms of Service — NSFWGuard',
@@ -238,19 +237,7 @@ const sections = [
 
 export default function TermsOfServicePage() {
   return (
-    <ForceField
-      className="flex flex-col flex-1 h-dvh bg-background text-foreground font-sans scrollbar-hide"
-      shape="hexagon"
-      color={[0.15, 0.68, 1]}
-      cellScale={26}
-      gridReveal="always"
-      gridOpacity={0.2}
-      hoverGlow={0}
-      hoverCharge={0}
-      clickRipples={false}
-      refraction={0}
-      opacity={0.35}
-    >
+    <>
       <section className="py-24 px-6 text-center space-y-6 max-w-4xl mx-auto">
         <h1 className="text-3xl md:text-5xl font-bold tracking-tighter leading-tight italic uppercase">
           Terms of <span className="text-primary italic">Service.</span>
@@ -278,6 +265,6 @@ export default function TermsOfServicePage() {
           </div>
         ))}
       </section>
-    </ForceField>
+    </>
   );
 }

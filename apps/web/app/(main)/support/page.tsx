@@ -3,7 +3,6 @@ import { BookOpen, FileCode, Mail } from 'lucide-react';
 import { FaTwitter, FaGithub } from 'react-icons/fa';
 import { getUser } from '@/lib/auth/auth-session';
 import { SupportForm } from './support-form';
-import { ForceField } from '@/components/canvasui/ForceField';
 
 export const metadata = {
   title: 'Contact Support — NSFWGuard',
@@ -14,19 +13,7 @@ export default async function SupportPage() {
   const user = await getUser();
 
   return (
-    <ForceField
-      className="flex flex-col flex-1 h-dvh bg-background text-foreground font-sans scrollbar-hide"
-      shape="hexagon"
-      color={[0.15, 0.68, 1]}
-      cellScale={13}
-      gridReveal="always"
-      gridOpacity={0.2}
-      hoverGlow={0}
-      hoverCharge={0}
-      clickRipples={false}
-      refraction={0}
-      opacity={0.35}
-    >
+    <>
       <section className="py-24 px-6 text-center space-y-6 max-w-4xl mx-auto">
         <h1 className="text-3xl md:text-5xl font-bold tracking-tighter leading-tight italic uppercase">
           Contact <span className="text-primary italic">Support.</span>
@@ -106,6 +93,6 @@ export default async function SupportPage() {
           </div>
         </div>
       </section>
-    </ForceField>
+    </>
   );
 }
