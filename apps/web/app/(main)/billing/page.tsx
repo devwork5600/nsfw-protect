@@ -151,7 +151,7 @@ export default async function PricingPage() {
             return (
               <div
                 key={plan.name}
-                className={`relative z-10 border p-8 flex flex-col justify-between group transition-all duration-500 ${
+                className={`relative z-10 border p-8 flex flex-col justify-between group transition-all ${
                   plan.recommended
                     ? 'border-primary bg-card scale-105'
                     : 'border-border bg-card hover:border-primary'

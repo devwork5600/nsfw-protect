@@ -43,7 +43,7 @@ const MainNavbar = () => {
           <Link href="/billing">
             <Button
               variant="default"
-              className="font-heading uppercase tracking-widest px-3 sm:px-4 hidden sm:flex items-center"
+              className="font-semibold uppercase tracking-widest px-3 sm:px-4 hidden sm:flex items-center"
             >
               <span>Get API Key</span>
               <ArrowRight className="sm:ml-2 w-4 h-4" />

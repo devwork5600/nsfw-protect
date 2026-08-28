@@ -37,7 +37,7 @@ const HeroSection = () => {
           <Link href="/docs" className="w-full sm:w-auto">
             <Button
               size="lg"
-              variant="outline"
+              variant="card"
               className="h-14 px-8 text-base font-heading tracking-widest uppercase  w-full"
             >
               Read the Docs

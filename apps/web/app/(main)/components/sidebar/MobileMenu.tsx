@@ -46,7 +46,7 @@ export function MobileMenu() {
   return (
     <div
       className={cn(
-        'fixed inset-0 z-[100] md:hidden transition-all duration-300',
+        'fixed inset-0 z-100 md:hidden transition-all duration-300',
         isOpen ? 'visible pointer-events-auto' : 'invisible pointer-events-none',
       )}
     >
@@ -92,9 +92,9 @@ export function MobileMenu() {
               isOpen ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0',
             )}
           >
-            <h4 className="text-xs font-heading font-bold tracking-widest uppercase text-muted-foreground mb-4">
+            {/* <h4 className="text-xs font-heading font-bold tracking-widest uppercase text-muted-foreground mb-4">
               Main
-            </h4>
+            </h4> */}
             <div className="flex flex-col space-y-3">
               <Link
                 href="/"

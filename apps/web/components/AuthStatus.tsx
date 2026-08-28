@@ -8,11 +8,11 @@ export default function AuthStatus() {
   const { data: session } = authClient.useSession();
 
   return session ? (
-    <Button className="font-heading uppercase tracking-widest px-3 sm:px-4">
+    <Button className="font-semibold uppercase tracking-widest px-3 sm:px-4">
       <Link href="/dashboard">Dashboard</Link>
     </Button>
   ) : (
-    <Button className="font-heading uppercase tracking-widest px-3 sm:px-4">
+    <Button className="font-semibold uppercase tracking-widest px-3 sm:px-4">
       <Link href="/auth">Connexion</Link>
     </Button>
   );
