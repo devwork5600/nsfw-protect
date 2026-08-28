@@ -5,6 +5,7 @@ import {
   Head,
   Heading,
   Html,
+  Img,
   Link,
   Preview,
   Section,
@@ -12,6 +13,7 @@ import {
   Tailwind,
   pixelBasedPreset,
 } from 'react-email';
+import { logoUrl } from './logo-url.js';
 
 export const EmailTemplate = ({
   username,
@@ -38,10 +40,14 @@ export const EmailTemplate = ({
       >
         <Body className="mx-auto my-auto bg-white px-2 font-sans">
           <Container className="mx-auto my-10 max-w-116.25 rounded border border-[#eaeaea] border-solid p-5">
-            <Section className="mt-8 text-center">
-              <Text className="m-0 text-[20px] font-bold uppercase tracking-widest text-[#0070ff]">
-                NSFWGuard
-              </Text>
+            <Section className="mt-8">
+              <Img
+                src={logoUrl()}
+                width="200"
+                height="44"
+                alt="NSFWGuard"
+                className="mx-auto my-0"
+              />
             </Section>
             <Heading className="mx-0 my-7.5 p-0 text-center font-normal text-[24px] text-black">
               Welcome back, <strong>{username}</strong>!

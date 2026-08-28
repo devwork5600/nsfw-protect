@@ -4,6 +4,7 @@ import {
   Head,
   Heading,
   Html,
+  Img,
   Link,
   Preview,
   Section,
@@ -12,6 +13,7 @@ import {
   pixelBasedPreset,
   Hr,
 } from 'react-email';
+import { logoUrl } from './logo-url.js';
 
 export const SupportRequestTemplate = ({
   name,
@@ -40,10 +42,14 @@ export const SupportRequestTemplate = ({
       >
         <Body className="mx-auto my-auto bg-white px-2 font-sans">
           <Container className="mx-auto my-[40px] max-w-[520px] rounded border border-[#eaeaea] border-solid p-[20px]">
-            <Section className="mt-[32px] text-center">
-              <Text className="m-0 text-[20px] font-bold uppercase tracking-widest text-[#0070ff]">
-                NSFWGuard
-              </Text>
+            <Section className="mt-[32px]">
+              <Img
+                src={logoUrl()}
+                width="200"
+                height="44"
+                alt="NSFWGuard"
+                className="mx-auto my-0"
+              />
             </Section>
             <Heading className="mx-0 my-[30px] p-0 text-center font-normal text-[24px] text-black">
               New <strong>Support Request</strong>
