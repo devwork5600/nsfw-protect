@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { Check, AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { unstable_rethrow } from 'next/navigation';
 import { manageSubscription, previewSubscriptionChange } from '@/actions/subscription';
+import { createCheckoutSession } from '@/actions/create-checkout-session';
 
 const plans = [
   {
@@ -79,6 +81,10 @@ export default function BillingClient({
     !!subscription.planChangedAt &&
     new Date(subscription.planChangedAt) >= new Date(subscription.currentPeriodStart);
 
+  // A Free-tier user who has never subscribed via Stripe has no subscription
+  // record at all, so upgrading them must go through Checkout, not manageSubscription.
+  const hasActiveSubscription = !!subscription.stripeSubscriptionId;
+
   // Update plans with actual price IDs from server
   const activePlans = plans.map((plan) => {
     const config = plansConfig.find((c) => c.name === plan.name);
@@ -101,6 +107,12 @@ export default function BillingClient({
     setLoading(priceId);
 
     try {
+      if (!hasActiveSubscription && planName !== 'Free') {
+        // No Stripe subscription exists yet — send them through Checkout instead.
+        await createCheckoutSession(priceId);
+        return;
+      }
+
       // Logic for upgrade/downgrade
       const isUpgrade =
         (subscription.plan === 'STARTER' && planName === 'Pro') ||
@@ -124,6 +136,7 @@ export default function BillingClient({
         });
       }
     } catch (error: unknown) {
+      unstable_rethrow(error);
       toast.error(error instanceof Error ? error.message : 'Failed to update subscription');
     } finally {
       setLoading(null);
@@ -274,6 +287,8 @@ export default function BillingClient({
                 >
                   {isLoading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : !hasActiveSubscription ? (
+                    'Subscribe'
                   ) : isUpgrade ? (
                     'Upgrade'
                   ) : (
