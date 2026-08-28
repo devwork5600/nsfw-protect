@@ -24,11 +24,11 @@ const chartConfig = {
   },
   safe: {
     label: 'Safe',
-    color: 'hsl(var(--chart-1))',
+    color: '#16a34a',
   },
   nsfw: {
     label: 'NSFW',
-    color: 'hsl(var(--chart-2))',
+    color: '#dc2626',
   },
 } satisfies ChartConfig;
 
@@ -46,8 +46,8 @@ interface UsageStats {
 
 export default function UsageClient({ stats }: { stats: UsageStats }) {
   const chartData = [
-    { type: 'safe', scans: stats.usage.safeDetections, fill: 'var(--color-chart-1)' },
-    { type: 'nsfw', scans: stats.usage.nsfwDetections, fill: 'var(--color-chart-2)' },
+    { type: 'safe', scans: stats.usage.safeDetections, fill: 'var(--color-safe)' },
+    { type: 'nsfw', scans: stats.usage.nsfwDetections, fill: 'var(--color-nsfw)' },
   ];
 
   return (
