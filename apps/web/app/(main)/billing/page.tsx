@@ -189,7 +189,7 @@ export default async function PricingPage() {
                   className={`w-full rounded-none font-bold uppercase tracking-widest py-6 transition-all ${
                     plan.recommended
                       ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(0,112,255,0.4)]'
-                      : 'bg-transparent border border-muted text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary hover:shadow-[0_0_20px_rgba(0,112,255,0.4)]'
+                      : 'bg-transparent border border-muted text-foreground group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary group-hover:shadow-[0_0_20px_rgba(0,112,255,0.4)]'
                   }`}
                   asChild
                 >
