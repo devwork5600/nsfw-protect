@@ -1,9 +1,14 @@
+'use client';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
+import { authClient } from '@/lib/auth/auth-client';
 
 const HeroSection = () => {
+  const { data: session } = authClient.useSession();
+
   return (
     <section className="container mx-auto max-w-360 px-4 py-24 grid lg:grid-cols-2 gap-16 items-center">
       <div className="space-y-8">
@@ -21,12 +26,14 @@ const HeroSection = () => {
           infrastructure. Built for scale, optimized for latency.
         </p>
         <div className="flex flex-col sm:flex-row gap-4">
-          <Button
-            size="lg"
-            className="h-14 px-8 text-base font-heading font-bold tracking-widest uppercase  w-full sm:w-auto"
-          >
-            Start Building Free
-          </Button>
+          <Link href={session ? '/dashboard' : '/billing'} className="w-full sm:w-auto">
+            <Button
+              size="lg"
+              className="h-14 px-8 text-base font-heading font-bold tracking-widest uppercase  w-full"
+            >
+              Start Building Free
+            </Button>
+          </Link>
           <Link href="/docs" className="w-full sm:w-auto">
             <Button
               size="lg"

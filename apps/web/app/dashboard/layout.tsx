@@ -16,7 +16,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           style={{ position: 'absolute', inset: 0 }}
           shape="hexagon"
           color={[0.15, 0.68, 1]}
-          cellScale={14}
+          cellScale={26}
           gridReveal="always"
           gridOpacity={0.2}
           hoverGlow={0}

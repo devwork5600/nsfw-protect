@@ -34,7 +34,7 @@ const plans = [
       '5 concurrent streams',
       'Basic tag filters',
     ],
-    buttonText: 'Upgrade to Starter',
+    buttonText: 'Get Started',
     href: '/auth/register',
     recommended: true,
   },
@@ -51,7 +51,7 @@ const plans = [
       'Custom tag filters',
       'Advanced Audit Logs',
     ],
-    buttonText: 'Upgrade to Pro',
+    buttonText: 'Get Started',
     href: '/auth/register',
     recommended: false,
   },
@@ -154,7 +154,7 @@ export default async function PricingPage() {
                 className={`relative z-10 border p-8 flex flex-col justify-between group transition-all duration-500 ${
                   plan.recommended
                     ? 'border-primary bg-card scale-105'
-                    : 'border-border bg-card hover:border-muted-foreground'
+                    : 'border-border bg-card hover:border-primary'
                 }`}
               >
                 {plan.recommended && (
@@ -189,7 +189,7 @@ export default async function PricingPage() {
                   className={`w-full rounded-none font-bold uppercase tracking-widest py-6 transition-all ${
                     plan.recommended
                       ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(0,112,255,0.4)]'
-                      : 'bg-transparent border border-muted hover:border-foreground text-foreground'
+                      : 'bg-transparent border border-muted text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary hover:shadow-[0_0_20px_rgba(0,112,255,0.4)]'
                   }`}
                   asChild
                 >

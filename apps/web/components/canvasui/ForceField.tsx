@@ -348,7 +348,7 @@ float cellFlash(vec2 id){
 
 void main(){
   vec2 frag = vUv * uResolution;
-  float minAxis = min(uResolution.x, uResolution.y);
+  float minAxis = uResolution.x;
   vec2 pageFrag = vec2(frag.x, frag.y - uScroll);
   vec2 st = pageFrag / minAxis;
 

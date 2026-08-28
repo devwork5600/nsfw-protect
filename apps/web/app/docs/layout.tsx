@@ -186,7 +186,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
         style={{ position: 'absolute', inset: 0 }}
         shape="hexagon"
         color={[0.15, 0.68, 1]}
-        cellScale={17}
+        cellScale={26}
         gridReveal="always"
         gridOpacity={0.2}
         hoverGlow={0}
