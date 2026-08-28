@@ -5,7 +5,6 @@ import {
   Head,
   Heading,
   Html,
-  Img,
   Link,
   Preview,
   Section,
@@ -25,16 +24,12 @@ export const EmailTemplate = ({
   text: string;
   buttonText: string;
 }) => {
-  const rawBaseUrl =
-    process.env.APP_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
-
-  const baseUrl = rawBaseUrl.endsWith('/') ? rawBaseUrl.slice(0, -1) : rawBaseUrl;
-
   return (
     <Html lang="en">
-      <Head />
+      <Head>
+        <meta name="color-scheme" content="light" />
+        <meta name="supported-color-schemes" content="light" />
+      </Head>
       <Preview>Sign in to NSFWGuard</Preview>
       <Tailwind
         config={{
@@ -43,18 +38,10 @@ export const EmailTemplate = ({
       >
         <Body className="mx-auto my-auto bg-white px-2 font-sans">
           <Container className="mx-auto my-10 max-w-116.25 rounded border border-[#eaeaea] border-solid p-5">
-            <Section className="mt-8">
-              <Img
-                src={
-                  baseUrl === 'http://localhost:3000'
-                    ? `${baseUrl}/shield.png`
-                    : 'https://app.nsfw-protect.com/shield.png'
-                }
-                width="40"
-                height="40"
-                alt="NSFWGuard Logo"
-                className="mx-auto my-0"
-              />
+            <Section className="mt-8 text-center">
+              <Text className="m-0 text-[20px] font-bold uppercase tracking-widest text-[#0070ff]">
+                NSFWGuard
+              </Text>
             </Section>
             <Heading className="mx-0 my-7.5 p-0 text-center font-normal text-[24px] text-black">
               Welcome back, <strong>{username}</strong>!
@@ -63,7 +50,7 @@ export const EmailTemplate = ({
             <Text className="text-[14px] text-black leading-6">{text}</Text>
             <Section className="mt-8 mb-8 text-center">
               <Button
-                className="rounded bg-[#000000] px-5 py-3 text-center font-semibold text-[12px] text-white no-underline"
+                className="rounded bg-[#0070ff] px-6 py-3 text-center font-semibold text-[12px] text-white no-underline"
                 href={linkUrl}
               >
                 {buttonText}

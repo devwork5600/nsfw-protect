@@ -43,7 +43,7 @@ const plans = [
   {
     name: 'Pro',
     description: 'For industrial-scale applications.',
-    price: '$149',
+    price: '$99',
     priceId: 'price_pro',
     features: [
       '100,000 requests / month',

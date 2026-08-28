@@ -28,7 +28,10 @@ export const SupportRequestTemplate = ({
 }) => {
   return (
     <Html lang="en">
-      <Head />
+      <Head>
+        <meta name="color-scheme" content="light" />
+        <meta name="supported-color-schemes" content="light" />
+      </Head>
       <Preview>New support request: {subject}</Preview>
       <Tailwind
         config={{
@@ -37,6 +40,11 @@ export const SupportRequestTemplate = ({
       >
         <Body className="mx-auto my-auto bg-white px-2 font-sans">
           <Container className="mx-auto my-[40px] max-w-[520px] rounded border border-[#eaeaea] border-solid p-[20px]">
+            <Section className="mt-[32px] text-center">
+              <Text className="m-0 text-[20px] font-bold uppercase tracking-widest text-[#0070ff]">
+                NSFWGuard
+              </Text>
+            </Section>
             <Heading className="mx-0 my-[30px] p-0 text-center font-normal text-[24px] text-black">
               New <strong>Support Request</strong>
             </Heading>

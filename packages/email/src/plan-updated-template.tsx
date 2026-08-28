@@ -4,7 +4,6 @@ import {
   Head,
   Heading,
   Html,
-  Img,
   Link,
   Preview,
   Section,
@@ -31,13 +30,6 @@ export const PlanUpdatedTemplate = ({
   changeType: 'upgrade' | 'downgrade' | 'update';
   newPrice?: string;
 }) => {
-  const rawBaseUrl =
-    process.env.APP_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
-
-  const baseUrl = rawBaseUrl.endsWith('/') ? rawBaseUrl.slice(0, -1) : rawBaseUrl;
-
   const title =
     changeType === 'upgrade'
       ? 'Upgrade Confirmed'
@@ -46,15 +38,28 @@ export const PlanUpdatedTemplate = ({
         : 'Plan Updated';
 
   const message =
-    changeType === 'upgrade'
-      ? `Great news! You've successfully upgraded your account to the **${newPlanName}** plan.`
-      : changeType === 'downgrade'
-        ? `Your plan has been changed to **${newPlanName}**. This change will be reflected in your next billing cycle.`
-        : `Your subscription has been updated to the **${newPlanName}** plan.`;
+    changeType === 'upgrade' ? (
+      <>
+        Great news! You&apos;ve successfully upgraded your account to the{' '}
+        <strong>{newPlanName}</strong> plan.
+      </>
+    ) : changeType === 'downgrade' ? (
+      <>
+        Your plan has been changed to <strong>{newPlanName}</strong>. This change will be
+        reflected in your next billing cycle.
+      </>
+    ) : (
+      <>
+        Your subscription has been updated to the <strong>{newPlanName}</strong> plan.
+      </>
+    );
 
   return (
     <Html lang="en">
-      <Head />
+      <Head>
+        <meta name="color-scheme" content="light" />
+        <meta name="supported-color-schemes" content="light" />
+      </Head>
       <Preview>{title} - NSFWGuard</Preview>
       <Tailwind
         config={{
@@ -63,18 +68,10 @@ export const PlanUpdatedTemplate = ({
       >
         <Body className="mx-auto my-auto bg-white px-2 font-sans">
           <Container className="mx-auto my-[40px] max-w-[465px] rounded border border-[#eaeaea] border-solid p-[20px]">
-            <Section className="mt-[32px]">
-              <Img
-                src={
-                  baseUrl === 'http://localhost:3000'
-                    ? `${baseUrl}/shield.png`
-                    : 'https://app.nsfw-protect.com/shield.png'
-                }
-                width="40"
-                height="40"
-                alt="NSFWGuard Logo"
-                className="mx-auto my-0"
-              />
+            <Section className="mt-[32px] text-center">
+              <Text className="m-0 text-[20px] font-bold uppercase tracking-widest text-[#0070ff]">
+                NSFWGuard
+              </Text>
             </Section>
             <Heading className="mx-0 my-[30px] p-0 text-center font-normal text-[24px] text-black">
               Plan{' '}
@@ -124,7 +121,7 @@ export const PlanUpdatedTemplate = ({
             <Section className="text-center mt-[32px] mb-[32px]">
               <Link
                 href={dashboardUrl}
-                className="rounded bg-[#000000] px-10 py-3 text-center font-semibold text-[12px] text-white no-underline inline-block"
+                className="rounded bg-[#0070ff] px-10 py-3 text-center font-semibold text-[12px] text-white no-underline inline-block"
               >
                 View Dashboard
               </Link>
