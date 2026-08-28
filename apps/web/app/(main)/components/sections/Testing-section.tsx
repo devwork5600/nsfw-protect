@@ -20,6 +20,7 @@ interface ClassificationResult {
 export function TestingSection() {
   const [isClassifying, setIsClassifying] = useState(false);
   const [result, setResult] = useState<ClassificationResult[] | null>(null);
+  const [displayResult, setDisplayResult] = useState<ClassificationResult[] | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [latency, setLatency] = useState<number | null>(null);
   const startTimeRef = useRef<number>(0);
@@ -62,6 +63,7 @@ export function TestingSection() {
       }
 
       setResult(data.result);
+      setDisplayResult(data.result);
       setLatency(Date.now() - startTimeRef.current);
       toast.success('Analysis complete!');
     } catch (error: unknown) {
@@ -88,10 +90,13 @@ export function TestingSection() {
   };
 
   // The model is binary: it returns exactly 'nsfw' and 'sfw' labels.
-  const nsfwScore = result?.find((r) => r.label.trim().toLowerCase() === 'nsfw')?.score ?? 0;
+  const nsfwScore =
+    displayResult?.find((r) => r.label.trim().toLowerCase() === 'nsfw')?.score ?? 0;
   const isNSFW = nsfwScore > 0.5;
   // Only show the score for the predicted class, not both nsfw and sfw.
-  const topResult = result?.find((r) => r.label.trim().toLowerCase() === (isNSFW ? 'nsfw' : 'sfw'));
+  const topResult = displayResult?.find(
+    (r) => r.label.trim().toLowerCase() === (isNSFW ? 'nsfw' : 'sfw'),
+  );
 
   return (
     <section className="container mx-auto max-w-360 px-4 py-32">
