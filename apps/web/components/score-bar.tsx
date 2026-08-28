@@ -12,7 +12,7 @@ export function ScoreBar({ label, score, className }: ScoreBarProps) {
     <div className={cn('h-1.5 w-full bg-accent overflow-hidden', className)}>
       <div
         className={cn(
-          'h-full transition-all duration-1000',
+          'h-full transition-[width] duration-1000',
           label.toLowerCase() === 'nsfw' && score > 0.5 ? 'bg-red-600' : 'bg-green-600',
         )}
         style={{ width: `${score * 100}%` }}
