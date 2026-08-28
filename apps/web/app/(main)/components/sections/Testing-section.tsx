@@ -84,7 +84,11 @@ export function TestingSection() {
       setLatency(Date.now() - startTimeRef.current);
       toast.success('Analysis complete!');
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
+      const message = error instanceof Error ? error.message : 'An unknown error occurred';
+      // Oversized requests get rejected by the framework before our action
+      // runs, surfacing as a redacted "Server Components render" error.
+      const isBodyTooLarge = /Server Components render|Body exceeded/i.test(message);
+      toast.error(isBodyTooLarge ? 'Image is too large. Max size is 20MB.' : message);
     } finally {
       setIsClassifying(false);
     }
