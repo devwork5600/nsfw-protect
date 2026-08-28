@@ -4,6 +4,24 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_place
 
 export const PLAN_ORDER = ['FREE', 'STARTER', 'PRO', 'ENTERPRISE'] as const;
 
+// The only price IDs a user is allowed to self-serve subscribe to. Anything
+// else (including other prices that may exist under the same Stripe account)
+// must be rejected before it ever reaches the Stripe API.
+const SELF_SERVE_PLAN_PRICE_IDS: Record<'STARTER' | 'PRO', string | undefined> = {
+  STARTER: process.env.STRIPE_PRICE_STARTER_MONTHLY,
+  PRO: process.env.STRIPE_PRICE_PRO_MONTHLY,
+};
+
+export function getPlanForPriceId(priceId: string): 'STARTER' | 'PRO' | null {
+  if (priceId === SELF_SERVE_PLAN_PRICE_IDS.STARTER) return 'STARTER';
+  if (priceId === SELF_SERVE_PLAN_PRICE_IDS.PRO) return 'PRO';
+  return null;
+}
+
+export function isAllowedPriceId(priceId: string): boolean {
+  return getPlanForPriceId(priceId) !== null;
+}
+
 export function formatPlanName(plan: string) {
   return plan.charAt(0) + plan.slice(1).toLowerCase();
 }
@@ -22,7 +40,7 @@ export function formatBillingCycle(interval: Stripe.Price.Recurring.Interval | u
 }
 
 export function getDashboardUrl() {
-  return process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://app.nsfw-protect.com';
+  return process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://nsfw-protect.com';
 }
 
 // Stripe moved current_period_start/end off the Subscription object and onto

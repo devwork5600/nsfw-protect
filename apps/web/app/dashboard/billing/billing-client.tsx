@@ -8,12 +8,14 @@ import { unstable_rethrow } from 'next/navigation';
 import { manageSubscription, previewSubscriptionChange } from '@/actions/subscription';
 import { createCheckoutSession } from '@/actions/create-checkout-session';
 
+// priceId here is a placeholder — activePlans below always overrides it with
+// the real value from the server-provided plansConfig, matched by name.
 const plans = [
   {
     name: 'Free',
     description: 'For hobbyists and small projects.',
     price: '$0',
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_FREE || 'price_free',
+    priceId: 'price_free',
     features: [
       '100 requests / month',
       'Standard latency',
@@ -27,7 +29,7 @@ const plans = [
     name: 'Starter',
     description: 'For growing developers.',
     price: '$29',
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER_MONTHLY || 'price_starter',
+    priceId: 'price_starter',
     features: [
       '10,000 requests / month',
       '< 150ms latency SLA',
@@ -42,7 +44,7 @@ const plans = [
     name: 'Pro',
     description: 'For industrial-scale applications.',
     price: '$149',
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MONTHLY || 'price_pro',
+    priceId: 'price_pro',
     features: [
       '100,000 requests / month',
       '< 80ms latency SLA',

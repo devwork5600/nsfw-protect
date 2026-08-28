@@ -4,6 +4,7 @@ import Stripe from 'stripe';
 import { redirect } from 'next/navigation';
 import { getUser } from '@/lib/auth/auth-session';
 import { prisma } from '@nsfw/db';
+import { isAllowedPriceId } from '@/lib/stripe/helpers';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
 
@@ -14,6 +15,10 @@ export async function createCheckoutSession(priceId: string) {
 
   if (!user) {
     throw new Error('Unauthorized');
+  }
+
+  if (!isAllowedPriceId(priceId)) {
+    throw new Error('Invalid plan selected');
   }
 
   const customer = await prisma.customer.findUnique({
@@ -55,9 +60,7 @@ export async function createCheckoutSession(priceId: string) {
   }
 
   const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    process.env.BETTER_AUTH_URL ||
-    'https://app.nsfw-protect.com';
+    process.env.NEXT_PUBLIC_APP_URL || process.env.BETTER_AUTH_URL || 'https://nsfw-protect.com';
 
   const session = await stripe.checkout.sessions.create({
     mode: 'subscription',

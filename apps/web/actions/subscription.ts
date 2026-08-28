@@ -4,12 +4,15 @@ import Stripe from 'stripe';
 import { getUser } from '@/lib/auth/auth-session';
 import { prisma } from '@nsfw/db';
 import { revalidatePath } from 'next/cache';
+import { getPlanForPriceId, isAllowedPriceId, PLAN_ORDER } from '@/lib/stripe/helpers';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
 
 export async function previewSubscriptionChange(priceId: string) {
   const user = await getUser();
   if (!user) throw new Error('Unauthorized');
+
+  if (!isAllowedPriceId(priceId)) throw new Error('Invalid plan selected');
 
   const customer = await prisma.customer.findUnique({
     where: { userId: user.id },
@@ -72,6 +75,8 @@ export async function manageSubscription(priceId: string | null, prorationDate?:
 
   if (!customer) throw new Error('Customer not found');
 
+  if (priceId !== null && !isAllowedPriceId(priceId)) throw new Error('Invalid plan selected');
+
   const subscription = customer.subscriptions[0];
 
   // If no active subscription, we should use createCheckoutSession instead
@@ -125,20 +130,18 @@ export async function manageSubscription(priceId: string | null, prorationDate?:
       return;
     }
 
-    // Determine if it's an upgrade or downgrade
-    // In a real app, you might fetch price amounts from Stripe to be sure
-    const isProPrice = priceId === process.env.STRIPE_PRICE_PRO_MONTHLY;
-    const isStarterPrice = priceId === process.env.STRIPE_PRICE_STARTER_MONTHLY;
-    const currentIsStarter = currentPriceId === process.env.STRIPE_PRICE_STARTER_MONTHLY;
-    const currentIsFree = currentPriceId === process.env.STRIPE_PRICE_FREE_MONTHLY; // If applicable
+    // Determine if it's an upgrade or downgrade by comparing tier order —
+    // priceId is already validated against the self-serve allow-list above,
+    // and a currentPriceId that isn't STARTER/PRO (e.g. no real subscription
+    // yet) is treated as FREE, the bottom of the order.
+    const newPlan = getPlanForPriceId(priceId) as 'STARTER' | 'PRO';
+    const currentPlan = getPlanForPriceId(currentPriceId) ?? 'FREE';
 
     // Industry standard: Upgrades are invoiced immediately (always_invoice)
     // Downgrades can be invoiced at the end of the period (create_prorations or none)
     let prorationBehavior: Stripe.SubscriptionUpdateParams.ProrationBehavior = 'always_invoice';
 
-    // Simple upgrade detection
-    const isUpgrade =
-      (currentIsStarter && isProPrice) || (currentIsFree && (isStarterPrice || isProPrice));
+    const isUpgrade = PLAN_ORDER.indexOf(newPlan) > PLAN_ORDER.indexOf(currentPlan);
 
     if (!isUpgrade) {
       // Downgrade behavior:
@@ -165,7 +168,7 @@ export async function manageSubscription(priceId: string | null, prorationDate?:
     await prisma.subscription.update({
       where: { id: subscription.id },
       data: {
-        plan: isProPrice ? 'PRO' : isStarterPrice ? 'STARTER' : 'FREE',
+        plan: newPlan,
         stripePriceId: priceId as string,
         cancelAtPeriodEnd: false,
         planChangedAt: new Date(),
