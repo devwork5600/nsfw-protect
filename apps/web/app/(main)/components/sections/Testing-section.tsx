@@ -24,6 +24,7 @@ export function TestingSection() {
   const [preview, setPreview] = useState<string | null>(null);
   const [latency, setLatency] = useState<number | null>(null);
   const startTimeRef = useRef<number>(0);
+  const clearDisplayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Revoke the previous blob URL whenever preview changes (fixes memory leak)
   useEffect(() => {
@@ -31,6 +32,20 @@ export function TestingSection() {
       if (preview) URL.revokeObjectURL(preview);
     };
   }, [preview]);
+
+  // Clear the timeout on unmount so we never setState after unmount.
+  useEffect(() => {
+    return () => {
+      if (clearDisplayTimeoutRef.current) clearTimeout(clearDisplayTimeoutRef.current);
+    };
+  }, []);
+
+  // Wipe the displayed result only after the panel's fade-out transition
+  // finishes, so the "reset" placeholder never flashes mid-animation.
+  const scheduleClearDisplay = useCallback(() => {
+    if (clearDisplayTimeoutRef.current) clearTimeout(clearDisplayTimeoutRef.current);
+    clearDisplayTimeoutRef.current = setTimeout(() => setDisplayResult(null), 300);
+  }, []);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -46,6 +61,7 @@ export function TestingSection() {
     const objectUrl = URL.createObjectURL(file);
     setPreview(objectUrl);
     setResult(null);
+    scheduleClearDisplay();
     setIsClassifying(true);
     startTimeRef.current = Date.now();
     setLatency(null);
@@ -62,6 +78,7 @@ export function TestingSection() {
         throw new Error('Analysis timed out. Please try again.');
       }
 
+      if (clearDisplayTimeoutRef.current) clearTimeout(clearDisplayTimeoutRef.current);
       setResult(data.result);
       setDisplayResult(data.result);
       setLatency(Date.now() - startTimeRef.current);
@@ -71,7 +88,7 @@ export function TestingSection() {
     } finally {
       setIsClassifying(false);
     }
-  }, []);
+  }, [scheduleClearDisplay]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -86,6 +103,7 @@ export function TestingSection() {
     setIsClassifying(false);
     setPreview(null);
     setResult(null);
+    scheduleClearDisplay();
     setLatency(null);
   };
 
