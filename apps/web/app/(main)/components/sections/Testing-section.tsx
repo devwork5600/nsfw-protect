@@ -122,39 +122,39 @@ export function TestingSection() {
             </div>
           </div>
 
-          {result && (
-            <div className="p-6 border border-border bg-card space-y-4 animate-in fade-in slide-in-from-bottom-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-heading font-bold uppercase tracking-widest text-sm">
-                  Results
-                </h3>
-                {isNSFW ? (
-                  <Badge variant="destructive" className="uppercase font-bold tracking-widest">
-                    NSFW DETECTED
-                  </Badge>
-                ) : (
-                  <Badge
-                    variant="outline"
-                    className="text-green-600 border-green-200 bg-green-50 uppercase font-bold tracking-widest"
-                  >
-                    SFW / SAFE
-                  </Badge>
-                )}
-              </div>
-
-              {topResult && (
-                <div className="space-y-3">
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs uppercase font-bold tracking-tighter">
-                      <span>{topResult.label}</span>
-                      <span>{(topResult.score * 100).toFixed(1)}%</span>
-                    </div>
-                    <ScoreBar label={topResult.label} score={topResult.score} />
-                  </div>
-                </div>
+          <div
+            className={cn(
+              'p-6 border border-border bg-card space-y-4 transition-opacity duration-300',
+              result ? 'opacity-100' : 'opacity-0 pointer-events-none select-none',
+            )}
+            aria-hidden={!result}
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="font-heading font-bold uppercase tracking-widest text-sm">Results</h3>
+              {isNSFW ? (
+                <Badge variant="destructive" className="uppercase font-bold tracking-widest">
+                  NSFW DETECTED
+                </Badge>
+              ) : (
+                <Badge
+                  variant="outline"
+                  className="text-green-600 border-green-200 bg-green-50 uppercase font-bold tracking-widest"
+                >
+                  SFW / SAFE
+                </Badge>
               )}
             </div>
-          )}
+
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs uppercase font-bold tracking-tighter">
+                  <span>{topResult?.label ?? 'SFW'}</span>
+                  <span>{((topResult?.score ?? 0) * 100).toFixed(1)}%</span>
+                </div>
+                <ScoreBar label={topResult?.label ?? 'SFW'} score={topResult?.score ?? 0} />
+              </div>
+            </div>
+          </div>
         </div>
 
         <div {...getRootProps()} className="relative z-10 group">
