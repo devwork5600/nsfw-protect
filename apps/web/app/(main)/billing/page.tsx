@@ -13,7 +13,7 @@ const plans = [
     price: '$0',
     priceId: null,
     features: [
-      '100 requests / month',
+      '1,000 requests / month',
       'Standard latency',
       'Community support',
       '1 concurrent stream',
@@ -58,7 +58,7 @@ const plans = [
 ];
 
 const comparisons = [
-  { feature: 'Monthly Quota', free: '100', starter: '10k', pro: '100k+ ' },
+  { feature: 'Monthly Quota', free: '1k', starter: '10k', pro: '100k+ ' },
   { feature: 'P99 Latency', free: 'Standard', starter: '< 150ms', pro: '< 80ms' },
   { feature: 'Batch Processing', free: false, starter: true, pro: true },
   { feature: 'Webhooks', free: false, starter: true, pro: true },

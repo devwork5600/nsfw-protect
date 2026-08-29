@@ -1,9 +1,6 @@
 import React from 'react';
-import { getApiKeys, isSubscribed } from '@/actions/api-key-actions';
+import { getApiKeys } from '@/actions/api-key-actions';
 import { ApiKeyClient } from './api-keys-client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { getUser } from '@/lib/auth/auth-session';
 import { prisma } from '@nsfw/db';
 
@@ -12,28 +9,7 @@ export default async function ApiKeysPage() {
   const dbUser = user ? await prisma.user.findUnique({ where: { id: user.id } }) : null;
   const isAdmin = dbUser?.role === 'admin';
 
-  const subscribed = await isSubscribed();
   const apiKeys = await getApiKeys();
-
-  if (!subscribed && !isAdmin) {
-    return (
-      <div className="container mx-auto py-10">
-        <Card>
-          <CardHeader>
-            <CardTitle>API Keys</CardTitle>
-            <CardDescription>
-              You need an active subscription to generate and use API keys.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/dashboard/billing">
-              <Button>Upgrade to Pro</Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto py-10">

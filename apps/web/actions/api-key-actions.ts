@@ -5,37 +5,12 @@ import { prisma } from '@nsfw/db';
 import { generateRawApiKey, hashApiKeySha256, getPrefix } from '@/lib/api-keys';
 import { revalidatePath } from 'next/cache';
 
-export async function isSubscribed() {
-  const user = await getUser();
-  if (!user) return false;
-
-  const customer = await prisma.customer.findUnique({
-    where: { userId: user.id },
-    include: {
-      subscriptions: {
-        where: {
-          status: 'ACTIVE',
-        },
-      },
-    },
-  });
-
-  return (customer?.subscriptions.length ?? 0) > 0;
-}
-
 export async function generateApiKey() {
   const user = await getUser();
   if (!user) throw new Error('Unauthorized');
 
   const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
   const isAdmin = dbUser?.role === 'admin';
-
-  if (!isAdmin) {
-    const subscribed = await isSubscribed();
-    if (!subscribed) {
-      throw new Error('You must have an active subscription to generate an API key.');
-    }
-  }
 
   // Invalidate previous keys
   await prisma.apiKey.updateMany({
