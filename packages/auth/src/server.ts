@@ -15,7 +15,6 @@ export const getAuthOptions = (): BetterAuthOptions => ({
     'http://localhost:3000',
     'https://nsfw-protect.com',
     'https://www.nsfw-protect.com',
-    'https://app.nsfw-protect.com',
     'https://api.nsfw-protect.com',
   ],
 
