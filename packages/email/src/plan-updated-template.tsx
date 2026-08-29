@@ -47,8 +47,8 @@ export const PlanUpdatedTemplate = ({
       </>
     ) : changeType === 'downgrade' ? (
       <>
-        Your plan has been changed to <strong>{newPlanName}</strong>. This change will be
-        reflected in your next billing cycle.
+        Your plan has been changed to <strong>{newPlanName}</strong>. This change will be reflected
+        in your next billing cycle.
       </>
     ) : (
       <>

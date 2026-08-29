@@ -47,52 +47,55 @@ export function TestingSection() {
     clearDisplayTimeoutRef.current = setTimeout(() => setDisplayResult(null), 300);
   }, []);
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (!file) return;
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      const file = acceptedFiles[0];
+      if (!file) return;
 
-    // Client-side size check (20MB)
-    if (file.size > 20 * 1024 * 1024) {
-      toast.error('Image is too large. Max size is 20MB.');
-      return;
-    }
-
-    // Create preview
-    const objectUrl = URL.createObjectURL(file);
-    setPreview(objectUrl);
-    setResult(null);
-    scheduleClearDisplay();
-    setIsClassifying(true);
-    startTimeRef.current = Date.now();
-    setLatency(null);
-
-    const formData = new FormData();
-    formData.append('image', file);
-
-    try {
-      // The API responds with the classification directly — no polling needed.
-      const data = await testImageAction(formData);
-
-      if (data.error) throw new Error(data.error);
-      if (data.status !== 'done' || !data.result) {
-        throw new Error('Analysis timed out. Please try again.');
+      // Client-side size check (20MB)
+      if (file.size > 20 * 1024 * 1024) {
+        toast.error('Image is too large. Max size is 20MB.');
+        return;
       }
 
-      if (clearDisplayTimeoutRef.current) clearTimeout(clearDisplayTimeoutRef.current);
-      setResult(data.result);
-      setDisplayResult(data.result);
-      setLatency(Date.now() - startTimeRef.current);
-      toast.success('Analysis complete!');
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'An unknown error occurred';
-      // Oversized requests get rejected by the framework before our action
-      // runs, surfacing as a redacted "Server Components render" error.
-      const isBodyTooLarge = /Server Components render|Body exceeded/i.test(message);
-      toast.error(isBodyTooLarge ? 'Image is too large. Max size is 20MB.' : message);
-    } finally {
-      setIsClassifying(false);
-    }
-  }, [scheduleClearDisplay]);
+      // Create preview
+      const objectUrl = URL.createObjectURL(file);
+      setPreview(objectUrl);
+      setResult(null);
+      scheduleClearDisplay();
+      setIsClassifying(true);
+      startTimeRef.current = Date.now();
+      setLatency(null);
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        // The API responds with the classification directly — no polling needed.
+        const data = await testImageAction(formData);
+
+        if (data.error) throw new Error(data.error);
+        if (data.status !== 'done' || !data.result) {
+          throw new Error('Analysis timed out. Please try again.');
+        }
+
+        if (clearDisplayTimeoutRef.current) clearTimeout(clearDisplayTimeoutRef.current);
+        setResult(data.result);
+        setDisplayResult(data.result);
+        setLatency(Date.now() - startTimeRef.current);
+        toast.success('Analysis complete!');
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
+        // Oversized requests get rejected by the framework before our action
+        // runs, surfacing as a redacted "Server Components render" error.
+        const isBodyTooLarge = /Server Components render|Body exceeded/i.test(message);
+        toast.error(isBodyTooLarge ? 'Image is too large. Max size is 20MB.' : message);
+      } finally {
+        setIsClassifying(false);
+      }
+    },
+    [scheduleClearDisplay],
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -112,8 +115,7 @@ export function TestingSection() {
   };
 
   // The model is binary: it returns exactly 'nsfw' and 'sfw' labels.
-  const nsfwScore =
-    displayResult?.find((r) => r.label.trim().toLowerCase() === 'nsfw')?.score ?? 0;
+  const nsfwScore = displayResult?.find((r) => r.label.trim().toLowerCase() === 'nsfw')?.score ?? 0;
   const isNSFW = nsfwScore > 0.5;
   // Only show the score for the predicted class, not both nsfw and sfw.
   const topResult = displayResult?.find(
