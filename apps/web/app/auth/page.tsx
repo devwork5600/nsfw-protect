@@ -11,7 +11,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FcGoogle } from 'react-icons/fc';
 import { authClient } from '@/lib/auth/auth-client';
-import { ForceField } from '@/components/canvasui/ForceField';
+import { BackgroundStage } from '@/components/canvasui/BackgroundStage';
 import SocialButton from './social-button';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { MagicLinkSignInSchema, MagicLinkSignInSchemaType } from '@/lib/validators/email-schemas';
@@ -79,23 +79,10 @@ export default function AuthPage() {
   };
 
   return (
-    <main className="h-screen flex flex-col md:flex-row bg-background relative overflow-hidden">
-      <ForceField
-        style={{ position: 'absolute', inset: 0 }}
-        shape="hexagon"
-        color={[0.15, 0.68, 1]}
-        cellScale={26}
-        gridReveal="always"
-        gridOpacity={0.2}
-        hoverGlow={0}
-        hoverCharge={0}
-        clickRipples={false}
-        refraction={0}
-        opacity={0.35}
-      >
-        <></>
-      </ForceField>
-
+    <BackgroundStage
+      as="main"
+      className="h-screen flex flex-col md:flex-row bg-background relative overflow-hidden"
+    >
       {/* Left panel (Marketing) */}
       <div className="hidden md:flex md:w-1/2 p-12 lg:p-24 flex-col justify-between relative z-10 overflow-hidden border-r border-border">
         <Link href={'/'} className="flex gap-2">
@@ -221,6 +208,6 @@ export default function AuthPage() {
           </form>
         </div>
       </div>
-    </main>
+    </BackgroundStage>
   );
 }
