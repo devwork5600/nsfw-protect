@@ -19,7 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { useMobileMenu } from '@/lib/store/use-mobile-menu';
-import { ForceField } from '@/components/canvasui/ForceField';
+import { BackgroundStage } from '@/components/canvasui/BackgroundStage';
 
 const navSections = [
   {
@@ -181,23 +181,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
   const { toggle } = useMobileMenu();
 
   return (
-    <div className="flex min-h-screen bg-background relative">
-      <ForceField
-        style={{ position: 'absolute', inset: 0 }}
-        shape="hexagon"
-        color={[0.15, 0.68, 1]}
-        cellScale={26}
-        gridReveal="always"
-        gridOpacity={0.2}
-        hoverGlow={0}
-        hoverCharge={0}
-        clickRipples={false}
-        refraction={0}
-        opacity={0.35}
-      >
-        <></>
-      </ForceField>
-
+    <BackgroundStage className="flex min-h-screen bg-background relative">
       <DocsSidebar />
 
       <main className="relative z-10 flex-1 flex flex-col min-w-0">
@@ -215,6 +199,6 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
 
         <div className="flex-1 p-8 lg:p-12 pb-24 max-w-[1400px]">{children}</div>
       </main>
-    </div>
+    </BackgroundStage>
   );
 }

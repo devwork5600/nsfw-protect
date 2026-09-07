@@ -97,6 +97,8 @@ export interface ForceFieldOptions {
   clickRipples?: boolean;
   /** Called with the impact position in CSS pixels after each click. */
   onHit?: (x: number, y: number) => void;
+  /** Called once the first frame has been painted to the output canvas. */
+  onReady?: () => void;
 }
 
 export interface ForceFieldElements {
@@ -121,8 +123,9 @@ export interface ForceFieldInstance {
 
 const MAX_HITS = 10;
 
-const DEFAULTS: Required<Omit<ForceFieldOptions, 'onHit'>> & {
+const DEFAULTS: Required<Omit<ForceFieldOptions, 'onHit' | 'onReady'>> & {
   onHit: ((x: number, y: number) => void) | null;
+  onReady: (() => void) | null;
 } = {
   shape: 'hexagon',
   color: [0.15, 0.68, 1],
@@ -168,6 +171,7 @@ const DEFAULTS: Required<Omit<ForceFieldOptions, 'onHit'>> & {
   grain: 0.2,
   clickRipples: true,
   onHit: null,
+  onReady: null,
 };
 
 type PaintableCanvas = HTMLCanvasElement & {
@@ -999,6 +1003,7 @@ export function createForceField(
   let destroyed = false;
   let running = false;
   let visible = true;
+  let readyFired = false;
 
   const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   let reducedMotion = motionQuery.matches;
@@ -1023,6 +1028,10 @@ export function createForceField(
     if (active || now - lastDraw >= 31) {
       render();
       lastDraw = now;
+      if (!readyFired) {
+        readyFired = true;
+        config.onReady?.();
+      }
     }
     if (reducedMotion && !contentDirty) {
       running = false;
@@ -1188,6 +1197,7 @@ export function ForceField({ children, className, style, ...options }: ForceFiel
     if (!source || !content || !output) return;
     instanceRef.current = createForceField({ source, content, output }, initialOptions);
     if (native && !instanceRef.current) setFailed(true);
+    if (!instanceRef.current) initialOptions.onReady?.();
     return () => {
       instanceRef.current?.destroy();
       instanceRef.current = null;
