@@ -16,7 +16,7 @@
     "better-auth": "^1.6.11",
     "@nsfw/db": "*",
     "@nsfw/email": "*",
-    "zod": "^3.25.76"
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@types/node": "^25.9.1",
