@@ -1,0 +1,29 @@
+version: 2
+
+updates:
+  # Turborepo monorepo (apps/api, apps/web, apps/worker, packages/*) with ONE
+  # root package-lock.json, so directory "/" is the single correct scan
+  # point — pointing Dependabot at a workspace subfolder instead creates
+  # duplicate, lockfile-desynced PRs for the same dependency.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      patch-updates:
+        update-types:
+          - "patch"
+      minor-updates:
+        update-types:
+          - "minor"
+    # Major bumps are deliberately left out of both groups, so they still
+    # arrive as their own individual PR — those are the ones worth reading
+    # the changelog for before merging, never auto-merge.
+
+  # Keeps the actions pinned in ci.yml (checkout, setup-node, ...) current —
+  # same weekly cadence, no grouping needed since there are only a handful.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
