@@ -11,7 +11,9 @@
     "build": "prisma generate && tsc",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",
@@ -22,6 +24,7 @@
   "devDependencies": {
     "@types/node": "^26.4.1",
     "@types/pg": "^8.23.1",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.0"
   }
 }
