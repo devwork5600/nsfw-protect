@@ -16,7 +16,7 @@
     "postinstall": "turbo run build --filter='./packages/*'"
   },
   "devDependencies": {
-    "@eslint/js": "^9.30.0",
+    "@eslint/js": "^9.39.5",
     "eslint": "^9.30.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.12.0",
