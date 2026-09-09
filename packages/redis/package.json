@@ -12,7 +12,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "ioredis": "^5.10.1"
+    "ioredis": "^6.0.0"
   },
   "devDependencies": {
     "@types/node": "^26",
