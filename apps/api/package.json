@@ -12,7 +12,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.758.0",
+    "@aws-sdk/client-s3": "^3.1127.0",
     "@fastify/cors": "^11.3.0",
     "@fastify/multipart": "^10.1.1",
     "@nsfw/db": "*",
@@ -24,14 +24,14 @@
     "fastify": "^5.12.1",
     "ioredis": "^5.10.1",
     "p-queue": "^9.3.3",
-    "sharp": "^0.34.5"
+    "sharp": "^0.35.4"
   },
   "devDependencies": {
     "@types/node": "^26.4.1",
-    "@types/pg": "^8.20.0",
+    "@types/pg": "^8.23.1",
     "@vitest/coverage-v8": "^4.1.9",
     "concurrently": "^10.0.5",
-    "tsx": "^4.7.1",
+    "tsx": "^4.23.13",
     "typescript": "^5.8.3",
     "vitest": "^4.1.11"
   }
