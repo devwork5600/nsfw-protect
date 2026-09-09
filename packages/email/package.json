@@ -13,7 +13,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@react-email/ui": "^6.9.3",
+    "@react-email/ui": "^6.9.5",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-email": "^6.9.3",
