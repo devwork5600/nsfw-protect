@@ -32,13 +32,21 @@ export async function sendEmail({
 
   try {
     const resendClient = getResend();
-    await resendClient.emails.send({
+    const { error } = await resendClient.emails.send({
       from,
       to: [to.toLowerCase().trim()],
       subject: subject.trim(),
       react,
       ...(replyTo && { replyTo: replyTo.toLowerCase().trim() }),
     });
+
+    if (error) {
+      console.error('Error sending email:', error);
+      return {
+        success: false,
+        message: error.message,
+      };
+    }
 
     return {
       success: true,

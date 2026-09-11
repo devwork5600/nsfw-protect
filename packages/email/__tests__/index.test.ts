@@ -16,7 +16,7 @@ describe('sendEmail', () => {
     vi.resetModules();
     vi.stubEnv('EMAIL_FROM', undefined);
     vi.stubEnv('RESEND_API_KEY', undefined);
-    mocks.send.mockReset().mockResolvedValue({ id: 'email-1' });
+    mocks.send.mockReset().mockResolvedValue({ data: { id: 'email-1' }, error: null });
     mocks.ResendCtor.mockClear();
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
@@ -93,6 +93,26 @@ describe('sendEmail', () => {
     const result = await sendEmail({ to: 'user@test.com', subject: 'Hi', react: null as never });
 
     expect(result).toEqual({ success: false, message: 'rate limited' });
+  });
+
+  it('returns a failure result when Resend resolves with an API-level error instead of throwing', async () => {
+    // The Resend SDK doesn't throw for API-level errors (invalid domain, unverified
+    // sender, etc.) — it resolves with { data: null, error }. A send() call that only
+    // checks for a thrown exception would silently report success here.
+    vi.stubEnv('EMAIL_FROM', 'noreply@nsfw-protect.com');
+    vi.stubEnv('RESEND_API_KEY', 'test-key');
+    mocks.send.mockResolvedValue({
+      data: null,
+      error: { name: 'validation_error', message: 'The nsfw-protect.com domain is not verified.' },
+    });
+    const { sendEmail } = await import('../src/index.js');
+
+    const result = await sendEmail({ to: 'user@test.com', subject: 'Hi', react: null as never });
+
+    expect(result).toEqual({
+      success: false,
+      message: 'The nsfw-protect.com domain is not verified.',
+    });
   });
 
   it('falls back to a generic message when Resend rejects with a non-Error value', async () => {
