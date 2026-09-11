@@ -1,8 +1,8 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Terms of Service — NSFWGuard',
-  description: 'The terms that govern your use of the NSFWGuard API and dashboard.',
+  title: 'Terms of Service — NSFW Protect',
+  description: 'The terms that govern your use of the NSFW Protect API and dashboard.',
 };
 
 const sections = [
@@ -11,9 +11,9 @@ const sections = [
     title: 'Acceptance of Terms',
     body: (
       <p>
-        By creating an account, generating an API key, or otherwise accessing the NSFWGuard API or
-        dashboard (the &quot;Service&quot;), you agree to be bound by these Terms of Service. If you
-        do not agree, do not use the Service.
+        By creating an account, generating an API key, or otherwise accessing the NSFW Protect API
+        or dashboard (the &quot;Service&quot;), you agree to be bound by these Terms of Service. If
+        you do not agree, do not use the Service.
       </p>
     ),
   },
@@ -22,7 +22,7 @@ const sections = [
     title: 'Description of the Service',
     body: (
       <p>
-        NSFWGuard provides an API that analyzes images you submit and returns automated content
+        NSFW Protect provides an API that analyzes images you submit and returns automated content
         classification scores. Classification is performed by a machine learning model and is
         provided on a best-effort basis — see{' '}
         <a href="#no-warranty" className="text-primary hover:underline">
@@ -151,8 +151,8 @@ const sections = [
           model.
         </li>
         <li>
-          The Service, including its software, models, and documentation, is owned by NSFWGuard and
-          protected by intellectual property law. These Terms do not grant you any rights to our
+          The Service, including its software, models, and documentation, is owned by NSFW Protect
+          and protected by intellectual property law. These Terms do not grant you any rights to our
           intellectual property beyond the limited right to use the API as described here.
         </li>
       </ul>
@@ -181,7 +181,7 @@ const sections = [
     title: 'Limitation of Liability',
     body: (
       <p>
-        To the maximum extent permitted by law, NSFWGuard will not be liable for any indirect,
+        To the maximum extent permitted by law, NSFW Protect will not be liable for any indirect,
         incidental, special, consequential, or punitive damages, or any loss of profits or revenue,
         arising from your use of the Service. Our total liability for any claim relating to the
         Service is limited to the amount you paid us in the 12 months preceding the claim.
@@ -246,8 +246,8 @@ export default function TermsOfServicePage() {
           Last updated: July 3, 2026
         </p>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto tracking-wide">
-          These terms govern your access to and use of the NSFWGuard API and dashboard. Please read
-          them carefully.
+          These terms govern your access to and use of the NSFW Protect API and dashboard. Please
+          read them carefully.
         </p>
       </section>
 

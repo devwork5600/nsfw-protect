@@ -10,8 +10,8 @@ export default function DocsSecurityPage() {
             Security
           </h1>
           <p className="text-lg text-muted-foreground font-sans leading-relaxed">
-            NSFWGuard is built with a privacy-first architecture. All data is encrypted in transit,
-            processed in volatile memory, and purged immediately after classification.
+            NSFW Protect is built with a privacy-first architecture. All data is encrypted in
+            transit, processed in volatile memory, and purged immediately after classification.
           </p>
         </div>
         <div className="space-y-6">

@@ -43,7 +43,7 @@ function SidebarContent({ plan, onClose }: { plan: string; onClose?: () => void 
           onClick={onClose}
         >
           <Shield className="w-6 h-6 text-primary" />
-          NSFWGuard
+          NSFW Protect
         </Link>
         {onClose && (
           <button

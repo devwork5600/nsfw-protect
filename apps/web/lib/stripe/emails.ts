@@ -70,7 +70,7 @@ export async function sendPlanUpdatedEmail(
 
     await sendEmail({
       to: user.email,
-      subject: `Plan ${changeType === 'upgrade' ? 'Upgraded' : changeType === 'downgrade' ? 'Downgraded' : 'Updated'} - NSFWGuard`,
+      subject: `Plan ${changeType === 'upgrade' ? 'Upgraded' : changeType === 'downgrade' ? 'Downgraded' : 'Updated'} - NSFW Protect`,
       react: React.createElement(PlanUpdatedTemplate, {
         username: displayName(user),
         oldPlanName: formatPlanName(existingSub.plan),

@@ -10,7 +10,7 @@ const CTASection = () => {
           Ready to secure your community?
         </h2>
         <p className="text-xl text-muted-foreground">
-          Join 2,000+ developers building safer digital spaces with NSFWGuard. No credit card
+          Join 2,000+ developers building safer digital spaces with NSFW Protect. No credit card
           required to start.
         </p>
         <div className="pt-8 flex justify-center">

@@ -73,7 +73,7 @@ export function MobileMenu() {
             onClick={close}
           >
             <Shield className="w-6 h-6 text-primary" />
-            NSFWGuard
+            NSFW Protect
           </Link>
           <button
             onClick={close}

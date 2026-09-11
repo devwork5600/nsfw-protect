@@ -18,7 +18,7 @@ const DashboardPage = async () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-heading font-bold tracking-tight uppercase">Overview</h2>
-          <p className="text-muted-foreground">Welcome to your NSFWGuard dashboard.</p>
+          <p className="text-muted-foreground">Welcome to your NSFW Protect dashboard.</p>
         </div>
         <Badge
           variant="outline"
