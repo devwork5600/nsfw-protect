@@ -75,7 +75,7 @@ export const PlanUpdatedTemplate = ({
                 <tbody>
                   <tr>
                     <td style={{ verticalAlign: 'middle', paddingRight: 8 }}>
-                      <Img src={shieldUrl()} width="28" height="34" alt="NSFW Protect" />
+                      <Img src={shieldUrl()} width="28" height="34" alt="" />
                     </td>
                     <td style={{ verticalAlign: 'middle' }}>
                       <Text className="m-0 font-bold text-[22px] text-black leading-[34px]">
