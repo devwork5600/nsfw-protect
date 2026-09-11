@@ -1,8 +1,8 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Privacy Policy — NSFWGuard',
-  description: 'How NSFWGuard collects, uses, and protects your data.',
+  title: 'Privacy Policy — NSFW Protect',
+  description: 'How NSFW Protect collects, uses, and protects your data.',
 };
 
 const sections = [
@@ -11,7 +11,7 @@ const sections = [
     title: 'Information We Collect',
     body: (
       <>
-        <p>We collect the following categories of information when you use NSFWGuard:</p>
+        <p>We collect the following categories of information when you use NSFW Protect:</p>
         <ul className="list-disc pl-6 space-y-2 marker:text-primary">
           <li>
             <span className="text-foreground font-medium">Account information</span> — your email
@@ -106,7 +106,7 @@ const sections = [
     body: (
       <>
         <p>
-          We share the minimum data necessary with the following providers to operate NSFWGuard:
+          We share the minimum data necessary with the following providers to operate NSFW Protect:
         </p>
         <ul className="list-disc pl-6 space-y-2 marker:text-primary">
           <li>
@@ -219,7 +219,7 @@ const sections = [
     title: "Children's Privacy",
     body: (
       <p>
-        NSFWGuard is a developer tool and is not directed at, or knowingly used to collect data
+        NSFW Protect is a developer tool and is not directed at, or knowingly used to collect data
         from, individuals under the age of 16. If you believe a minor has provided us with personal
         data, contact us and we will delete it.
       </p>
@@ -273,8 +273,8 @@ export default function PrivacyPolicyPage() {
           Last updated: July 3, 2026
         </p>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto tracking-wide">
-          This policy explains what data NSFWGuard collects, how we use it, and — because our core
-          product classifies images you submit — exactly what happens to that content.
+          This policy explains what data NSFW Protect collects, how we use it, and — because our
+          core product classifies images you submit — exactly what happens to that content.
         </p>
       </section>
 

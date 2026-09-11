@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'NSFWGuard - AI-Powered Content Moderation',
-    template: '%s | NSFWGuard',
+    default: 'NSFW Protect - AI-Powered Content Moderation',
+    template: '%s | NSFW Protect',
   },
   description:
     'Real-time NSFW detection with 99%+ accuracy. Protect your users and brand with advanced AI moderation. Easy API integration, enterprise-grade performance.',
@@ -30,9 +30,9 @@ export const metadata: Metadata = {
     'NSFW classifier',
     'image classification API',
   ],
-  authors: [{ name: 'NSFWGuard' }],
-  creator: 'NSFWGuard',
-  publisher: 'NSFWGuard',
+  authors: [{ name: 'NSFW Protect' }],
+  creator: 'NSFW Protect',
+  publisher: 'NSFW Protect',
   icons: {
     icon: '/favicon.ico',
   },
@@ -51,17 +51,17 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: 'NSFWGuard - AI-Powered Content Moderation',
+    title: 'NSFW Protect - AI-Powered Content Moderation',
     description:
       'Real-time NSFW detection with 99%+ accuracy. Protect your users and brand with advanced AI moderation. Easy API integration, enterprise-grade performance.',
     url: SITE_URL,
-    siteName: 'NSFWGuard',
+    siteName: 'NSFW Protect',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'NSFWGuard Content Moderation',
+        alt: 'NSFW Protect Content Moderation',
       },
     ],
     locale: 'en_US',
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'NSFWGuard - AI-Powered Content Moderation',
+    title: 'NSFW Protect - AI-Powered Content Moderation',
     description:
       'Real-time NSFW detection with 99%+ accuracy. Protect your users and brand with advanced AI moderation.',
     images: ['/og-image.png'],

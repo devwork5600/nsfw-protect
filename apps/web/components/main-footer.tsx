@@ -11,7 +11,7 @@ const MainFooter = () => {
         <div className="flex items-center gap-2 text-muted-foreground font-heading">
           <Shield className="w-5 h-5 text-primary" />
           <span className="tracking-widest uppercase text-sm font-bold">
-            © {new Date().getFullYear()} NSFWGuard API. Engineered Precision.
+            © {new Date().getFullYear()} NSFW Protect API. Engineered Precision.
           </span>
         </div>
 

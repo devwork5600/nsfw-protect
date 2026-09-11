@@ -49,7 +49,7 @@ print(response.json())`;
             Integration Guide
           </h2>
           <p className="text-muted-foreground">
-            Implement NSFWGuard into your application in minutes.
+            Implement NSFW Protect into your application in minutes.
           </p>
         </div>
         <Link href="/docs" target="_blank">

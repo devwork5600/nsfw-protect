@@ -5,8 +5,8 @@ import { getUser } from '@/lib/auth/auth-session';
 import { SupportForm } from './support-form';
 
 export const metadata = {
-  title: 'Contact Support — NSFWGuard',
-  description: 'Get in touch with the NSFWGuard team.',
+  title: 'Contact Support — NSFW Protect',
+  description: 'Get in touch with the NSFW Protect team.',
 };
 
 export default async function SupportPage() {

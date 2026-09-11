@@ -15,7 +15,7 @@ export default function QuickstartPage() {
             Quickstart Guide
           </h1>
           <p className="text-lg text-muted-foreground font-sans leading-relaxed">
-            Get up and running with NSFWGuard in under 5 minutes. This guide walks you through
+            Get up and running with NSFW Protect in under 5 minutes. This guide walks you through
             generating an API key, making your first request, and interpreting the results.
           </p>
         </div>

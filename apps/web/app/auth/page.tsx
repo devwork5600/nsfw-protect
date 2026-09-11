@@ -92,7 +92,7 @@ export default function AuthPage() {
         <div>
           <Link href="/" className="font-bold text-2xl flex items-center gap-2 mb-16">
             <Shield className="w-8 h-8 text-primary" />
-            NSFWGuard
+            NSFW Protect
           </Link>
 
           <div className="space-y-6 max-w-lg">
@@ -125,7 +125,7 @@ export default function AuthPage() {
             className="font-heading font-bold text-2xl tracking-tighter flex items-center gap-2 mb-4"
           >
             <Shield className="w-8 h-8 text-primary" />
-            NSFWGuard
+            NSFW Protect
           </Link>
         </div>
 

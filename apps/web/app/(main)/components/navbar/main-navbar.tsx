@@ -25,7 +25,7 @@ const MainNavbar = () => {
             className="font-heading font-bold text-xl tracking-tighter flex items-center gap-2"
           >
             <Shield className="w-6 h-6 text-primary" />
-            <span className="truncate">NSFWGuard</span>
+            <span className="truncate">NSFW Protect</span>
           </Link>
           <div className="hidden md:flex gap-6">
             <Link

@@ -13,7 +13,7 @@ import {
   pixelBasedPreset,
   Hr,
 } from 'react-email';
-import { logoUrl } from './logo-url.js';
+import { shieldUrl } from './logo-url.js';
 
 export const SupportRequestTemplate = ({
   name,
@@ -43,13 +43,20 @@ export const SupportRequestTemplate = ({
         <Body className="mx-auto my-auto bg-white px-2 font-sans">
           <Container className="mx-auto my-[40px] max-w-[520px] rounded border border-[#eaeaea] border-solid p-[20px]">
             <Section className="mt-[32px]">
-              <Img
-                src={logoUrl()}
-                width="200"
-                height="44"
-                alt="NSFWGuard"
-                className="mx-auto my-0"
-              />
+              <table role="presentation" align="center" cellPadding="0" cellSpacing="0" border={0}>
+                <tbody>
+                  <tr>
+                    <td style={{ verticalAlign: 'middle', paddingRight: 8 }}>
+                      <Img src={shieldUrl()} width="28" height="34" alt="NSFW Protect" />
+                    </td>
+                    <td style={{ verticalAlign: 'middle' }}>
+                      <Text className="m-0 font-bold text-[22px] text-black leading-[34px]">
+                        NSFW Protect
+                      </Text>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </Section>
             <Heading className="mx-0 my-[30px] p-0 text-center font-normal text-[24px] text-black">
               New <strong>Support Request</strong>

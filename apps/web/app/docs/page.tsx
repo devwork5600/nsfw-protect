@@ -16,7 +16,7 @@ export default function DocsPage() {
             System Overview
           </h1>
           <p className="text-lg text-muted-foreground font-sans leading-relaxed">
-            NSFWGuard provides a high-performance, low-latency API designed to detect and filter
+            NSFW Protect provides a high-performance, low-latency API designed to detect and filter
             sensitive content in real-time. Whether you&apos;re building a social platform, a
             marketplace, or an enterprise internal tool, our neural engine ensures safety without
             compromising user experience.

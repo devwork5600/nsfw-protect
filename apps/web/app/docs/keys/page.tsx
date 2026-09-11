@@ -14,7 +14,7 @@ export default function DocsKeysPage() {
             API Keys
           </h1>
           <p className="text-lg text-muted-foreground font-sans leading-relaxed">
-            API keys are the primary method of authenticating requests to the NSFWGuard API. Each
+            API keys are the primary method of authenticating requests to the NSFW Protect API. Each
             key is cryptographically generated and hashed for storage — the raw key is only
             displayed once during creation.
           </p>

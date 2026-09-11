@@ -85,7 +85,7 @@ const faqs = [
   {
     question: 'Is my data used for training?',
     answer:
-      'No. NSFWGuard API adheres to strict data privacy standards. Images are processed in volatile memory and discarded instantly unless audit logging is enabled.',
+      'No. NSFW Protect API adheres to strict data privacy standards. Images are processed in volatile memory and discarded instantly unless audit logging is enabled.',
   },
   {
     question: 'Do you offer a sandbox?',
@@ -293,7 +293,7 @@ export default async function PricingPage() {
             Ready to secure your platform?
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto relative z-10 font-sans">
-            Join over 2,500+ developers building safer digital environments with NSFWGuard.
+            Join over 2,500+ developers building safer digital environments with NSFW Protect.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4 relative z-10">
             <Button
