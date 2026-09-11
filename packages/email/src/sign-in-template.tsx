@@ -39,7 +39,7 @@ export const EmailTemplate = ({
         }}
       >
         <Body className="mx-auto my-auto bg-white px-2 font-sans">
-          <Container className="mx-auto my-10 max-w-116.25 rounded border border-[#eaeaea] border-solid p-5">
+          <Container className="mx-auto my-[40px] max-w-[465px] rounded border border-[#eaeaea] border-solid p-[20px]">
             <Section className="mt-8">
               <Img
                 src={logoUrl()}
