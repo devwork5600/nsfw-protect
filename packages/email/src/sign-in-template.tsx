@@ -39,7 +39,10 @@ export const EmailTemplate = ({
         }}
       >
         <Body className="mx-auto my-auto bg-white px-2 font-sans">
-          <Container className="mx-auto my-[40px] max-w-[465px] rounded border border-[#eaeaea] border-solid p-[20px]">
+          <Container
+            width={465}
+            className="mx-auto my-[40px] max-w-[465px] rounded border border-[#eaeaea] border-solid p-[20px]"
+          >
             <Section className="mt-8">
               <table role="presentation" align="center" cellPadding="0" cellSpacing="0" border={0}>
                 <tbody>
