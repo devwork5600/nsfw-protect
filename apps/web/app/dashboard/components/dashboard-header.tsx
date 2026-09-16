@@ -7,7 +7,7 @@ export function DashboardHeader({ title }: { title: string }) {
   const { toggle } = useMobileMenu();
 
   return (
-    <header className="h-16 border-b border-border bg-background/80 backdrop-blur-md flex items-center px-4 md:px-8 shrink-0 sticky top-0 z-10 w-full">
+    <header className="h-16 border-b border-border bg-background/80 backdrop-blur-md flex items-center gap-4 px-4 md:px-8 shrink-0 sticky top-0 z-10 w-full">
       <button
         onClick={toggle}
         className="md:hidden p-2 hover:bg-accent transition-colors border border-border"
