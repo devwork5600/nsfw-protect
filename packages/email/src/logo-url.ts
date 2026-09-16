@@ -5,10 +5,6 @@ function baseUrl(): string {
   return rawBaseUrl.endsWith('/') ? rawBaseUrl.slice(0, -1) : rawBaseUrl;
 }
 
-export function logoUrl(): string {
-  return `${baseUrl()}/logo-email.png`;
-}
-
 export function shieldUrl(): string {
   return `${baseUrl()}/shield-email.png`;
 }

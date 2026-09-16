@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/sonner';
@@ -56,14 +56,9 @@ export const metadata: Metadata = {
       'Real-time NSFW detection with 99%+ accuracy. Protect your users and brand with advanced AI moderation. Easy API integration, enterprise-grade performance.',
     url: SITE_URL,
     siteName: 'NSFW Protect',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'NSFW Protect Content Moderation',
-      },
-    ],
+    // No manual `images` here — app/opengraph-image.tsx (file convention)
+    // generates it and Next.js injects the og:image/twitter:image tags
+    // automatically. A manual entry would duplicate/conflict with that.
     locale: 'en_US',
     type: 'website',
   },
@@ -72,8 +67,16 @@ export const metadata: Metadata = {
     title: 'NSFW Protect - AI-Powered Content Moderation',
     description:
       'Real-time NSFW detection with 99%+ accuracy. Protect your users and brand with advanced AI moderation.',
-    images: ['/og-image.png'],
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'NSFW Protect',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#0a0a0a',
 };
 
 export default function RootLayout({
