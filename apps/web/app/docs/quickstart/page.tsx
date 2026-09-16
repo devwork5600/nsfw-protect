@@ -1,7 +1,14 @@
 import { Lightbulb, Link as LinkIcon } from 'lucide-react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { CodeTabs } from '../_components/code-tabs';
+
+export const metadata: Metadata = {
+  title: 'Quickstart Guide',
+  description:
+    'Get up and running with NSFW Protect in under 5 minutes — generate an API key, make your first request, and interpret the results.',
+};
 
 export default function QuickstartPage() {
   return (

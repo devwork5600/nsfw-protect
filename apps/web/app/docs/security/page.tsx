@@ -1,5 +1,12 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+
+export const metadata: Metadata = {
+  title: 'Security',
+  description:
+    'NSFW Protect is built with a privacy-first architecture — all data is encrypted in transit, processed in volatile memory, and purged immediately after classification.',
+};
 
 export default function DocsSecurityPage() {
   return (
