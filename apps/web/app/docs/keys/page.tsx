@@ -1,6 +1,13 @@
 import { Link as LinkIcon } from 'lucide-react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+
+export const metadata: Metadata = {
+  title: 'API Keys',
+  description:
+    'API keys are the primary method of authenticating requests to the NSFW Protect API — cryptographically generated and hashed for storage.',
+};
 
 export default function DocsKeysPage() {
   return (

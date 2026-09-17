@@ -1,10 +1,17 @@
 import { Check, X } from 'lucide-react';
+import type { Metadata } from 'next';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { getUser } from '@/lib/auth/auth-session';
 import { redirect } from 'next/navigation';
 import { prisma } from '@nsfw/db';
+
+export const metadata: Metadata = {
+  title: 'Pricing',
+  description:
+    'Transparent pricing for teams of all sizes — scale your content moderation with millisecond latency and industrial-grade verification.',
+};
 
 const plans = [
   {

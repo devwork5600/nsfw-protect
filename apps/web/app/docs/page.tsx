@@ -1,7 +1,14 @@
 import { Lightbulb, Link as LinkIcon } from 'lucide-react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { CodeTabs } from './_components/code-tabs';
+
+export const metadata: Metadata = {
+  title: 'API Overview',
+  description:
+    'NSFW Protect provides a high-performance, low-latency API designed to detect and filter sensitive content in real-time.',
+};
 
 export default function DocsPage() {
   return (

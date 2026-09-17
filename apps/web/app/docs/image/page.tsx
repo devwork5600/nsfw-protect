@@ -1,6 +1,13 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { CodeTabs } from '../_components/code-tabs';
+
+export const metadata: Metadata = {
+  title: 'Image Analysis',
+  description:
+    'The image classification endpoint accepts JPEG, PNG, and WebP files up to 10MB, resized to 224×224 and analyzed by our neural detection model.',
+};
 
 export default function DocsImagePage() {
   return (
