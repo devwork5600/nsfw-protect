@@ -22,6 +22,12 @@ const MainFooter = () => {
           <Link href="/terms" className="hover:text-primary transition-colors font-bold">
             Terms of Service
           </Link>
+          <Link href="/cookies" className="hover:text-primary transition-colors font-bold">
+            Cookie Policy
+          </Link>
+          <Link href="/legal" className="hover:text-primary transition-colors font-bold">
+            Legal Notice
+          </Link>
           <Link href="/support" className="hover:text-primary transition-colors font-bold">
             Contact Support
           </Link>
