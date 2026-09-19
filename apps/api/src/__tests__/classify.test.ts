@@ -346,6 +346,60 @@ describe('rate limiting', () => {
     expect(mocks.apiKeyFindUnique).toHaveBeenCalledTimes(3);
   });
 
+  it('exempts an unlimited (admin) key from the per-key burst limit', async () => {
+    app = await buildApp({ logger: false, rateLimitStore: 'memory' });
+    mocks.apiKeyFindUnique.mockResolvedValue({ ...DB_API_KEY, isUnlimited: true });
+
+    // FREE would block at 31; an unlimited key is the owner's own apps and never throttled.
+    for (let i = 0; i < 35; i++) {
+      expect((await classify(VALID_RAW_KEY)).statusCode).toBe(200);
+    }
+  });
+
+  describe('homepage demo key', () => {
+    const DEMO_KEY = 'demo-home-key';
+
+    const classifyAsVisitor = (ip: string) => {
+      const { body, contentType } = makeMultipartBody();
+      return app.inject({
+        method: 'POST',
+        url: '/classify',
+        headers: { 'x-api-key': DEMO_KEY, 'x-demo-client-ip': ip, 'content-type': contentType },
+        payload: body,
+      });
+    };
+
+    beforeEach(async () => {
+      vi.stubEnv('HOME_PAGE_API_KEY', DEMO_KEY);
+      app = await buildApp({ logger: false, rateLimitStore: 'memory' });
+    });
+
+    it('allows 10 tests per visitor, then answers 429 with a retry delay', async () => {
+      for (let i = 0; i < 10; i++) {
+        expect((await classifyAsVisitor('203.0.113.7')).statusCode).toBe(200);
+      }
+
+      const res = await classifyAsVisitor('203.0.113.7');
+      expect(res.statusCode).toBe(429);
+      expect(res.json()).toMatchObject({ error: 'Too many requests', limit: 10 });
+      // Window is one hour, so the wait must be well over a few minutes.
+      expect(res.json().retryAfterSeconds).toBeGreaterThan(3000);
+    });
+
+    it('counts each visitor separately', async () => {
+      for (let i = 0; i < 11; i++) await classifyAsVisitor('203.0.113.7');
+
+      expect((await classifyAsVisitor('198.51.100.9')).statusCode).toBe(200);
+    });
+
+    it('never touches billing or the database', async () => {
+      await classifyAsVisitor('203.0.113.7');
+
+      expect(mocks.apiKeyFindUnique).not.toHaveBeenCalled();
+      expect(mocks.usageRecordUpsert).not.toHaveBeenCalled();
+    });
+  });
+
   it('never rate-limits /health', async () => {
     vi.stubEnv('RATE_LIMIT_IP_PER_MIN', '1');
     app = await buildApp({ logger: false, rateLimitStore: 'memory' });
