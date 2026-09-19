@@ -1,4 +1,4 @@
-import Fastify from 'fastify';
+import Fastify, { type FastifyReply } from 'fastify';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
 import rateLimit from '@fastify/rate-limit';
@@ -135,6 +135,26 @@ export async function buildApp({
     ]),
   ) as Record<PlanTier, ReturnType<typeof fastify.createRateLimit>>;
 
+  // The public homepage demo shares one API key, and the server action calling us runs on
+  // the site's servers — so our IP limiter only ever sees that server, never the visitor.
+  // The action forwards the visitor's IP in x-demo-client-ip; since only the holder of the
+  // (server-side, secret) demo key can reach this path, the header can be trusted here.
+  // Hashed before it reaches Redis: raw visitor IPs are personal data we don't need to keep.
+  const demoLimiter = fastify.createRateLimit({
+    max: parseInt(process.env.DEMO_RATE_LIMIT_MAX ?? '10', 10),
+    timeWindow: '1 hour',
+    skipOnError: true,
+    keyGenerator: (request) =>
+      `demo:${hashApiKeySha256(String(request.headers['x-demo-client-ip'] ?? 'unknown'))}`,
+  });
+
+  const tooManyRequests = (reply: FastifyReply, l: { max: number; ttlInSeconds: number }) =>
+    reply.status(429).header('retry-after', l.ttlInSeconds).send({
+      error: 'Too many requests',
+      limit: l.max,
+      retryAfterSeconds: l.ttlInSeconds,
+    });
+
   // Caps uploaded image size at 20MB to bound memory/processing cost per request.
   await fastify.register(multipart, { limits: { fileSize: 20 * 1024 * 1024 } });
 
@@ -225,6 +245,13 @@ export async function buildApp({
     };
     let billingCtx: BillingCtx | null = null;
 
+    // The demo key skips billing and the per-key burst limit below, so this per-visitor
+    // cap is what keeps it from being an unmetered free endpoint.
+    if (isHomePageKey) {
+      const demo = await demoLimiter(request);
+      if (!demo.isAllowed && demo.isExceeded) return tooManyRequests(reply, demo);
+    }
+
     if (!isHomePageKey) {
       const keyHash = hashApiKeySha256(apiKeyRaw);
 
@@ -257,13 +284,10 @@ export async function buildApp({
 
       // Burst limit, checked before the quota queries so a throttled request costs no
       // further DB work. Rejects before the upload is read, so nothing is billed either.
-      const burst = await (keyLimiters[plan] ?? keyLimiters.FREE)(request);
-      if (!burst.isAllowed && burst.isExceeded) {
-        return reply.status(429).header('retry-after', burst.ttlInSeconds).send({
-          error: 'Too many requests',
-          limit: burst.max,
-          retryAfterSeconds: burst.ttlInSeconds,
-        });
+      // Unlimited (admin "magic") keys are exempt: they're the owner's own apps.
+      if (!apiKey.isUnlimited) {
+        const burst = await (keyLimiters[plan] ?? keyLimiters.FREE)(request);
+        if (!burst.isAllowed && burst.isExceeded) return tooManyRequests(reply, burst);
       }
 
       // Cheap best-effort pre-check so obviously over-quota callers are rejected

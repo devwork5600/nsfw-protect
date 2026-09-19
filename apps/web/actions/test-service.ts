@@ -1,5 +1,7 @@
 'use server';
 
+import { headers } from 'next/headers';
+
 const API_URL =
   process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -9,6 +11,14 @@ if (process.env.NODE_ENV === 'production' && API_URL.includes('localhost')) {
   );
 }
 const MAGIC_KEY = process.env.HOME_PAGE_API_KEY;
+
+// The API only sees this server's address, so the visitor's IP is forwarded explicitly for
+// the demo key's per-visitor limit. Vercel overwrites x-forwarded-for at its edge, so the
+// first entry is the real client and can't be spoofed by the visitor.
+async function getVisitorIp() {
+  const h = await headers();
+  return h.get('x-forwarded-for')?.split(',')[0]?.trim() || h.get('x-real-ip') || 'unknown';
+}
 
 export async function testImageAction(formData: FormData) {
   if (!MAGIC_KEY) {
@@ -27,12 +37,19 @@ export async function testImageAction(formData: FormData) {
       method: 'POST',
       headers: {
         'x-api-key': MAGIC_KEY || '',
+        'x-demo-client-ip': await getVisitorIp(),
       },
       body: formData,
     });
 
     if (!response.ok) {
       const error = await response.json();
+      if (response.status === 429) {
+        const minutes = Math.max(1, Math.ceil((error.retryAfterSeconds ?? 60) / 60));
+        return {
+          error: `Demo limit reached (${error.limit ?? 10} free tests per hour). Try again in ${minutes} min, or create a free account to keep testing.`,
+        };
+      }
       return { error: error.error || 'Failed to classify image' };
     }
 
