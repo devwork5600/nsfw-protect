@@ -400,6 +400,47 @@ describe('rate limiting', () => {
     });
   });
 
+  describe('client IP resolution behind Railway', () => {
+    // A cheap request that still passes through the IP limiter: no key -> 401, but the
+    // x-ratelimit-remaining header shows which bucket it was counted in.
+    const remainingFor = async (xForwardedFor: string, socketIp = '100.64.0.5') => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/classify',
+        remoteAddress: socketIp,
+        headers: { 'x-forwarded-for': xForwardedFor },
+      });
+      return Number(res.headers['x-ratelimit-remaining']);
+    };
+
+    beforeEach(async () => {
+      app = await buildApp({ logger: false, rateLimitStore: 'memory' });
+    });
+
+    it('counts one client in one bucket however many internal hops Railway adds', async () => {
+      expect(await remainingFor('203.0.113.7')).toBe(299);
+      expect(await remainingFor('203.0.113.7, 100.64.0.9')).toBe(298);
+      expect(await remainingFor('203.0.113.7, 100.64.1.1, 100.64.2.2')).toBe(297);
+    });
+
+    it('ignores fake addresses a visitor puts in front of the real one', async () => {
+      expect(await remainingFor('203.0.113.7, 100.64.0.9')).toBe(299);
+      expect(await remainingFor('6.6.6.6, 203.0.113.7, 100.64.0.9')).toBe(298);
+      expect(await remainingFor('100.9.9.9, 203.0.113.7, 100.64.0.9')).toBe(297);
+    });
+
+    it('gives different clients different buckets', async () => {
+      await remainingFor('203.0.113.7, 100.64.0.9');
+      expect(await remainingFor('198.51.100.9, 100.64.0.9')).toBe(299);
+    });
+
+    it('ignores x-forwarded-for entirely when the request does not come from a trusted proxy', async () => {
+      // A direct connection could write any header: only the socket address counts.
+      expect(await remainingFor('1.1.1.1', '198.51.100.50')).toBe(299);
+      expect(await remainingFor('2.2.2.2', '198.51.100.50')).toBe(298);
+    });
+  });
+
   it('never rate-limits /health', async () => {
     vi.stubEnv('RATE_LIMIT_IP_PER_MIN', '1');
     app = await buildApp({ logger: false, rateLimitStore: 'memory' });
