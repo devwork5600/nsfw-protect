@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
+import rateLimit from '@fastify/rate-limit';
 import crypto from 'node:crypto';
 import { Queue } from 'bullmq';
 import sharp from 'sharp';
@@ -17,6 +18,18 @@ const RESULT_PREFIX = 'nsfw:result:';
 // that's what generates the hash stored in the DB. Name is pinned to the algorithm so a
 // future swap (e.g. to bcrypt) can't happen on one side without the mismatch being obvious.
 const hashApiKeySha256 = (key: string) => crypto.createHash('sha256').update(key).digest('hex');
+
+// Max /classify requests per minute per API key, by plan. Separate from the monthly quota
+// (PLAN_LIMITS): the quota bounds total volume, this bounds bursts so one key can't
+// monopolise the worker's CPU-heavy model.
+const PLAN_RATE_LIMITS: Record<PlanTier, number> = {
+  FREE: 30,
+  STARTER: 120,
+  PRO: 600,
+  ENTERPRISE: 3000,
+};
+
+const RATE_LIMIT_WINDOW = '1 minute';
 
 type NsfwJobData = { jobId: string; r2Key: string; usageRecordId?: string };
 
@@ -39,10 +52,20 @@ async function enqueueWithRetry(queue: Queue, data: NsfwJobData, retries = 3) {
   }
 }
 
-export async function buildApp({ logger = true }: { logger?: boolean | object } = {}) {
+export async function buildApp({
+  logger = true,
+  rateLimitStore = 'redis',
+}: { logger?: boolean | object; rateLimitStore?: 'redis' | 'memory' } = {}) {
   const REDIS_URL = process.env.REDIS_URL ?? 'redis://localhost:6379';
 
-  const fastify = Fastify({ logger });
+  // Number of reverse-proxy hops in front of the API (Railway's edge = 1). Fastify only
+  // reads the client IP from x-forwarded-for through that many trusted hops; without it
+  // request.ip is the proxy's address, so every client would share one rate-limit bucket.
+  const trustedHops = parseInt(process.env.TRUST_PROXY_HOPS ?? '1', 10);
+
+  // Same semantics as passing the number straight to Fastify (its typings only accept a
+  // function here): trust the first N addresses in the chain, starting from the socket.
+  const fastify = Fastify({ logger, trustProxy: (_address, hop) => hop < trustedHops });
 
   const { s3Client, bucketName: BUCKET_NAME } = createR2Client({
     onMissingConfig: () =>
@@ -68,6 +91,50 @@ export async function buildApp({ logger = true }: { logger?: boolean | object } 
     allowedHeaders: ['x-api-key', 'Content-Type'],
   });
 
+  // Dedicated Redis connection for the rate limiter, kept apart from the main one: that one
+  // has maxRetriesPerRequest: null (commands wait forever), which would make every request
+  // hang during a Redis outage. Here commands fail fast and skipOnError lets requests
+  // through — losing rate limiting briefly beats taking the whole API down with Redis.
+  const rateLimitRedis =
+    rateLimitStore === 'redis'
+      ? createRedisConnection(REDIS_URL, { connectTimeout: 500, maxRetriesPerRequest: 1 })
+          .connection
+      : undefined;
+  rateLimitRedis?.on('error', (err) => fastify.log.error({ err }, 'Rate-limit Redis error'));
+
+  // Global per-IP ceiling, checked before any auth or DB work: this is what stops a flood
+  // (or API-key guessing) from reaching Postgres. Deliberately high — customers call from
+  // servers, so one IP can legitimately send a lot. The per-key limit in /classify is the
+  // tight one.
+  await fastify.register(rateLimit, {
+    max: parseInt(process.env.RATE_LIMIT_IP_PER_MIN ?? '300', 10),
+    timeWindow: RATE_LIMIT_WINDOW,
+    redis: rateLimitRedis,
+    skipOnError: true,
+    nameSpace: 'nsfw:ratelimit:ip:',
+    errorResponseBuilder: (_request, context) => ({
+      statusCode: 429,
+      error: 'Too many requests',
+      retryAfterSeconds: Math.ceil(context.ttl / 1000),
+    }),
+  });
+
+  // Per-API-key limiters, one per plan (max is fixed per limiter). Keyed on a hash of the
+  // key so raw API keys never land in Redis. Called manually inside /classify because the
+  // plan is only known after the key has been looked up in the database.
+  const keyLimiters = Object.fromEntries(
+    (Object.keys(PLAN_RATE_LIMITS) as PlanTier[]).map((plan) => [
+      plan,
+      fastify.createRateLimit({
+        max: PLAN_RATE_LIMITS[plan],
+        timeWindow: RATE_LIMIT_WINDOW,
+        skipOnError: true,
+        keyGenerator: (request) =>
+          `apikey:${hashApiKeySha256(String(request.headers['x-api-key']))}`,
+      }),
+    ]),
+  ) as Record<PlanTier, ReturnType<typeof fastify.createRateLimit>>;
+
   // Caps uploaded image size at 20MB to bound memory/processing cost per request.
   await fastify.register(multipart, { limits: { fileSize: 20 * 1024 * 1024 } });
 
@@ -80,17 +147,19 @@ export async function buildApp({ logger = true }: { logger?: boolean | object } 
   fastify.addHook('onClose', async () => {
     await nsfwQueue.close();
     await connection.quit();
+    await rateLimitRedis?.quit();
     await prisma.$disconnect();
     await pool.end();
   });
 
-  fastify.get('/', async () => ({
+  // Health checks are hit constantly by the platform's probes — never rate-limit them.
+  fastify.get('/', { config: { rateLimit: false } }, async () => ({
     status: 'ok',
     service: 'nsfw-api',
     timestamp: new Date().toISOString(),
   }));
 
-  fastify.get('/health', async () => ({ status: 'ok' }));
+  fastify.get('/health', { config: { rateLimit: false } }, async () => ({ status: 'ok' }));
 
   // /classify is synchronous from the caller's perspective: after enqueueing, the
   // request waits for the worker to publish the result and returns it directly.
@@ -185,6 +254,17 @@ export async function buildApp({ logger = true }: { logger?: boolean | object } 
       const plan = customer?.subscriptions[0]?.plan || 'FREE';
       const limit = PLAN_LIMITS[plan] || PLAN_LIMITS.FREE;
       const now = new Date();
+
+      // Burst limit, checked before the quota queries so a throttled request costs no
+      // further DB work. Rejects before the upload is read, so nothing is billed either.
+      const burst = await (keyLimiters[plan] ?? keyLimiters.FREE)(request);
+      if (!burst.isAllowed && burst.isExceeded) {
+        return reply.status(429).header('retry-after', burst.ttlInSeconds).send({
+          error: 'Too many requests',
+          limit: burst.max,
+          retryAfterSeconds: burst.ttlInSeconds,
+        });
+      }
 
       // Cheap best-effort pre-check so obviously over-quota callers are rejected
       // before we spend time receiving the (up to 20MB) multipart upload. This is
