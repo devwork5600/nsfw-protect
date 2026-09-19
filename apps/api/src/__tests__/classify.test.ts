@@ -178,7 +178,7 @@ describe('POST /classify', () => {
     mocks.apiKeyUpdate.mockResolvedValue({});
     mocks.prismaExecuteRaw.mockResolvedValue(undefined);
 
-    app = await buildApp({ logger: false });
+    app = await buildApp({ logger: false, rateLimitStore: 'memory' });
   });
 
   afterEach(async () => {
@@ -237,7 +237,7 @@ describe('GET /health', () => {
   beforeEach(async () => {
     mocks.redisQuit.mockResolvedValue('OK');
     mocks.queueClose.mockResolvedValue(undefined);
-    app = await buildApp({ logger: false });
+    app = await buildApp({ logger: false, rateLimitStore: 'memory' });
   });
 
   afterEach(async () => {
@@ -248,5 +248,110 @@ describe('GET /health', () => {
     const res = await app.inject({ method: 'GET', url: '/health' });
     expect(res.statusCode).toBe(200);
     expect(res.json()).toMatchObject({ status: 'ok' });
+  });
+});
+
+// ─── Rate limiting ────────────────────────────────────────────────────────────
+
+describe('rate limiting', () => {
+  let app: FastifyInstance;
+
+  const classify = (apiKey: string) => {
+    const { body, contentType } = makeMultipartBody();
+    return app.inject({
+      method: 'POST',
+      url: '/classify',
+      headers: { 'x-api-key': apiKey, 'content-type': contentType },
+      payload: body,
+    });
+  };
+
+  beforeEach(() => {
+    mocks.redisSet.mockResolvedValue('OK');
+    mocks.redisGet.mockResolvedValue(JSON.stringify(DONE_RESULT));
+    mocks.redisQuit.mockResolvedValue('OK');
+    mocks.queueAdd.mockResolvedValue({ id: 'job-123' });
+    mocks.queueClose.mockResolvedValue(undefined);
+    mocks.s3Send.mockResolvedValue({});
+    mocks.sharpToBuffer.mockResolvedValue(Buffer.from('processed-image'));
+    mocks.apiKeyFindUnique.mockResolvedValue(DB_API_KEY);
+    mocks.customerFindUnique.mockResolvedValue(DB_CUSTOMER_FREE);
+    mocks.usageRecordAggregate.mockResolvedValue({ _sum: { imageCount: 0 } });
+    mocks.usageRecordUpsert.mockResolvedValue({ id: 'usage_new_id' });
+    mocks.apiKeyUpdate.mockResolvedValue({});
+    mocks.prismaExecuteRaw.mockResolvedValue(undefined);
+  });
+
+  afterEach(async () => {
+    vi.unstubAllEnvs();
+    await app.close();
+  });
+
+  it('rejects a FREE-plan key with 429 once it exceeds its per-minute burst limit', async () => {
+    app = await buildApp({ logger: false, rateLimitStore: 'memory' });
+
+    // FREE allows 30 requests per minute.
+    for (let i = 0; i < 30; i++) {
+      expect((await classify(VALID_RAW_KEY)).statusCode).toBe(200);
+    }
+
+    const res = await classify(VALID_RAW_KEY);
+    expect(res.statusCode).toBe(429);
+    expect(res.json()).toMatchObject({ error: 'Too many requests', limit: 30 });
+    expect(Number(res.headers['retry-after'])).toBeGreaterThan(0);
+  });
+
+  it('does not bill or store anything for a throttled request', async () => {
+    app = await buildApp({ logger: false, rateLimitStore: 'memory' });
+    for (let i = 0; i < 30; i++) await classify(VALID_RAW_KEY);
+    mocks.usageRecordUpsert.mockClear();
+    mocks.s3Send.mockClear();
+
+    await classify(VALID_RAW_KEY);
+
+    expect(mocks.usageRecordUpsert).not.toHaveBeenCalled();
+    expect(mocks.s3Send).not.toHaveBeenCalled();
+  });
+
+  it('gives each API key its own bucket', async () => {
+    app = await buildApp({ logger: false, rateLimitStore: 'memory' });
+    for (let i = 0; i < 31; i++) await classify(VALID_RAW_KEY);
+
+    expect((await classify('nsfwprot_someotherkey0000000000000')).statusCode).toBe(200);
+  });
+
+  it('applies the higher burst limit of a paid plan', async () => {
+    app = await buildApp({ logger: false, rateLimitStore: 'memory' });
+    mocks.customerFindUnique.mockResolvedValue(DB_CUSTOMER_PRO);
+
+    // 31 would already be blocked on FREE; PRO allows 600.
+    for (let i = 0; i < 31; i++) {
+      expect((await classify(VALID_RAW_KEY)).statusCode).toBe(200);
+    }
+  });
+
+  it('caps a single IP with 429 even before any API key is checked', async () => {
+    vi.stubEnv('RATE_LIMIT_IP_PER_MIN', '3');
+    mocks.apiKeyFindUnique.mockResolvedValue(null); // unknown key
+    app = await buildApp({ logger: false, rateLimitStore: 'memory' });
+
+    for (let i = 0; i < 3; i++) {
+      expect((await classify('nsfwprot_guess')).statusCode).toBe(401);
+    }
+
+    const res = await classify('nsfwprot_guess');
+    expect(res.statusCode).toBe(429);
+    expect(res.json()).toMatchObject({ error: 'Too many requests' });
+    // The blocked guess never reached the database.
+    expect(mocks.apiKeyFindUnique).toHaveBeenCalledTimes(3);
+  });
+
+  it('never rate-limits /health', async () => {
+    vi.stubEnv('RATE_LIMIT_IP_PER_MIN', '1');
+    app = await buildApp({ logger: false, rateLimitStore: 'memory' });
+
+    for (let i = 0; i < 5; i++) {
+      expect((await app.inject({ method: 'GET', url: '/health' })).statusCode).toBe(200);
+    }
   });
 });
