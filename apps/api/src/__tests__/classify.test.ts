@@ -27,6 +27,10 @@ const mocks = vi.hoisted(() => ({
   poolEnd: vi.fn(),
   // sharp chain
   sharpToBuffer: vi.fn(),
+  // Sentry
+  sentryCaptureException: vi.fn(),
+  sentryCaptureMessage: vi.fn(),
+  sentrySetupFastifyErrorHandler: vi.fn(),
 }));
 
 vi.mock('ioredis', () => ({
@@ -93,6 +97,12 @@ vi.mock('@nsfw/db', () => {
 });
 
 vi.mock('dotenv', () => ({ default: { config: vi.fn() } }));
+
+vi.mock('@sentry/node', () => ({
+  captureException: mocks.sentryCaptureException,
+  captureMessage: mocks.sentryCaptureMessage,
+  setupFastifyErrorHandler: mocks.sentrySetupFastifyErrorHandler,
+}));
 
 // ─── Import after mocks ───────────────────────────────────────────────────────
 
@@ -226,6 +236,48 @@ describe('POST /classify', () => {
       limit: 250000,
       currentUsage: 250000,
     });
+  });
+
+  // ── Sentry reporting ────────────────────────────────────────────────────────
+  // Both paths below return a manually-built reply.status(500).send(...) rather than
+  // throwing, so Fastify's own error handling (and Sentry's setupFastifyErrorHandler hook)
+  // never sees them — only the explicit Sentry calls right where each error is caught do.
+
+  it('reports an unexpected processing failure to Sentry', async () => {
+    mocks.sharpToBuffer.mockRejectedValue(new Error('corrupt image'));
+
+    const { body, contentType } = makeMultipartBody();
+    const res = await app.inject({
+      method: 'POST',
+      url: '/classify',
+      headers: { 'x-api-key': VALID_RAW_KEY, 'content-type': contentType },
+      payload: body,
+    });
+
+    expect(res.statusCode).toBe(500);
+    expect(mocks.sentryCaptureException).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'corrupt image' }),
+      expect.objectContaining({ extra: expect.objectContaining({ jobId: expect.any(String) }) }),
+    );
+  });
+
+  it('reports a worker-side classification error to Sentry as a message, not a fake exception', async () => {
+    mocks.redisGet.mockResolvedValue(JSON.stringify({ status: 'error', error: 'Model timed out' }));
+
+    const { body, contentType } = makeMultipartBody();
+    const res = await app.inject({
+      method: 'POST',
+      url: '/classify',
+      headers: { 'x-api-key': VALID_RAW_KEY, 'content-type': contentType },
+      payload: body,
+    });
+
+    expect(res.statusCode).toBe(500);
+    expect(mocks.sentryCaptureMessage).toHaveBeenCalledWith(
+      'Model timed out',
+      expect.objectContaining({ level: 'error' }),
+    );
+    expect(mocks.sentryCaptureException).not.toHaveBeenCalled();
   });
 });
 

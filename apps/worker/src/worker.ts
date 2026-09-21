@@ -1,3 +1,8 @@
+// Imported first, before anything else in this file, so Sentry's auto-instrumentation can
+// patch libraries like ioredis before they're first required.
+import './instrument.js';
+
+import * as Sentry from '@sentry/node';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'node:url';
 import { Worker } from 'bullmq';
@@ -45,6 +50,10 @@ connection.on('connect', () => logger.info('Redis connected'));
 const classifierPromise = pipeline('image-classification', 'AdamCodd/vit-base-nsfw-detector').catch(
   (err) => {
     logger.error({ err }, 'Failed to load model');
+    // Captured here once, distinctly, rather than relying only on the resulting per-job
+    // failures below — every job attempted while the model is broken would otherwise report
+    // the same root cause as N separate, indistinguishable Sentry events.
+    Sentry.captureException(err, { tags: { stage: 'model-load' } });
     throw err;
   },
 ) as unknown as ProcessJobDeps['classifierPromise'];
@@ -73,8 +82,18 @@ const worker = new Worker<ProcessJobData>(
 );
 
 worker.on('completed', (job) => logger.info({ bullJobId: job.id }, 'Job completed'));
-worker.on('failed', (job, err) => logger.error({ bullJobId: job?.id, err }, 'Job failed'));
-worker.on('error', (err) => logger.error({ err }, 'Worker error'));
+worker.on('failed', (job, err) => {
+  logger.error({ bullJobId: job?.id, err }, 'Job failed');
+  // BullMQ has no Sentry integration of its own — nothing captures this unless done here.
+  // Fires only once a job has exhausted its retries (attempts: 2, set where jobs are enqueued
+  // in apps/api), not on every individual attempt.
+  Sentry.captureException(err, { tags: { stage: 'job-failed' }, extra: { bullJobId: job?.id } });
+});
+worker.on('error', (err) => {
+  logger.error({ err }, 'Worker error');
+  // Worker-level (e.g. Redis connection), distinct from a single job failing above.
+  Sentry.captureException(err, { tags: { stage: 'worker-error' } });
+});
 
 logger.info('NSFW worker started');
 
