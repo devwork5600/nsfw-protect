@@ -1,5 +1,6 @@
 import Fastify, { type FastifyReply, type FastifyRequest } from 'fastify';
 import cors from '@fastify/cors';
+import helmet from '@fastify/helmet';
 import multipart from '@fastify/multipart';
 import rateLimit, { normalizeIP } from '@fastify/rate-limit';
 import crypto from 'node:crypto';
@@ -98,6 +99,17 @@ export async function buildApp({
 
   // Queue that classification jobs are pushed onto; the worker service consumes it.
   const nsfwQueue = new Queue('nsfw-queue', { connection: bullmqConnection });
+
+  // Sets the standard security response headers (X-Content-Type-Options, X-Frame-Options,
+  // HSTS, etc.). CSP is disabled: it governs how a browser renders HTML, and this API only
+  // ever returns JSON, so it'd be dead weight. crossOriginResourcePolicy is loosened from
+  // helmet's 'same-origin' default to 'cross-origin' to match the CORS policy right below —
+  // callers on other origins (the marketing site, third-party integrations) are the intended
+  // audience, not an exception to carve out.
+  await fastify.register(helmet, {
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  });
 
   // Allow any origin (the API is called from the marketing site and third-party integrations),
   // but still restrict methods/headers to what the API actually uses. Auth is via the
