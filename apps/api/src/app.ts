@@ -186,6 +186,18 @@ export async function buildApp({
 
   fastify.get('/health', { config: { rateLimit: false } }, async () => ({ status: 'ok' }));
 
+  // TEMPORARY — diagnosing the rate limiter counting one Railway client into more than one
+  // bucket (fixed once in #63 by trusting 100.0.0.0/8 instead of a hop count, but the split
+  // persists). No secrets exposed, only how this request's IP got resolved — remove once
+  // the actual X-Forwarded-For shape Railway sends is confirmed.
+  fastify.get('/debug/ip', { config: { rateLimit: false } }, async (request) => ({
+    resolvedIp: request.ip,
+    ips: request.ips,
+    xForwardedFor: request.headers['x-forwarded-for'] ?? null,
+    xRealIp: request.headers['x-real-ip'] ?? null,
+    remoteAddress: request.socket.remoteAddress,
+  }));
+
   // /classify is synchronous from the caller's perspective: after enqueueing, the
   // request waits for the worker to publish the result and returns it directly.
   // Configurable mainly so tests can shrink the window.
