@@ -13,7 +13,12 @@ vi.mock('@nsfw/email', () => ({
   sendEmail: mocks.sendEmail,
   EmailTemplate: () => null,
 }));
-vi.mock('better-auth', () => ({ betterAuth: mocks.betterAuthCtor }));
+vi.mock('better-auth', async (importOriginal) => {
+  // Keeps the real APIError class (server.ts's error handling constructs and checks
+  // `instanceof APIError`) while still mocking the betterAuth constructor itself.
+  const actual = await importOriginal<typeof import('better-auth')>();
+  return { ...actual, betterAuth: mocks.betterAuthCtor };
+});
 vi.mock('better-auth/adapters/prisma', () => ({ prismaAdapter: mocks.prismaAdapter }));
 vi.mock('better-auth/plugins', () => ({
   magicLink: mocks.magicLink.mockImplementation((opts: unknown) => ({ id: 'magic-link', opts })),
@@ -74,6 +79,35 @@ describe('getAuthOptions', () => {
         sendMagicLink({ email: 'jane@test.com', url: 'https://x' }),
       ).resolves.toBeUndefined();
     });
+
+    it('reports an expected sendEmail failure as a 400, not an opaque 500', async () => {
+      mocks.sendEmail.mockResolvedValue({ success: false, message: 'recipient rejected' });
+      const sendMagicLink = getSendMagicLink();
+
+      const error: unknown = await sendMagicLink({ email: 'jane@test.com', url: 'https://x' })
+        .then(() => null)
+        .catch((e) => e);
+
+      expect(error).toMatchObject({ status: 'BAD_REQUEST', message: 'recipient rejected' });
+    });
+
+    it('logs and reports an unexpected sendEmail throw as a generic 500, hiding the internal message', async () => {
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+      mocks.sendEmail.mockRejectedValue(new Error('EMAIL_FROM is not set'));
+      const sendMagicLink = getSendMagicLink();
+
+      const error: unknown = await sendMagicLink({ email: 'jane@test.com', url: 'https://x' })
+        .then(() => null)
+        .catch((e) => e);
+
+      expect(error).toMatchObject({ status: 'INTERNAL_SERVER_ERROR' });
+      expect((error as Error).message).not.toContain('EMAIL_FROM');
+      expect(consoleError).toHaveBeenCalledWith(
+        'Failed to send magic link email:',
+        expect.objectContaining({ message: 'EMAIL_FROM is not set' }),
+      );
+      consoleError.mockRestore();
+    });
   });
 
   describe('change-email confirmation', () => {
@@ -130,6 +164,25 @@ describe('getAuthOptions', () => {
   it('wires the Prisma adapter with the postgresql provider', () => {
     getAuthOptions();
     expect(mocks.prismaAdapter).toHaveBeenCalledWith(expect.anything(), { provider: 'postgresql' });
+  });
+
+  describe('rate limiting', () => {
+    it('is enabled and persisted in Postgres rather than the in-memory default', () => {
+      const options = getAuthOptions();
+      expect(options.rateLimit).toMatchObject({ enabled: true, storage: 'database' });
+    });
+  });
+
+  describe('client IP resolution', () => {
+    it('trusts only x-forwarded-for, not cf-connecting-ip', () => {
+      // Verified live (2026-09-21): the apex domain resolves straight to Vercel with no
+      // Cloudflare in front, so a request there reaches this app with cf-connecting-ip
+      // completely unfiltered — trusting it would let a visitor set any value they like and
+      // bypass IP-based rate limiting entirely. x-forwarded-for is safe on every path this
+      // app is reachable from (Vercel and Cloudflare each overwrite it themselves).
+      const options = getAuthOptions();
+      expect(options.advanced?.ipAddress?.ipAddressHeaders).toEqual(['x-forwarded-for']);
+    });
   });
 });
 
