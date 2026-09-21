@@ -1,16 +1,10 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Smartphone, History, AlertTriangle, GlobeIcon, Share2, Mail } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
 
 export default function SecurityPage() {
-  const handleEnable2FA = () => {
-    toast.info('Two-factor authentication setup is coming soon!');
-  };
-
   return (
     <div className="container mx-auto py-10 space-y-8 pb-10">
       <div>
@@ -71,39 +65,6 @@ export default function SecurityPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Smartphone className="size-5 text-primary" />
-              Two-Factor Authentication
-            </CardTitle>
-            <CardDescription>Add an extra layer of security to your account.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-4 border rounded-lg bg-primary/5 border-primary/20">
-              <div className="space-y-1">
-                <p className="font-bold uppercase tracking-wider text-xs">Authenticator App</p>
-                <p className="text-sm text-muted-foreground">
-                  Use an app like Google Authenticator or Authy.
-                </p>
-              </div>
-              <Badge
-                variant="outline"
-                className="text-muted-foreground border-muted-foreground/30 uppercase tracking-widest text-[10px]"
-              >
-                Disabled
-              </Badge>
-            </div>
-            <Button
-              onClick={handleEnable2FA}
-              variant="outline"
-              className="font-heading uppercase tracking-widest text-xs font-bold w-full"
-            >
-              Enable 2FA
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
               <History className="size-5 text-primary" />
               Recent Login Activity
             </CardTitle>
@@ -154,7 +115,6 @@ export default function SecurityPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-yellow-600 space-y-2 leading-relaxed">
-            <p>• Enable two-factor authentication to prevent unauthorized access.</p>
             <p>• Review your API keys regularly and revoke any that are no longer in use.</p>
             <p>• Ensure your recovery email is up to date in your social provider settings.</p>
           </CardContent>
