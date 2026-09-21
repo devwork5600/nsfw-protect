@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { withSentryConfig } from '@sentry/nextjs/config';
 
 // Static CSP (no nonce): keeps every page statically rendered/CDN-cached, same as today —
 // the nonce-based alternative Next.js also supports forces dynamic rendering on every page
@@ -67,4 +68,20 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Applied unconditionally, even before SENTRY_ORG/PROJECT/AUTH_TOKEN are set: verified in
+// @sentry/bundler-plugin-core that a missing authToken just logs "No auth token provided...
+// Will not upload source maps" and skips that step — it never fails the build. Until those
+// three are configured, source maps just won't upload (readable stack traces are a nice-to-have
+// this buys later); Sentry.init() already reports errors either way.
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  // Quiets the plugin's own build-log noise; real errors still surface.
+  silent: true,
+  // Proxies browser event submission through this app's own domain under an
+  // unlikely-to-be-blocklisted path, instead of directly to Sentry's ingest domain — ad
+  // blockers commonly block the latter, silently losing client-side error reports. Works
+  // independently of the source-map options above.
+  tunnelRoute: '/monitoring-tunnel',
+});
