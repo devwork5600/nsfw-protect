@@ -159,6 +159,39 @@ describe('getAuthOptions', () => {
         } as never),
       ).rejects.toThrow('Failed to send email. Please try again later.');
     });
+
+    it('reports an expected sendEmail failure as a 400, not an opaque 500', async () => {
+      mocks.sendEmail.mockResolvedValue({ success: false, message: 'recipient rejected' });
+      const options = getAuthOptions();
+      const send = getSendChangeEmailConfirmation(options);
+
+      const error: unknown = await send({
+        user: { email: 'jane@test.com' },
+        newEmail: 'new@test.com',
+        url: 'https://x',
+      } as never)
+        .then(() => null)
+        .catch((e) => e);
+
+      expect(error).toMatchObject({ status: 'BAD_REQUEST', message: 'recipient rejected' });
+    });
+
+    it('hides the internal error message behind a generic 500', async () => {
+      mocks.sendEmail.mockRejectedValue(new Error('smtp down'));
+      const options = getAuthOptions();
+      const send = getSendChangeEmailConfirmation(options);
+
+      const error: unknown = await send({
+        user: { email: 'jane@test.com' },
+        newEmail: 'new@test.com',
+        url: 'https://x',
+      } as never)
+        .then(() => null)
+        .catch((e) => e);
+
+      expect(error).toMatchObject({ status: 'INTERNAL_SERVER_ERROR' });
+      expect((error as Error).message).not.toContain('smtp down');
+    });
   });
 
   it('wires the Prisma adapter with the postgresql provider', () => {

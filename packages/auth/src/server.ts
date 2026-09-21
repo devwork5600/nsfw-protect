@@ -100,9 +100,14 @@ export const getAuthOptions = (): BetterAuthOptions => {
           newEmail: string;
           url: string;
         }) => {
+          // Same handling as sendMagicLink above: an expected sendEmail failure
+          // (result.success === false — this used to go unchecked, so a rejected recipient
+          // silently looked like success) is reported as 400 with the real reason; anything
+          // that throws instead is logged and reported as a generic 500 rather than leaking
+          // internal details or a plain Error that Better Auth's router can't classify.
           try {
             const username = user.email.split('@')[0];
-            await sendEmail({
+            const result = await sendEmail({
               to: user.email,
               subject: 'Approve Email Change',
               react: React.createElement(EmailTemplate, {
@@ -112,9 +117,18 @@ export const getAuthOptions = (): BetterAuthOptions => {
                 buttonText: 'Approve Email Change',
               }),
             });
+
+            if (!result.success) {
+              throw new APIError('BAD_REQUEST', {
+                message: result.message || 'Failed to send email change confirmation',
+              });
+            }
           } catch (err) {
+            if (err instanceof APIError) throw err;
             console.error('Failed to send email change verification:', err);
-            throw new Error('Failed to send email. Please try again later.');
+            throw new APIError('INTERNAL_SERVER_ERROR', {
+              message: 'Failed to send email. Please try again later.',
+            });
           }
         },
       },
