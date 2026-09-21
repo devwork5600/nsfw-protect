@@ -1,7 +1,3 @@
-// Imported first, before anything else in this file, so Sentry's auto-instrumentation can
-// patch libraries like ioredis before app.js first requires them.
-import './instrument.js';
-
 import dotenv from 'dotenv';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

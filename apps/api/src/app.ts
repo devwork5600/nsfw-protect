@@ -1,5 +1,4 @@
 import Fastify, { type FastifyReply, type FastifyRequest } from 'fastify';
-import * as Sentry from '@sentry/node';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import multipart from '@fastify/multipart';
@@ -61,14 +60,6 @@ export async function buildApp({
   const REDIS_URL = process.env.REDIS_URL ?? 'redis://localhost:6379';
 
   const fastify = Fastify({ logger });
-
-  // Reports any error that reaches Fastify's own error-handling (a thrown exception, or
-  // reply.send(error)) to Sentry — but only 5xx (or, oddly, the <=299 edge case); expected 4xx
-  // responses like the 401/403/429s below never reach it. This does NOT cover the errors
-  // caught and manually formatted inside /classify's own try/catch below — those are ordinary
-  // successful reply.send() calls as far as Fastify can tell, so they're captured explicitly
-  // instead, right where they're caught.
-  Sentry.setupFastifyErrorHandler(fastify);
 
   // Fastify's built-in trustProxy walks x-forwarded-for from the right, skipping addresses
   // in a trusted range, and takes the first untrusted one as the client — that assumes every
@@ -524,19 +515,12 @@ export async function buildApp({
       }
 
       if (outcome.status === 'error') {
-        // A string from the worker, not an Error object — captured as a message (grouped by
-        // text) rather than forced into a fake exception with no real stack trace.
-        Sentry.captureMessage(outcome.error ?? 'Classification failed', {
-          level: 'error',
-          extra: { jobId },
-        });
         return reply.status(500).send({ error: outcome.error ?? 'Classification failed' });
       }
 
       return outcome;
     } catch (error) {
       request.log.error({ err: error, jobId }, 'Processing failed');
-      Sentry.captureException(error, { extra: { jobId } });
       return reply.status(500).send({ error: 'Failed to process image' });
     }
   });
