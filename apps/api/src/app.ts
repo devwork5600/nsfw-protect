@@ -1,7 +1,7 @@
-import Fastify, { type FastifyReply } from 'fastify';
+import Fastify, { type FastifyReply, type FastifyRequest } from 'fastify';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
-import rateLimit from '@fastify/rate-limit';
+import rateLimit, { normalizeIP } from '@fastify/rate-limit';
 import crypto from 'node:crypto';
 import { Queue } from 'bullmq';
 import sharp from 'sharp';
@@ -58,19 +58,31 @@ export async function buildApp({
 }: { logger?: boolean | object; rateLimitStore?: 'redis' | 'memory' } = {}) {
   const REDIS_URL = process.env.REDIS_URL ?? 'redis://localhost:6379';
 
-  // Which proxies to trust when reading the client IP from x-forwarded-for. Trusted by
-  // address range rather than by hop count: Railway's docs and staff disagree on how many
-  // entries its edge puts in the chain (and it varies by routing path), which is what made
-  // one client land in several rate-limit buckets. Railway's internal addresses are always
-  // in 100.0.0.0/8, and Fastify walks the chain from the right, skipping trusted addresses:
-  // the first untrusted one is the real client, so anything a visitor writes to the left of
-  // it is ignored. Behind Cloudflare too, add its ranges via TRUSTED_PROXIES (comma list).
-  const trustProxy = (process.env.TRUSTED_PROXIES ?? '100.0.0.0/8')
-    .split(',')
-    .map((range) => range.trim())
-    .filter(Boolean);
+  const fastify = Fastify({ logger });
 
-  const fastify = Fastify({ logger, trustProxy });
+  // Fastify's built-in trustProxy walks x-forwarded-for from the right, skipping addresses
+  // in a trusted range, and takes the first untrusted one as the client — that assumes every
+  // hop it doesn't own sits to the left of the ones it does. Railway breaks that assumption:
+  // debugging (GET /debug/ip) showed it rotates through its own PUBLIC edge IPs (observed:
+  // 79.127.178.81 and .82, not the private 100.0.0.0/8 range) as the rightmost entry, so
+  // that walk landed on Railway's edge instead of the visitor — splitting one client across
+  // several rate-limit buckets depending on which edge IP happened to handle the request.
+  //
+  // Fix, verified live against the deployed API (2026-09-21): Railway's edge fully REWRITES
+  // x-forwarded-for on every request — a spoofed header sent by the caller (tried
+  // "X-Forwarded-For: 6.6.6.6") was discarded entirely, replaced with "<real client ip>,
+  // <railway edge ip>". So the leftmost entry is guaranteed to be the real visitor, and it
+  // can't be spoofed by anyone going through Railway's edge — but that guarantee comes from
+  // Railway itself, not from anything checkable in this code, so it only holds deployed
+  // there. A direct connection with no edge in front (e.g. local dev) has no
+  // x-forwarded-for at all and falls back to the socket address below.
+  const resolveClientIp = (request: FastifyRequest): string => {
+    const xForwardedFor = request.headers['x-forwarded-for'];
+    const first = (Array.isArray(xForwardedFor) ? xForwardedFor[0] : xForwardedFor)
+      ?.split(',')[0]
+      ?.trim();
+    return normalizeIP(first || request.socket.remoteAddress || 'unknown');
+  };
 
   const { s3Client, bucketName: BUCKET_NAME } = createR2Client({
     onMissingConfig: () =>
@@ -117,6 +129,7 @@ export async function buildApp({
     redis: rateLimitRedis,
     skipOnError: true,
     nameSpace: 'nsfw:ratelimit:ip:',
+    keyGenerator: resolveClientIp,
     errorResponseBuilder: (_request, context) => ({
       statusCode: 429,
       error: 'Too many requests',
@@ -191,8 +204,8 @@ export async function buildApp({
   // persists). No secrets exposed, only how this request's IP got resolved — remove once
   // the actual X-Forwarded-For shape Railway sends is confirmed.
   fastify.get('/debug/ip', { config: { rateLimit: false } }, async (request) => ({
-    resolvedIp: request.ip,
-    ips: request.ips,
+    resolvedIp: resolveClientIp(request),
+    fastifyIp: request.ip,
     xForwardedFor: request.headers['x-forwarded-for'] ?? null,
     xRealIp: request.headers['x-real-ip'] ?? null,
     remoteAddress: request.socket.remoteAddress,
