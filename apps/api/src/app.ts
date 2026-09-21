@@ -58,14 +58,19 @@ export async function buildApp({
 }: { logger?: boolean | object; rateLimitStore?: 'redis' | 'memory' } = {}) {
   const REDIS_URL = process.env.REDIS_URL ?? 'redis://localhost:6379';
 
-  // Number of reverse-proxy hops in front of the API (Railway's edge = 1). Fastify only
-  // reads the client IP from x-forwarded-for through that many trusted hops; without it
-  // request.ip is the proxy's address, so every client would share one rate-limit bucket.
-  const trustedHops = parseInt(process.env.TRUST_PROXY_HOPS ?? '1', 10);
+  // Which proxies to trust when reading the client IP from x-forwarded-for. Trusted by
+  // address range rather than by hop count: Railway's docs and staff disagree on how many
+  // entries its edge puts in the chain (and it varies by routing path), which is what made
+  // one client land in several rate-limit buckets. Railway's internal addresses are always
+  // in 100.0.0.0/8, and Fastify walks the chain from the right, skipping trusted addresses:
+  // the first untrusted one is the real client, so anything a visitor writes to the left of
+  // it is ignored. Behind Cloudflare too, add its ranges via TRUSTED_PROXIES (comma list).
+  const trustProxy = (process.env.TRUSTED_PROXIES ?? '100.0.0.0/8')
+    .split(',')
+    .map((range) => range.trim())
+    .filter(Boolean);
 
-  // Same semantics as passing the number straight to Fastify (its typings only accept a
-  // function here): trust the first N addresses in the chain, starting from the socket.
-  const fastify = Fastify({ logger, trustProxy: (_address, hop) => hop < trustedHops });
+  const fastify = Fastify({ logger, trustProxy });
 
   const { s3Client, bucketName: BUCKET_NAME } = createR2Client({
     onMissingConfig: () =>
