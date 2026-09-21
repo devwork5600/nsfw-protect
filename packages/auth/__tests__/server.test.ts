@@ -131,6 +131,25 @@ describe('getAuthOptions', () => {
     getAuthOptions();
     expect(mocks.prismaAdapter).toHaveBeenCalledWith(expect.anything(), { provider: 'postgresql' });
   });
+
+  describe('rate limiting', () => {
+    it('is enabled and persisted in Postgres rather than the in-memory default', () => {
+      const options = getAuthOptions();
+      expect(options.rateLimit).toMatchObject({ enabled: true, storage: 'database' });
+    });
+  });
+
+  describe('client IP resolution', () => {
+    it('trusts only x-forwarded-for, not cf-connecting-ip', () => {
+      // Verified live (2026-09-21): the apex domain resolves straight to Vercel with no
+      // Cloudflare in front, so a request there reaches this app with cf-connecting-ip
+      // completely unfiltered — trusting it would let a visitor set any value they like and
+      // bypass IP-based rate limiting entirely. x-forwarded-for is safe on every path this
+      // app is reachable from (Vercel and Cloudflare each overwrite it themselves).
+      const options = getAuthOptions();
+      expect(options.advanced?.ipAddress?.ipAddressHeaders).toEqual(['x-forwarded-for']);
+    });
+  });
 });
 
 describe('getAuth', () => {
