@@ -1,4 +1,4 @@
-import { betterAuth } from 'better-auth';
+import { betterAuth, APIError } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { magicLink } from 'better-auth/plugins';
 import { prisma } from '@nsfw/db';
@@ -51,19 +51,38 @@ export const getAuthOptions = (): BetterAuthOptions => {
       magicLink({
         sendMagicLink: async ({ email, url }) => {
           const username = email.split('@')[0];
-          const result = await sendEmail({
-            to: email,
-            subject: 'Your Magic Sign-In Link',
-            react: React.createElement(EmailTemplate, {
-              username,
-              linkUrl: url,
-              text: 'Click the button below to sign in.',
-              buttonText: 'Sign In',
-            }),
-          });
+          // Wrapped in try/catch (unlike the plain-Error version this replaced) because
+          // Better Auth's router only special-cases its own APIError — any other thrown
+          // value, including a plain Error, becomes an opaque 500 with no client-facing
+          // message (confirmed live 2026-09-21: a recipient Resend rejects, e.g. an
+          // unverified/sandbox-restricted address, surfaced this way instead of a clean
+          // error). A result.success === false from sendEmail is an expected, user-facing
+          // failure (bad/rejected recipient) — reported as 400 with the real reason. Anything
+          // that throws instead (e.g. EMAIL_FROM missing) is an unexpected config/ops fault —
+          // logged here and reported as a generic 500 rather than leaking internal details.
+          try {
+            const result = await sendEmail({
+              to: email,
+              subject: 'Your Magic Sign-In Link',
+              react: React.createElement(EmailTemplate, {
+                username,
+                linkUrl: url,
+                text: 'Click the button below to sign in.',
+                buttonText: 'Sign In',
+              }),
+            });
 
-          if (!result.success) {
-            throw new Error(result.message || 'Failed to send magic link');
+            if (!result.success) {
+              throw new APIError('BAD_REQUEST', {
+                message: result.message || 'Failed to send magic link',
+              });
+            }
+          } catch (err) {
+            if (err instanceof APIError) throw err;
+            console.error('Failed to send magic link email:', err);
+            throw new APIError('INTERNAL_SERVER_ERROR', {
+              message: 'Failed to send the sign-in email. Please try again later.',
+            });
           }
         },
       }),
