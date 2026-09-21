@@ -103,6 +103,19 @@ model Verification {
   @@map("verification")
 }
 
+// Persists Better Auth's rate-limit counters (rateLimit.storage = "database" in
+// packages/auth/src/server.ts). Field names are fixed by Better Auth itself — it reads/writes
+// this table by these exact names (key, count, lastRequest in epoch milliseconds).
+model RateLimit {
+  id String @id @default(uuid())
+
+  key         String @unique
+  count       Int
+  lastRequest BigInt
+
+  @@map("rate_limit")
+}
+
 //
 // ==========================
 // BILLING
@@ -263,10 +276,10 @@ model UsageRecord {
 
   createdAt DateTime @default(now())
 
-  @@index([userId, periodStart])
-  @@index([apiKeyId])
   // One usage row per API key per billing period, so the check-then-increment
   // in apps/api/src/app.ts can be a single upsert instead of a findFirst+update/create.
   @@unique([apiKeyId, periodStart, periodEnd])
+  @@index([userId, periodStart])
+  @@index([apiKeyId])
   @@map("usage_record")
 }
